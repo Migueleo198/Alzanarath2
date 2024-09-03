@@ -8,6 +8,8 @@ import javax.swing.JPanel;
 
 import Networking.Configuration;
 import Networking.NetworkManager;
+import Entity.Entity;
+import Entity.NpcOldMan;
 import Entity.Player;
 import Inputs.KeyHandler;
 import Tile.TileManager;
@@ -41,6 +43,10 @@ public class GamePanel extends JPanel implements Runnable {
 
     // PLAYER ENTITY INSTANTIATION
     Player player;
+    
+    //NPCs entities instantiation
+    private Entity npc[] = new Entity[10];
+    private int currentNpcNum;
 
     // TILE MANAGER
     TileManager tileM = new TileManager(this);
@@ -51,7 +57,8 @@ public class GamePanel extends JPanel implements Runnable {
     //GAME BGM AND SE
     Sound sound = new Sound();
     
-    
+    //Asset setter
+    AssetSetter aSetter = new AssetSetter(this);
     //GAME STATAES
     private int gameState;
     private int titleState=1;
@@ -76,10 +83,15 @@ public class GamePanel extends JPanel implements Runnable {
         //Set the game state to title screen
         gameState=titleState;
         
-        
+        setupGame();
         
         playMusic(0);
     }
+	
+	public void setupGame() {
+		aSetter.setObject();
+		aSetter.setNpc();
+	}
 
     public void startGameThread() {
         gameThread = new Thread(this);
@@ -117,7 +129,14 @@ public class GamePanel extends JPanel implements Runnable {
 
     public void update() {
     	if(gameState==playState) {
+    	//PLAYER
         player.update();
+        //NPC
+        for(int i=0; i<npc.length;i++) {
+        	if(npc[i]!=null) {
+        		npc[i].update();
+        	}
+        }
     	}
     }
 
@@ -128,7 +147,19 @@ public class GamePanel extends JPanel implements Runnable {
     	if(gameState==playState) {
         g2.setColor(getBackground());
         tileM.draw(g2);
+        
+        for(int i=0; i<getNpc().length;i++) {
+        	if(getNpc()[i]!=null) {
+        	getNpc()[i].draw(g2);
+        	currentNpcNum=i;
+        	}
+        
         player.draw(g2);
+        
+        //Draw NPCS
+       
+    	}
+        
     	}
     	
     	
@@ -239,5 +270,21 @@ public class GamePanel extends JPanel implements Runnable {
 
 	public void setPlayState(int playState) {
 			this.playState = playState;
+	}
+
+	public int getCurrentNpcNum() {
+		return currentNpcNum;
+	}
+
+	public void setCurrentNpcNum(int currentNpcNum) {
+		this.currentNpcNum = currentNpcNum;
+	}
+
+	public Entity[] getNpc() {
+		return npc;
+	}
+
+	public void setNpc(Entity npc[]) {
+		this.npc = npc;
 	}
 }
