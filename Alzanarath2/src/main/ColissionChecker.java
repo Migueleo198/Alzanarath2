@@ -34,7 +34,7 @@ public class ColissionChecker {
 			}
 			break;
 		case "down":
-			entityBottomRow = (entityBottomWorldY - entity.getSpeed()) / gp.getTileSize();
+			entityBottomRow = (entityBottomWorldY + entity.getSpeed()) / gp.getTileSize();
 			tileNum1 = gp.tileM.getMapTileNum()[entityLeftCol][entityBottomRow];
 			tileNum2 = gp.tileM.getMapTileNum()[entityRightCol][entityBottomRow];
 			if (gp.tileM.tile[tileNum1].isCollision() || gp.tileM.tile[tileNum2].isCollision()) {
