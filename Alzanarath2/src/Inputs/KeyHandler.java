@@ -6,119 +6,90 @@ import java.awt.event.KeyListener;
 import main.GamePanel;
 
 public class KeyHandler implements KeyListener {
-	private int code;
-	GamePanel gp;
-	private boolean upPressed, downPressed, leftPressed, rightPressed;
-	public KeyHandler(GamePanel gp) {
-		this.gp=gp;
-	}
-	
+    private GamePanel gp;
+    private boolean upPressed, downPressed, leftPressed, rightPressed;
 
-	@Override
-	public void keyTyped(KeyEvent e) {
+    public KeyHandler(GamePanel gp) {
+        this.gp = gp;
+    }
 
-	}
+    @Override
+    public void keyTyped(KeyEvent e) {
+        // Not used
+    }
 
-	@Override
-	public void keyPressed(KeyEvent e) {
-		code = e.getKeyCode();
-		
-		if (gp.getGameState()==gp.getTitleState()){
-			if (code == KeyEvent.VK_UP) {
-				if(gp.ui.getCommandNum()>0) {
-				gp.ui.setCommandNum(gp.ui.getCommandNum()-1);
-				}
-			}
-			
-			if (code == KeyEvent.VK_DOWN) {
-				if(gp.ui.getCommandNum()<1) {
-				gp.ui.setCommandNum(gp.ui.getCommandNum()+1);
-				}
-			}
-			
-			if(code==KeyEvent.VK_ENTER) {
-				if(gp.ui.getCommandNum()==0) {
-					gp.setGameState(gp.getPlayState());
-					gp.isServer = true;
-				}
-				
-				if(gp.ui.getCommandNum()==1) {
-					gp.setGameState(gp.getPlayState());
-					gp.isServer = false;
-				}
-			}
-		}
+    @Override
+    public void keyPressed(KeyEvent e) {
+    	synchronized (gp.keyH) {
+        int code = e.getKeyCode();
 
-		if (code == KeyEvent.VK_W) {
-			upPressed = true;
-		}
+        if (gp.getGameState() == gp.getTitleState()) {
+            handleMenuNavigation(code);
+        } else {
+            handlePlayerMovement(code, true);
+        }
+    	}
+    }
 
-		if (code == KeyEvent.VK_S) {
-			downPressed = true;
-		}
+    @Override
+    public void keyReleased(KeyEvent e) {
+    	synchronized (gp.keyH) {
+        int code = e.getKeyCode();
+        handlePlayerMovement(code, false);
+    	}
+    }
 
-		if (code == KeyEvent.VK_A) {
-			leftPressed = true;
-		}
+    private void handleMenuNavigation(int code) {
+        if (code == KeyEvent.VK_UP) {
+            if (gp.ui.getCommandNum() > 0) {
+                gp.ui.setCommandNum(gp.ui.getCommandNum() - 1);
+            }
+        } else if (code == KeyEvent.VK_DOWN) {
+            if (gp.ui.getCommandNum() < 1) {
+                gp.ui.setCommandNum(gp.ui.getCommandNum() + 1);
+            }
+        } else if (code == KeyEvent.VK_ENTER) {
+            if (gp.ui.getCommandNum() == 0) {
+                gp.setGameState(gp.getPlayState());
+                gp.isServer = true;
+               
+                gp.initializeGame();  // Ensure this is called before the game loop
+            } else if (gp.ui.getCommandNum() == 1) {
+                gp.setGameState(gp.getPlayState());
+                gp.initializeGame();  // Ensure this is called before the game loop
+                
+                gp.isServer = false;
+            }
+        }
+    
+    }
 
-		if (code == KeyEvent.VK_D) {
-			rightPressed = true;
-		}
+    private void handlePlayerMovement(int code, boolean pressed) {
+        if (code == KeyEvent.VK_W) {
+            upPressed = pressed;
+        } else if (code == KeyEvent.VK_S) {
+            downPressed = pressed;
+        } else if (code == KeyEvent.VK_A) {
+            leftPressed = pressed;
+        } else if (code == KeyEvent.VK_D) {
+            rightPressed = pressed;
+        }
+    }
 
-	}
+    public boolean isUpPressed() {
+        return upPressed;
+    }
 
-	@Override
-	public void keyReleased(KeyEvent e) {
-		code = e.getKeyCode();
+    public boolean isDownPressed() {
+        return downPressed;
+    }
 
-		if (code == KeyEvent.VK_W) {
-			upPressed = false;
-		}
+    public boolean isLeftPressed() {
+        return leftPressed;
+    }
 
-		if (code == KeyEvent.VK_S) {
-			downPressed = false;
-		}
-
-		if (code == KeyEvent.VK_A) {
-			leftPressed = false;
-		}
-
-		if (code == KeyEvent.VK_D) {
-			rightPressed = false;
-		}
-
-	}
-
-	public boolean isUpPressed() {
-		return upPressed;
-	}
-
-	public void setUpPressed(boolean upPressed) {
-		this.upPressed = upPressed;
-	}
-
-	public boolean isDownPressed() {
-		return downPressed;
-	}
-
-	public void setDownPressed(boolean downPressed) {
-		this.downPressed = downPressed;
-	}
-
-	public boolean isLeftPressed() {
-		return leftPressed;
-	}
-
-	public void setLeftPressed(boolean leftPressed) {
-		this.leftPressed = leftPressed;
-	}
-
-	public boolean isRightPressed() {
-		return rightPressed;
-	}
-
-	public void setRightPressed(boolean rightPressed) {
-		this.rightPressed = rightPressed;
-	}
-
+    public boolean isRightPressed() {
+        return rightPressed;
+    }
 }
+

@@ -15,159 +15,177 @@ import main.GamePanel;
 import javax.swing.JOptionPane;
 
 import Networking.NetworkManager;
+import Networking.PlayerData;
 
 public class Player extends Entity {
-	GamePanel gp;
-	KeyHandler keyH;
-	NetworkManager networkManager;
+    private GamePanel gp;
+    private KeyHandler keyH;
+    private NetworkManager networkManager;
 
-	private final int screenX;
-	private final int screenY;
+    private final int screenX;
+    private final int screenY;
 
-	public Player(GamePanel gp, KeyHandler keyH, NetworkManager networkManager) {
-		super(gp);
-		this.gp = gp;
-		this.keyH = keyH;
-		this.networkManager = networkManager;
+    // Client-side prediction variables
+    private int predictedX, predictedY;
+    private boolean isPredicting;
+    
+    private PlayerData lastReceivedData; // Store the last received data
 
-		screenX = (gp.getScreenWidth() / 2) - gp.getTileSize() / 2;
-		screenY = (gp.getScreenHeight() / 2) - gp.getTileSize() / 2;
+    public Player(GamePanel gp, KeyHandler keyH, NetworkManager networkManager) {
+        super(gp);
+        this.gp = gp;
+        this.keyH = keyH;
+        this.networkManager = networkManager;
+       
 
-		solidArea = new Rectangle();
+        screenX = (gp.getScreenWidth() / 2) - gp.getTileSize() / 2;
+        screenY = (gp.getScreenHeight() / 2) - gp.getTileSize() / 2;
 
-		solidArea.x = 8;
-		solidArea.y = 16;
-		solidArea.width = 32;
-		solidArea.height = 32;
+        solidArea = new Rectangle();
+        solidArea.x = 8;
+        solidArea.y = 16;
+        solidArea.width = 32;
+        solidArea.height = 32;
 
-		setDefaultParams();
-		getPlayerModel();
-	}
+        setDefaultParams();
+        getPlayerModel();
+    }
 
+    @Override
+    public void update() {
+        // Client-side movement
+        if (keyH == null) {
+            
+            return;
+        }
+
+        boolean moved = false;
+
+        if (keyH.isUpPressed() || keyH.isDownPressed() || keyH.isLeftPressed() || keyH.isRightPressed()) {
+            moved = true;
+
+            if (keyH.isUpPressed()) {
+                direction = "up";
+            } else if (keyH.isDownPressed()) {
+                direction = "down";
+            } else if (keyH.isLeftPressed()) {
+                direction = "left";
+            } else if (keyH.isRightPressed()) {
+                direction = "right";
+            }
+
+            spriteCounter++;
+            if (spriteCounter > 10) {
+                spriteNum = (spriteNum == 1) ? 2 : 1;
+                spriteCounter = 0;
+            }
+
+            collisionOn = false;
+            gp.getcChecker().checkTile(this);
+
+            if (!collisionOn) {
+                switch (direction) {
+                    case "up": worldY -= speed; break;
+                    case "down": worldY += speed; break;
+                    case "left": worldX -= speed; break;
+                    case "right": worldX += speed; break;
+                }
+            }
+
+            // Send the update to the server
+            if (networkManager != null) {
+                try {
+                    networkManager.sendPlayerUpdate(this);
+                } catch (Exception e) {
+                    System.err.println("Failed to send player update: " + e.getMessage());
+                    e.printStackTrace();
+                }
+            } else {
+                System.err.println("NetworkManager is not initialized.");
+            }
+        }
+
+        // Smooth movement based on the last received data
+        if (lastReceivedData != null) {
+            long currentTime = System.currentTimeMillis();
+            long timeDifference = currentTime - lastReceivedData.getTimestamp();
+            double interpolationFactor = Math.min(1.0, timeDifference / 1000.0); // Cap the interpolation factor
+
+            double interpolatedX = worldX + (lastReceivedData.getX() - worldX) * interpolationFactor;
+            double interpolatedY = worldY + (lastReceivedData.getY() - worldY) * interpolationFactor;
+
+            worldX = (int) interpolatedX;
+            worldY = (int) interpolatedY;
+        }
+    }
+
+    public void setLastReceivedData(PlayerData playerData) {
+        this.lastReceivedData = playerData;
+    }
+
+   
+    public void correctPosition(int x, int y, String direction) {
+        this.worldX = x;
+        this.worldY = y;
+        this.direction = direction;
+
+        // Reset prediction to server's authoritative position
+        this.predictedX = x;
+        this.predictedY = y;
+        this.isPredicting = false;
+    }
+
+   
+
+
+	
 	public void setDefaultParams() {
 		worldX = 270;
 		worldY = 270;
-        usernamePlayer = networkManager.isServer() ? networkManager.getNameServer() : networkManager.getNameClient();
+		usernamePlayer = networkManager != null ? (networkManager.isServer() ? networkManager.getNameServer() : networkManager.getNameClient()) : "SinglePlayer";
 		speed = 4;
 		direction = "down";
 	}
 
-	public void update() {
-		if (keyH.isUpPressed() == true || keyH.isDownPressed() == true || keyH.isLeftPressed() == true
-				|| keyH.isRightPressed() == true) {
-
-			if (keyH.isUpPressed() == true) {
-				direction = "up";
-
-			}
-
-			else if (keyH.isDownPressed() == true) {
-
-				direction = "down";
-			}
-
-			else if (keyH.isLeftPressed() == true) {
-
-				direction = "left";
-			}
-
-			else if (keyH.isRightPressed() == true) {
-
-				direction = "right";
-
-			}
-
-			spriteCounter++;
-
-			if (spriteCounter > 10) {
-				if (spriteNum == 1) {
-					spriteNum = 2;
-				} else if (spriteNum == 2) {
-					spriteNum = 1;
-				}
-				spriteCounter = 0;
-			}
-
-			// Check collisions
-
-			collisionOn = false;
-			gp.getcChecker().checkTile(this);
-
-			// IF COLLISION IS FALSE THE PLAYER CAN MOVE
-			if (collisionOn == false) {
-				switch (direction) {
-				case "up":
-					worldY -= speed;
-					break;
-				case "down":
-					worldY += speed;
-					break;
-				case "left":
-					worldX -= speed;
-					break;
-				case "right":
-					worldX += speed;
-					break;
-				}
-			}
-		}
-		
-		
-	}
 
 	public void draw(Graphics2D g2) {
-		BufferedImage image = null;
+	    BufferedImage image = null;
 
-		switch (direction) {
-		case "up":
-			if (spriteNum == 1) {
-				image = up1;
-			}
-			if (spriteNum == 2) {
-				image = up2;
-			}
-			break;
-		case "down":
-			if (spriteNum == 1) {
-				image = down1;
-			}
-			if (spriteNum == 2) {
-				image = down2;
-			}
-			break;
+	    // Determine the correct image based on direction and sprite number
+	    switch (direction) {
+	        case "up":
+	            image = (spriteNum == 1) ? up1 : up2;
+	            break;
+	        case "down":
+	            image = (spriteNum == 1) ? down1 : down2;
+	            break;
+	        case "left":
+	            image = (spriteNum == 1) ? left1 : left2;
+	            break;
+	        case "right":
+	            image = (spriteNum == 1) ? right1 : right2;
+	            break;
+	    }
 
-		case "left":
-			if (spriteNum == 1) {
-				image = left1;
-			}
-			if (spriteNum == 2) {
-				image = left2;
-			}
-			break;
-		case "right":
-			if (spriteNum == 1) {
-				image = right1;
-			}
-			if (spriteNum == 2) {
-				image = right2;
-			}
-			break;
-		}
+	    // Draw the player at the correct position
+	    int drawX = screenX - gp.getPlayer().getWorldX() + worldX;
+	    int drawY = screenY - gp.getPlayer().getWorldY() + worldY;
+	    g2.drawImage(image, drawX, drawY, gp.getTileSize(), gp.getTileSize(), null);
 
-		// THE PLAYER POSITION WILL ALWAYS BE STATIC, ITS THE MAP WHICH MOVES NOT THE
-		// PLAYER!
-		g2.drawImage(image, screenX, screenY, gp.getTileSize(), gp.getTileSize(), null);
+	    // Draw the player's username
+	    if (usernamePlayer != null && !usernamePlayer.isEmpty()) {
+	        Font customFont = new Font("Comic Sans", Font.BOLD, 16);
+	        g2.setFont(customFont);
+	        g2.setColor(Color.white);
 
-		Font customFont = new Font("Comic Sans", Font.BOLD, 16);
-		g2.setFont(customFont);
-		g2.setColor(Color.white);
+	        int textWidth = g2.getFontMetrics().stringWidth(usernamePlayer);
+	        int textX = drawX + (gp.getTileSize() / 2) - (textWidth / 2);
+	        int textY = drawY - 5;
 
-		int textWidth = g2.getFontMetrics().stringWidth(usernamePlayer);
-		int textX = screenX + (gp.getTileSize() / 2) - (textWidth / 2);
-		int textY = screenY - 5;
-
-		g2.drawString(usernamePlayer, textX, textY);
+	        g2.drawString(usernamePlayer, textX, textY);
+	    }
 	}
+
 
 	public void getPlayerModel() {
 		try {
