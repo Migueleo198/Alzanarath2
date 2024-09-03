@@ -169,7 +169,7 @@ public class Player extends Entity {
 		// PLAYER!
 		g2.drawImage(image, screenX, screenY, gp.getTileSize(), gp.getTileSize(), null);
 
-		Font customFont = new Font("Verdana", Font.BOLD, 16);
+		Font customFont = new Font("Comic Sans", Font.BOLD, 16);
 		g2.setFont(customFont);
 		g2.setColor(Color.white);
 
