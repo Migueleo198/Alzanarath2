@@ -4,6 +4,7 @@ import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 
 public class Entity {
+	protected String usernamePlayer;
 	protected int worldX;
 	protected int worldY;
 	protected int speed;
@@ -18,6 +19,18 @@ public class Entity {
 	
 	public boolean collisionOn =false;
 
+	// [ This is the entity username ]
+	
+	public String getUsername() {
+		return usernamePlayer;
+	}
+	
+	public void setUsername(String usernamePlayer) {
+		this.usernamePlayer = usernamePlayer;
+	}
+	
+	// 
+	
 	public int getWorldX() {
 		return worldX;
 	}
