@@ -5,10 +5,13 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import javax.swing.JPanel;
+
+import Networking.Configuration;
 import Networking.NetworkManager;
 import Entity.Player;
 import Inputs.KeyHandler;
 import Tile.TileManager;
+import UI.UI;
 
 public class GamePanel extends JPanel implements Runnable {
 
@@ -34,7 +37,7 @@ public class GamePanel extends JPanel implements Runnable {
     int FPS = 60;
 
     // HANDLING INPUTS
-    KeyHandler keyH = new KeyHandler();
+    KeyHandler keyH = new KeyHandler(this);
 
     // PLAYER ENTITY INSTANTIATION
     Player player;
@@ -45,17 +48,35 @@ public class GamePanel extends JPanel implements Runnable {
     // Check collisions
     private ColissionChecker cChecker = new ColissionChecker(this);
 
-  //GAME BGM AND SE
+    //GAME BGM AND SE
     Sound sound = new Sound();
-    public GamePanel(NetworkManager networkManager) { // Updated constructor to accept NetworkManager
+    
+    
+    //GAME STATAES
+    private int gameState;
+    private int titleState=1;
+    private int playState=2;
+    
+    //Initialize the UI management class
+    
+    public UI ui = new UI(this);
+    
+   //IS SERVER or Client? NETWORK CONFIGS
+    public boolean isServer = false;
+    Configuration config = new Configuration(5050, "127.0.0.1");
+	int stop=0;
+	NetworkManager networkManager;
+
+	public GamePanel() { // Updated constructor to accept NetworkManager
         this.setPreferredSize(new Dimension(screenWidth, screenHeight));
         this.setDoubleBuffered(true);
         this.setFocusable(true);
         this.setBackground(Color.black);
         this.addKeyListener(keyH);
-
-        // Initialize player with networkManager
-        this.player = new Player(this, keyH, networkManager);
+        //Set the game state to title screen
+        gameState=titleState;
+        
+        
         
         playMusic(0);
     }
@@ -76,9 +97,17 @@ public class GamePanel extends JPanel implements Runnable {
             currentTime = System.nanoTime();
             delta += (currentTime - lastTime) / drawInterval;
             lastTime = currentTime;
-
+           
+            if(gameState==playState && stop==0) {
+          networkManager = new NetworkManager(isServer, config);
+          // Initialize player with networkManager
+          this.player = new Player(this, keyH, networkManager);
+          stop++;
+            }
             if (delta >= 1) {
+            	
                 update();
+            	
                 repaint();
                 delta--;
             }
@@ -87,15 +116,24 @@ public class GamePanel extends JPanel implements Runnable {
     }
 
     public void update() {
+    	if(gameState==playState) {
         player.update();
+    	}
     }
 
     public void paintComponent(Graphics g) {
-        super.paintComponent(g);
+    	super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
+        
+    	if(gameState==playState) {
         g2.setColor(getBackground());
         tileM.draw(g2);
         player.draw(g2);
+    	}
+    	
+    	
+    	ui.drawUI(g2);
+    	
         g2.dispose();
     }
     
@@ -178,4 +216,28 @@ public class GamePanel extends JPanel implements Runnable {
     public void setcChecker(ColissionChecker cChecker) {
         this.cChecker = cChecker;
     }
+
+	public int getTitleState() {
+		return titleState;
+	}
+
+	public void setTitleState(int titleState) {
+		this.titleState = titleState;
+	}
+
+	public int getGameState() {
+		return gameState;
+	}
+
+	public void setGameState(int gameState) {
+		this.gameState = gameState;
+	}
+	
+	 public int getPlayState() {
+			return playState;
+		}
+
+	public void setPlayState(int playState) {
+			this.playState = playState;
+	}
 }
