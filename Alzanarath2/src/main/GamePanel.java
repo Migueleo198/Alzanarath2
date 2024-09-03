@@ -51,6 +51,8 @@ public class GamePanel extends JPanel implements Runnable{
 	//TILE MANAGER
 	TileManager tileM = new TileManager(this);
 	
+	//Check collisions
+	private ColissionChecker cChecker = new ColissionChecker(this);
 	
 	public int getScale() {
 		return scale;
@@ -172,5 +174,11 @@ public class GamePanel extends JPanel implements Runnable{
 	}
 	public int getWorldHeight() {
 		return worldHeight;
+	}
+	public ColissionChecker getcChecker() {
+		return cChecker;
+	}
+	public void setcChecker(ColissionChecker cChecker) {
+		this.cChecker = cChecker;
 	}
 }
