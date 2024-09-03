@@ -1,23 +1,146 @@
 package Entity;
 
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 
-public class Entity {
+import javax.imageio.ImageIO;
+
+import main.GamePanel;
+
+public abstract class Entity {
 	protected String usernamePlayer;
 	protected int worldX;
 	protected int worldY;
 	protected int speed;
-	
+	protected String name;
 	protected BufferedImage up1,up2,down1,down2,left1,left2,right1,right2;
 	protected String direction;
-	
+	protected int actionLockCounter=0;
 	protected int spriteCounter=0;
-	public int spriteNum=1;
+	protected int spriteNum=1;
 	
-	public Rectangle solidArea;
+	public Rectangle solidArea = new Rectangle(0,0,48,48);
 	
 	public boolean collisionOn =false;
+	
+	GamePanel gp;
+	
+	
+	
+	public Entity(GamePanel gp) {
+		this.gp=gp;
+	}
+	
+	public void setAction() {}
+	
+	public void update(){
+		setAction();
+		
+		collisionOn=false;
+		gp.getcChecker().checkTile(this);
+		
+		spriteCounter++;
+
+		if (spriteCounter > 10) {
+			if (spriteNum == 1) {
+				spriteNum = 2;
+			} else if (spriteNum == 2) {
+				spriteNum = 1;
+			}
+			spriteCounter = 0;
+		}
+		
+		// IF COLLISION IS FALSE THE NPC CAN MOVE
+					if (collisionOn == false) {
+						switch (direction) {
+						case "up":
+							worldY -= speed;
+							break;
+						case "down":
+							worldY += speed;
+							break;
+						case "left":
+							worldX -= speed;
+							break;
+						case "right":
+							worldX += speed;
+							break;
+						}
+					}
+				
+				
+				
+	}
+	
+	public void getNpcImage() {
+		
+	}
+	
+		public void draw(Graphics2D g2) {
+			int screenX = worldX - gp.getPlayer().getWorldX() + gp.getPlayer().getScreenX();
+			int screenY = worldY - gp.getPlayer().getWorldY() + gp.getPlayer().getScreenY();
+			
+			if(worldX + gp.getTileSize() > gp.getPlayer().getWorldX()-gp.getPlayer().getScreenX()
+					&& worldX - gp.getTileSize() < gp.getPlayer().getWorldX()+gp.getPlayer().getScreenX()
+					&& worldY + gp.getTileSize()> gp.getPlayer().getWorldY()-gp.getPlayer().getScreenY()
+					&& worldY - gp.getTileSize() < gp.getPlayer().getWorldY()+gp.getPlayer().getScreenY()) {
+				
+				BufferedImage image = null;
+
+				switch (direction) {
+				case "up":
+					if (spriteNum == 1) {
+						image = up1;
+					}
+					if (spriteNum == 2) {
+						image = up2;
+					}
+					break;
+				case "down":
+					if (spriteNum == 1) {
+						image = down1;
+					}
+					if (spriteNum == 2) {
+						image = down2;
+					}
+					break;
+
+				case "left":
+					if (spriteNum == 1) {
+						image = left1;
+					}
+					if (spriteNum == 2) {
+						image = left2;
+					}
+					break;
+				case "right":
+					if (spriteNum == 1) {
+						image = right1;
+					}
+					if (spriteNum == 2) {
+						image = right2;
+					}
+					break;
+				}
+
+				// THE ENTITY POSITION WILL NEVER BE STATIC
+				Font customFont = new Font("Comic Sans", Font.BOLD, 16);
+				g2.setFont(customFont);
+				g2.setColor(Color.ORANGE);
+				int textWidth = g2.getFontMetrics().stringWidth(gp.getNpc()[gp.getCurrentNpcNum()].getName());
+				int textX = screenX + (gp.getTileSize() / 2) - (textWidth / 2);
+				int textY = screenY - 5;
+				g2.drawString(gp.getNpc()[gp.getCurrentNpcNum()].getName(), textX, textY);
+				g2.drawImage(image, screenX, screenY, gp.getTileSize(), gp.getTileSize(), null);
+				
+				
+			
+	}
+		}
 
 	// [ This is the entity username ]
 	
@@ -157,6 +280,14 @@ public class Entity {
 
 	public void setCollisionOn(boolean collisionOn) {
 		this.collisionOn = collisionOn;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
 	}
 	
 }

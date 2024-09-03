@@ -21,6 +21,7 @@ public class main {
 
 		window.setVisible(true);
 		gp.startGameThread();
+		
 		window.pack();
 
 	}

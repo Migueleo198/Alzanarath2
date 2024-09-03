@@ -25,6 +25,7 @@ public class Player extends Entity {
 	private final int screenY;
 
 	public Player(GamePanel gp, KeyHandler keyH, NetworkManager networkManager) {
+		super(gp);
 		this.gp = gp;
 		this.keyH = keyH;
 		this.networkManager = networkManager;
@@ -110,6 +111,8 @@ public class Player extends Entity {
 				}
 			}
 		}
+		
+		
 	}
 
 	public void draw(Graphics2D g2) {
