@@ -47,46 +47,13 @@ public class GamePanel extends JPanel implements Runnable {
 
 	// Check collisions
 	private ColissionChecker cChecker = new ColissionChecker(this);
+	
+	//Game Sounds
+	
+	Sound sound = new Sound();
+	
 
-	public int getScale() {
-		return scale;
-	}
-
-	public void setScale(int scale) {
-		this.scale = scale;
-	}
-
-	public Player getPlayer() {
-		return player;
-	}
-
-	public void setPlayer(Player player) {
-		this.player = player;
-	}
-
-	public int getOriginalTileSize() {
-		return originalTileSize;
-	}
-
-	public int getTileSize() {
-		return tileSize;
-	}
-
-	public int getMaxScreenCol() {
-		return maxScreenCol;
-	}
-
-	public int getMaxScreenRow() {
-		return maxScreenRow;
-	}
-
-	public int getScreenWidth() {
-		return screenWidth;
-	}
-
-	public int getScreenHeight() {
-		return screenHeight;
-	}
+	
 
 	public GamePanel() {
 		this.setPreferredSize(new Dimension(screenWidth, screenHeight));
@@ -94,6 +61,8 @@ public class GamePanel extends JPanel implements Runnable {
 		this.setFocusable(true);
 		this.setBackground(Color.black);
 		this.addKeyListener(keyH);
+		
+		playMusic(0);
 	}
 
 	public void startGameThread() {
@@ -155,6 +124,24 @@ public class GamePanel extends JPanel implements Runnable {
 
 		g2.dispose();
 	}
+	
+	//loops
+	public void playMusic(int i){
+		sound.setFile(i);
+		sound.play();
+		sound.loop();
+	}
+	
+	public void stopMusic() {
+		sound.stop();
+	}
+	
+	//Doesnt loop
+	public void playSE(int i) {
+		sound.setFile(i);
+		sound.play();
+	}
+	
 
 	public int getMaxWorldCol() {
 		return maxWorldCol;
@@ -178,5 +165,45 @@ public class GamePanel extends JPanel implements Runnable {
 
 	public void setcChecker(ColissionChecker cChecker) {
 		this.cChecker = cChecker;
+	}
+	
+	public int getScale() {
+		return scale;
+	}
+
+	public void setScale(int scale) {
+		this.scale = scale;
+	}
+
+	public Player getPlayer() {
+		return player;
+	}
+
+	public void setPlayer(Player player) {
+		this.player = player;
+	}
+
+	public int getOriginalTileSize() {
+		return originalTileSize;
+	}
+
+	public int getTileSize() {
+		return tileSize;
+	}
+
+	public int getMaxScreenCol() {
+		return maxScreenCol;
+	}
+
+	public int getMaxScreenRow() {
+		return maxScreenRow;
+	}
+
+	public int getScreenWidth() {
+		return screenWidth;
+	}
+
+	public int getScreenHeight() {
+		return screenHeight;
 	}
 }
