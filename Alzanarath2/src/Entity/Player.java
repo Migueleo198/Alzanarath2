@@ -39,8 +39,8 @@ public class Player extends Entity{
 	}
 	
 	public void setDefaultParams() {
-		worldX =250;
-		worldY= 250;
+		worldX =270;
+		worldY= 270;
 	    speed = 4;
 	    direction = "down";
 	}
