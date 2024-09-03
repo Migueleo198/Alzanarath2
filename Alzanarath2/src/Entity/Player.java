@@ -14,16 +14,20 @@ import java.awt.image.BufferedImage;
 import main.GamePanel;
 import javax.swing.JOptionPane;
 
+import Networking.NetworkManager;
+
 public class Player extends Entity {
 	GamePanel gp;
 	KeyHandler keyH;
+	NetworkManager networkManager;
 
 	private final int screenX;
 	private final int screenY;
 
-	public Player(GamePanel gp, KeyHandler keyH) {
+	public Player(GamePanel gp, KeyHandler keyH, NetworkManager networkManager) {
 		this.gp = gp;
 		this.keyH = keyH;
+		this.networkManager = networkManager;
 
 		screenX = (gp.getScreenWidth() / 2) - gp.getTileSize() / 2;
 		screenY = (gp.getScreenHeight() / 2) - gp.getTileSize() / 2;
@@ -38,29 +42,11 @@ public class Player extends Entity {
 		setDefaultParams();
 		getPlayerModel();
 	}
-	
-	public String promptInputName() {
-	    String name;
-
-	    while (true) {
-	        name = JOptionPane.showInputDialog(null, "Input your username:", "Username Input", JOptionPane.PLAIN_MESSAGE);
-
-	        if (name == null) {
-	        	return "Guest";
-	        } else if (name.trim().isEmpty()) {
-		        JOptionPane.showMessageDialog(null, "Username cannot be empty. Please enter a valid username.", "Invalid Input", JOptionPane.ERROR_MESSAGE);
-	        } else if(name.length() > 8){
-	        		JOptionPane.showMessageDialog(null, "Username cannot have more than 8 character, please input less.", "Invalid lenght", JOptionPane.ERROR_MESSAGE);
-	        } else {
-	            return name;
-	        }
-	    }
-	}
 
 	public void setDefaultParams() {
 		worldX = 270;
 		worldY = 270;
-		usernamePlayer = promptInputName();
+        usernamePlayer = networkManager.isServer() ? networkManager.getNameServer() : networkManager.getNameClient();
 		speed = 4;
 		direction = "down";
 	}
