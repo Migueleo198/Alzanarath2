@@ -45,46 +45,8 @@ public class GamePanel extends JPanel implements Runnable {
     // Check collisions
     private ColissionChecker cChecker = new ColissionChecker(this);
 
-    public int getScale() {
-        return scale;
-    }
-
-    public void setScale(int scale) {
-        this.scale = scale;
-    }
-
-    public Player getPlayer() {
-        return player;
-    }
-
-    public void setPlayer(Player player) {
-        this.player = player;
-    }
-
-    public int getOriginalTileSize() {
-        return originalTileSize;
-    }
-
-    public int getTileSize() {
-        return tileSize;
-    }
-
-    public int getMaxScreenCol() {
-        return maxScreenCol;
-    }
-
-    public int getMaxScreenRow() {
-        return maxScreenRow;
-    }
-
-    public int getScreenWidth() {
-        return screenWidth;
-    }
-
-    public int getScreenHeight() {
-        return screenHeight;
-    }
-
+  //GAME BGM AND SE
+    Sound sound = new Sound();
     public GamePanel(NetworkManager networkManager) { // Updated constructor to accept NetworkManager
         this.setPreferredSize(new Dimension(screenWidth, screenHeight));
         this.setDoubleBuffered(true);
@@ -94,6 +56,8 @@ public class GamePanel extends JPanel implements Runnable {
 
         // Initialize player with networkManager
         this.player = new Player(this, keyH, networkManager);
+        
+        playMusic(0);
     }
 
     public void startGameThread() {
@@ -133,6 +97,62 @@ public class GamePanel extends JPanel implements Runnable {
         tileM.draw(g2);
         player.draw(g2);
         g2.dispose();
+    }
+    
+    public void playMusic(int i) {
+    	sound.setFile(i);
+    	sound.play();
+    	sound.loop();
+    }
+    
+    public void stopMusic() {
+    	sound.stop();
+    }
+    
+    public void playSE(int i) {
+    	sound.setFile(i);
+    	sound.play();
+    	
+    }
+    
+    public int getScale() {
+        return scale;
+    }
+
+    public void setScale(int scale) {
+        this.scale = scale;
+    }
+
+    public Player getPlayer() {
+        return player;
+    }
+
+    public void setPlayer(Player player) {
+        this.player = player;
+    }
+
+    public int getOriginalTileSize() {
+        return originalTileSize;
+    }
+
+    public int getTileSize() {
+        return tileSize;
+    }
+
+    public int getMaxScreenCol() {
+        return maxScreenCol;
+    }
+
+    public int getMaxScreenRow() {
+        return maxScreenRow;
+    }
+
+    public int getScreenWidth() {
+        return screenWidth;
+    }
+
+    public int getScreenHeight() {
+        return screenHeight;
     }
 
     public int getMaxWorldCol() {
