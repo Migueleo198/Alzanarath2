@@ -2,9 +2,11 @@ package main;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
@@ -29,9 +31,10 @@ public class GamePanel extends JPanel implements Runnable{
 	private final int worldWidth = tileSize*maxWorldCol;
 	private final int worldHeight = tileSize*maxWorldRow;
 	
-	
-	
-
+	private int countUsernameLettersOffset=0;
+	private int countLetters;
+	//Player username
+	String username;
 
 
 	//GAME THREAD
@@ -90,10 +93,21 @@ public class GamePanel extends JPanel implements Runnable{
 		this.setFocusable(true);
 		this.setBackground(Color.black);
 		this.addKeyListener(keyH);
+		
+		
+		//Player username input
+		username = JOptionPane.showInputDialog(this,"Input your username");
+		
+		while(username.length()>8) {
+			username = JOptionPane.showInputDialog(this,"Username length needs to be equal or under 8 characters");
+		}
+		//
 	}
 	public void startGameThread() {
 		gameThread = new Thread(this);
 		gameThread.start();
+		
+		
 	}
 	
 	@Override
@@ -141,6 +155,8 @@ public class GamePanel extends JPanel implements Runnable{
 		
 		//Updates player params and positions
 		player.update();
+		
+		
 	}
 	
 	
@@ -158,7 +174,22 @@ public class GamePanel extends JPanel implements Runnable{
 		
 		player.draw(g2);
 		
+		//paint username
+		g2.setColor(Color.white);
+		g2.setFont(new Font("COMIC SANS",Font.BOLD,18));
 		
+		//Player username handling
+		
+		for(int i=0; i<username.length(); i++) {
+			
+			countLetters++;
+		}
+		
+		
+		
+		g2.drawString(username,player.getScreenX()-(int)((countLetters/2-2)*7),player.getScreenY()-10);
+		countLetters=0;
+		//
 		
 		g2.dispose();
 	}
