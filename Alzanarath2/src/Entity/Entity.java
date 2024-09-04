@@ -54,7 +54,8 @@ public abstract class Entity {
 		
 		collisionOn=false;
 		gp.getcChecker().checkTile(this);
-		
+		gp.getcChecker().checkEntity(this,gp.getNpc());
+		gp.getcChecker().checkEntity(this,gp.getMonster());
 		gp.getcChecker().checkPlayer(this);
 		
 		spriteCounter++;
