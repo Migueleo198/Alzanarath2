@@ -31,10 +31,18 @@ public abstract class Entity {
 	
 	GamePanel gp;
 	
-	protected int maxLife;
-	protected int life;
+	protected int maxHealth;
+	protected int Health;
 	
 	
+	public int getMaxHealth() {
+		return maxHealth;
+	}
+
+	public void setMaxHealth(int maxHealth) {
+		this.maxHealth = maxHealth;
+	}
+
 	public Entity(GamePanel gp) {
 		this.gp=gp;
 	}
@@ -140,6 +148,7 @@ public abstract class Entity {
 				int textWidth = g2.getFontMetrics().stringWidth(gp.getNpc()[gp.getCurrentNpcNum()].getName());
 				int textX = screenX + (gp.getTileSize() / 2) - (textWidth / 2);
 				int textY = screenY - 5;
+				
 				g2.drawString(gp.getNpc()[gp.getCurrentNpcNum()].getName(), textX, textY);
 				g2.drawImage(image, screenX, screenY, gp.getTileSize(), gp.getTileSize(), null);
 				
@@ -318,6 +327,14 @@ public abstract class Entity {
 
 	public void setLevel(int level) {
 		this.level = level;
+	}
+
+	public int getHealth() {
+		return Health;
+	}
+
+	public void setHealth(int health) {
+		Health = health;
 	}
 	
 }

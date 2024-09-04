@@ -16,6 +16,7 @@ import Inputs.KeyHandler;
 import Tile.TileManager;
 import UI.UI;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -53,7 +54,16 @@ public class GamePanel extends JPanel implements Runnable {
     // NPC entities instantiation
     private Entity[] npc = new Entity[10];
     private int currentNpcNum;
-
+    
+    //Monster entities instantiation
+    private Entity[] monster = new Entity[20];
+    private int currentMonsterNum;
+    
+    //ArrayListFor storing every non player entity array
+    ArrayList<Entity> entityList = new ArrayList<>();
+    
+    
+    
     // TILE MANAGER
     TileManager tileM;
 
@@ -113,6 +123,7 @@ public class GamePanel extends JPanel implements Runnable {
     public void setupGame() {
         aSetter.setObject();
         aSetter.setNpc();
+        aSetter.setMonster();
     }
 
     public void startGameThread() {
@@ -169,6 +180,12 @@ public class GamePanel extends JPanel implements Runnable {
                 npc[i].update();
             }
         }
+        
+        for(int i=0; i<monster.length; i++) {
+        	if(monster[i] != null) {
+        		monster[i].update();
+        	}
+        }
 
         synchronized (keyH) {
             // Update local player and other entities
@@ -184,6 +201,8 @@ public class GamePanel extends JPanel implements Runnable {
 
             
         }
+        
+       
     }
 
 
@@ -199,8 +218,17 @@ public class GamePanel extends JPanel implements Runnable {
             // Draw NPCs
             for (int i=0; i<npc.length; i++) {
                 if (npc[i]!=null) {
+                	setCurrentNpcNum(i);
                     npc[i].draw(g2);
                 }
+            }
+            
+            for (int i=0; i<monster.length; i++) {
+            	if(monster[i]!=null) {
+            		setCurrentMonsterNum(i);
+             monster[i].draw(g2);
+            
+            	}
             }
 
             // Draw local player
@@ -384,6 +412,26 @@ public class GamePanel extends JPanel implements Runnable {
 	public Entity[] getNpc() {
 		// TODO Auto-generated method stub
 		return npc;
+	}
+
+
+	public Entity[] getMonster() {
+		return monster;
+	}
+
+
+	public void setMonster(Entity[] monster) {
+		this.monster = monster;
+	}
+
+
+	public int getCurrentMonsterNum() {
+		return currentMonsterNum;
+	}
+
+
+	public void setCurrentMonsterNum(int currentMonsterNum) {
+		this.currentMonsterNum = currentMonsterNum;
 	}
 }
 

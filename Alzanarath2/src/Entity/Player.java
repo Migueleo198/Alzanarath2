@@ -48,7 +48,7 @@ public class Player extends Entity {
         setSolidAreaDefaultY(solidArea.y);
         solidArea.width = 32;
         solidArea.height = 32;
-        setLevel(2);
+        setLevel(1);
         setDefaultParams();
         getPlayerModel();
     }
@@ -93,6 +93,7 @@ public class Player extends Entity {
             gp.getcChecker().checkTile(this);
             
             int npcIndex =gp.getcChecker().checkEntity(this, gp.getNpc());
+            int monsterIndex =gp.getcChecker().checkEntity(this, gp.getMonster());
             npcInteraction(npcIndex);
 
             if (collisionOn==false) {
@@ -163,6 +164,8 @@ public class Player extends Entity {
 		usernamePlayer = networkManager != null ? (networkManager.isServer() ? networkManager.getNameServer() : networkManager.getNameClient()) : "SinglePlayer";
 		speed = 4;
 		direction = "down";
+		maxHealth=100;
+		setHealth(maxHealth);
 	}
 
 
