@@ -24,7 +24,7 @@ public abstract class Entity {
 	protected int spriteNum=1;
 	protected int solidAreaDefaultX;
 	protected int solidAreaDefaultY;
-	
+	protected int level = 1;
 	public Rectangle solidArea = new Rectangle(0,0,48,48);
 	
 	public boolean collisionOn =false;
@@ -310,6 +310,14 @@ public abstract class Entity {
 
 	public void setSolidAreaDefaultY(int solidAreaDefaultY) {
 		this.solidAreaDefaultY = solidAreaDefaultY;
+	}
+
+	public int getLevel() {
+		return level;
+	}
+
+	public void setLevel(int level) {
+		this.level = level;
 	}
 	
 }

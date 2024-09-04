@@ -26,7 +26,15 @@ public class UI {
 		if (gp.getGameState() == gp.getTitleState()) {
 			drawTitleScreen(g2);
 		}
-	}
+			
+	    if (gp.getGameState() == gp.getPlayState()) {
+	    	  g2.setFont(new Font("Comic Sans", Font.BOLD,30));
+	    	  g2.setColor(Color.white);
+	    	  g2.drawString("Player lvl = " + gp.getPlayer().getLevel(), 50 ,50);
+	    	  
+	    	  }
+		}
+	
 	
 	public void drawTitleScreen(Graphics2D g2) {
 		int middleX=gp.getScreenWidth()/2;
