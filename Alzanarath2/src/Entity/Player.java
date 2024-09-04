@@ -47,7 +47,7 @@ public class Player extends Entity {
         setSolidAreaDefaultX(solidArea.x);
         setSolidAreaDefaultY(solidArea.y);
         solidArea.width = 32;
-        solidArea.height = 32;
+        solidArea.height = 26;
         setLevel(1);
         setDefaultParams();
         getPlayerModel();
