@@ -89,7 +89,7 @@ public class GamePanel extends JPanel implements Runnable {
     
     // IS SERVER or Client? NETWORK CONFIGS
     public boolean isServer = false;
-    Configuration config = new Configuration(5050, "127.0.0.1");
+    Configuration config = new Configuration(5050, "25.14.141.164");
     int stop = 0;
     NetworkManager networkManager;
     

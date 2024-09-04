@@ -3,11 +3,18 @@ package Networking;
 import java.io.*;
 import java.net.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.Enumeration;
 import java.util.Map;
 import javax.swing.JOptionPane;
 import Entity.Player;
 import Inputs.KeyHandler;
 import main.GamePanel;
+
+import java.io.*;
+import java.net.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.Map;
+import javax.swing.JOptionPane;
 
 public class NetworkManager {
     private ServerSocket serverSocket;
@@ -21,7 +28,6 @@ public class NetworkManager {
 
     private GamePanel gamePanel;
     private Map<String, PlayerData> otherPlayers = new ConcurrentHashMap<>();
-    
     private KeyHandler keyH;
     private Map<Socket, PrintWriter> clientWriters = new ConcurrentHashMap<>();
     private Map<Socket, BufferedReader> clientReaders = new ConcurrentHashMap<>();
@@ -41,15 +47,18 @@ public class NetworkManager {
         }
     }
 
+    /**
+     * Start the server and listen on the Hamachi IP.
+     */
     public void startServer() {
         try {
-            serverSocket = new ServerSocket(config.getPort());
-            System.out.println("The server has started on port " + config.getPort() + "!");
+            String hamachiIP = getHamachiIPAddress();
+            serverSocket = new ServerSocket(config.getPort(), 50, InetAddress.getByName(hamachiIP));
+            System.out.println("The server has started on Hamachi IP " + hamachiIP + " and port " + config.getPort() + "!");
 
-            // Register the host player immediately after the server starts
             Player hostPlayer = gamePanel.getPlayer();
             if (hostPlayer != null) {
-                registerPlayer(hostPlayer); // Ensure the host is registered and sent to all clients
+                registerPlayer(hostPlayer); // Register the host
             }
 
             new Thread(() -> {
@@ -64,21 +73,9 @@ public class NetworkManager {
                         clientWriters.put(clientSocket, clientOut);
                         clientReaders.put(clientSocket, clientIn);
 
-                        // Send initial data to the new client
                         for (PlayerData playerData : otherPlayers.values()) {
-                            String message = "PLAYER_REGISTER " + playerData.getPlayerId() + " " + playerData.getX() + " " + playerData.getY() + " " + playerData.getDirection() + " " + playerData.getSpriteNum();
+                            String message = "PLAYER_REGISTER " + playerData.getPlayerId() + " " + playerData.getX() + " " + playerData.getY() + + playerData.getSpriteNum();
                             clientOut.println(message);
-                        }
-
-                        // Slightly move the host player to ensure the client sees it
-                        if (isServer) {
-                            
-                            if (gamePanel.getPlayer() != null) {
-                                
-                                gamePanel.getPlayer().setDirection(gamePanel.getPlayer().getDirection());
-                                
-                                sendPlayerUpdate(gamePanel.getPlayer());
-                            }
                         }
 
                         new Thread(() -> handleClient(clientSocket)).start();
@@ -92,10 +89,13 @@ public class NetworkManager {
         }
     }
 
+    /**
+     * Start the client and connect to the server using the Hamachi IP.
+     */
     public void startClient() {
         try {
             clientSocket = new Socket(config.getIP(), config.getPort());
-            System.out.println("Connected to server at " + config.getIP() + ":" + config.getPort());
+            System.out.println("Connected to server at Hamachi IP " + config.getIP() + ":" + config.getPort());
 
             out = new PrintWriter(clientSocket.getOutputStream(), true);
             in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
@@ -137,6 +137,44 @@ public class NetworkManager {
         }
     }
 
+    /**
+     * Retrieves the Hamachi IP address.
+     */
+    private String getHamachiIPAddress() {
+        try {
+            Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
+            
+            while (networkInterfaces.hasMoreElements()) {
+                NetworkInterface networkInterface = networkInterfaces.nextElement();
+                String displayName = networkInterface.getDisplayName();
+                
+                // Print out the display names for debugging purposes
+                System.out.println("Network Interface: " + displayName);
+                
+                if (displayName.toLowerCase().contains("hamachi")) {
+                    Enumeration<InetAddress> inetAddresses = networkInterface.getInetAddresses();
+                    
+                    while (inetAddresses.hasMoreElements()) {
+                        InetAddress inetAddress = inetAddresses.nextElement();
+                        
+                        // Check if it's an IPv4 address
+                        if (inetAddress instanceof Inet4Address) {
+                            return inetAddress.getHostAddress(); // Hamachi IP address
+                        }
+                    }
+                }
+            }
+            
+        } catch (SocketException e) {
+            e.printStackTrace();
+            // Log or handle the error appropriately
+        }
+        
+        // Could not find Hamachi IP address
+        System.err.println("Hamachi IP address not found.");
+        return null;
+    }
+
     public void registerPlayer(Player player) {
         if (player == null) {
             System.err.println("Cannot register null player.");
@@ -144,7 +182,7 @@ public class NetworkManager {
         }
 
         String playerId = isServer ? nameServer : nameClient;
-        int level = player.getLevel(); // Get the player's level
+        int level = player.getLevel();
         String message = "PLAYER_REGISTER " + playerId + " " + player.getUsername() + " " + player.getWorldX() + " " + player.getWorldY() + " " + player.getDirection() + " " + player.getSpriteNum() + " " + level;
 
         PlayerData playerData = new PlayerData(playerId, player.getWorldX(), player.getWorldY(), player.getDirection(), player.getSpriteNum(), System.currentTimeMillis(), level);
@@ -159,8 +197,7 @@ public class NetworkManager {
             out.println(message);
         }
     }
-
-
+    
     public void sendPlayerUpdate(Player player) {
         if (player == null) {
             System.err.println("Cannot update null player.");
@@ -190,7 +227,6 @@ public class NetworkManager {
         }
     }
 
-
     private void handleReceivedData(String data) {
         String[] tokens = data.split(" ");
         if (tokens[0].equals("PLAYER_UPDATE") || tokens[0].equals("PLAYER_REGISTER")) {
@@ -199,15 +235,15 @@ public class NetworkManager {
                 String username = tokens[2];
                 int x = Integer.parseInt(tokens[3]);
                 int y = Integer.parseInt(tokens[4]);
-                String direction = tokens[5]; // Correctly parse direction as a String
-                int spriteNum = Integer.parseInt(tokens[6]); // Get animation state
+                String direction = tokens[5];
+                int spriteNum = Integer.parseInt(tokens[6]);
                 long timestamp = (tokens[0].equals("PLAYER_UPDATE")) ? Long.parseLong(tokens[7]) : System.currentTimeMillis();
-                int level = Integer.parseInt(tokens[tokens.length - 1]); // Parse the player's level
-                PlayerData playerData = new PlayerData(playerId, x, y, direction, spriteNum, timestamp,level);
+                int level = Integer.parseInt(tokens[tokens.length - 1]);
+                PlayerData playerData = new PlayerData(playerId, x, y, direction, spriteNum, timestamp, level);
                 otherPlayers.put(playerId, playerData);
                 gamePanel.updateOtherPlayer(playerId, playerData);
             } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
-                
+                e.printStackTrace();
             }
         }
     }
@@ -216,13 +252,8 @@ public class NetworkManager {
         String name;
         while (true) {
             name = JOptionPane.showInputDialog(null, "Input your username:", "Username Input", JOptionPane.PLAIN_MESSAGE);
-
-            if (name == null) {
-                return "Guest";
-            } else if (name.trim().isEmpty()) {
-                JOptionPane.showMessageDialog(null, "Username cannot be empty. Please enter a valid username.", "Invalid Input", JOptionPane.ERROR_MESSAGE);
-            } else if (name.length() > 8) {
-                JOptionPane.showMessageDialog(null, "Username cannot have more than 8 characters, please input less.", "Invalid length", JOptionPane.ERROR_MESSAGE);
+            if (name == null || name.trim().isEmpty() || name.length() > 8) {
+                JOptionPane.showMessageDialog(null, "Invalid username. Please enter a valid name.", "Error", JOptionPane.ERROR_MESSAGE);
             } else {
                 return name;
             }
@@ -252,5 +283,3 @@ public class NetworkManager {
         return isServer;
     }
 }
-
-
