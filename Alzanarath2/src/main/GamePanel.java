@@ -232,21 +232,25 @@ public class GamePanel extends JPanel implements Runnable {
     // Method to add or update other players
     public void updateOtherPlayer(String playerId, PlayerData playerData) {
         if (!otherPlayers.containsKey(playerId)) {
+            // Create a new Player instance if the player doesn't exist in the map
             Player newPlayer = new Player(this, null, networkManager);
             newPlayer.setWorldX(playerData.getX());
             newPlayer.setWorldY(playerData.getY());
             newPlayer.setDirection(playerData.getDirection());
             newPlayer.setUsername(playerId);
             newPlayer.setSpriteNum(playerData.getSpriteNum()); // Set animation state for new player
+            newPlayer.setLevel(playerData.getLevel()); // Set the player's level
             otherPlayers.put(playerId, newPlayer);
         } else {
+            // Update the existing player
             Player existingPlayer = otherPlayers.get(playerId);
             existingPlayer.correctPosition(playerData.getX(), playerData.getY(), playerData.getDirection());
             existingPlayer.setSpriteNum(playerData.getSpriteNum()); // Update animation state
+            existingPlayer.setLevel(playerData.getLevel()); // Update the player's level
         }
-        repaint();
-        
+        repaint(); // Ensure the game panel is repainted to reflect the updates
     }
+
     
     public void refreshPlayers() {
         repaint(); // Trigger redraw

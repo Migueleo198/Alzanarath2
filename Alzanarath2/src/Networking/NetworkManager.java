@@ -144,9 +144,10 @@ public class NetworkManager {
         }
 
         String playerId = isServer ? nameServer : nameClient;
-        String message = "PLAYER_REGISTER " + playerId + " " + player.getUsername() + " " + player.getWorldX() + " " + player.getWorldY() + " " + player.getDirection() + " " + player.getSpriteNum();
-        
-        PlayerData playerData = new PlayerData(playerId, player.getWorldX(), player.getWorldY(), player.getDirection(), player.getSpriteNum(), System.currentTimeMillis());
+        int level = player.getLevel(); // Get the player's level
+        String message = "PLAYER_REGISTER " + playerId + " " + player.getUsername() + " " + player.getWorldX() + " " + player.getWorldY() + " " + player.getDirection() + " " + player.getSpriteNum() + " " + level;
+
+        PlayerData playerData = new PlayerData(playerId, player.getWorldX(), player.getWorldY(), player.getDirection(), player.getSpriteNum(), System.currentTimeMillis(), level);
         otherPlayers.put(playerId, playerData);
         gamePanel.updateOtherPlayer(playerId, playerData);
 
@@ -158,6 +159,7 @@ public class NetworkManager {
             out.println(message);
         }
     }
+
 
     public void sendPlayerUpdate(Player player) {
         if (player == null) {
@@ -169,12 +171,13 @@ public class NetworkManager {
         int x = player.getWorldX();
         int y = player.getWorldY();
         String direction = player.getDirection();
-        int spriteNum = player.getSpriteNum(); // Include animation state
+        int spriteNum = player.getSpriteNum();
         long timestamp = System.currentTimeMillis();
+        int level = player.getLevel(); // Get the player's level
 
-        String message = "PLAYER_UPDATE " + playerId + " " + player.getUsername() + " " + x + " " + y + " " + direction + " " + spriteNum + " " + timestamp;
+        String message = "PLAYER_UPDATE " + playerId + " " + player.getUsername() + " " + x + " " + y + " " + direction + " " + spriteNum + " " + timestamp + " " + level;
 
-        PlayerData playerData = new PlayerData(playerId, x, y, direction, spriteNum, timestamp);
+        PlayerData playerData = new PlayerData(playerId, x, y, direction, spriteNum, timestamp, level);
         otherPlayers.put(playerId, playerData);
         gamePanel.updateOtherPlayer(playerId, playerData);
 
@@ -186,6 +189,7 @@ public class NetworkManager {
             out.println(message);
         }
     }
+
 
     private void handleReceivedData(String data) {
         String[] tokens = data.split(" ");
@@ -198,8 +202,8 @@ public class NetworkManager {
                 String direction = tokens[5]; // Correctly parse direction as a String
                 int spriteNum = Integer.parseInt(tokens[6]); // Get animation state
                 long timestamp = (tokens[0].equals("PLAYER_UPDATE")) ? Long.parseLong(tokens[7]) : System.currentTimeMillis();
-
-                PlayerData playerData = new PlayerData(playerId, x, y, direction, spriteNum, timestamp);
+                int level = Integer.parseInt(tokens[tokens.length - 1]); // Parse the player's level
+                PlayerData playerData = new PlayerData(playerId, x, y, direction, spriteNum, timestamp,level);
                 otherPlayers.put(playerId, playerData);
                 gamePanel.updateOtherPlayer(playerId, playerData);
             } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {

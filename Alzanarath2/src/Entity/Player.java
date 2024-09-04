@@ -48,7 +48,7 @@ public class Player extends Entity {
         setSolidAreaDefaultY(solidArea.y);
         solidArea.width = 32;
         solidArea.height = 32;
-
+        setLevel(2);
         setDefaultParams();
         getPlayerModel();
     }
@@ -196,11 +196,11 @@ public class Player extends Entity {
 	        g2.setFont(customFont);
 	        g2.setColor(Color.white);
 
-	        int textWidth = g2.getFontMetrics().stringWidth(usernamePlayer);
+	        int textWidth = g2.getFontMetrics().stringWidth(usernamePlayer +" Lvl " + level);
 	        int textX = drawX + (gp.getTileSize() / 2) - (textWidth / 2);
 	        int textY = drawY - 5;
 
-	        g2.drawString(usernamePlayer, textX, textY);
+	        g2.drawString(usernamePlayer +" Lvl " + level, textX, textY);
 	    }
 	}
 
