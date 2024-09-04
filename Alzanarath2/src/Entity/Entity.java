@@ -25,7 +25,18 @@ public abstract class Entity {
 	protected int solidAreaDefaultX;
 	protected int solidAreaDefaultY;
 	protected int level = 1;
+	protected int attack=0;
+	protected int type; //1= player 2 = slime
+	
+	
 	public Rectangle solidArea = new Rectangle(0,0,48,48);
+	
+	//Hit params
+	protected boolean invincible = false;
+	protected int invincibleCounter = 0;
+	
+	
+	
 	
 	public boolean collisionOn =false;
 	
@@ -34,6 +45,13 @@ public abstract class Entity {
 	protected int maxHealth;
 	protected int Health;
 	
+	public int getAttack() {
+		return attack;
+	}
+
+	public void setAttack(int attack) {
+		this.attack = attack;
+	}
 	
 	public int getMaxHealth() {
 		return maxHealth;
@@ -56,7 +74,25 @@ public abstract class Entity {
 		gp.getcChecker().checkTile(this);
 		gp.getcChecker().checkEntity(this,gp.getNpc());
 		gp.getcChecker().checkEntity(this,gp.getMonster());
-		gp.getcChecker().checkPlayer(this);
+		boolean contactPlayer = gp.getcChecker().checkPlayer(this);
+		
+		
+		
+		if(this.type==2 && contactPlayer==true) {
+			
+			if(gp.getPlayer().Health>=0) {
+				
+				if(gp.getPlayer().invincible==false) {
+					
+					gp.getPlayer().Health-=this.getAttack();
+					gp.getPlayer().invincible=true;
+						
+					
+				}
+				
+			}
+		}
+		
 		
 		spriteCounter++;
 

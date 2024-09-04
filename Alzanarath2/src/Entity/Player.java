@@ -62,6 +62,8 @@ public class Player extends Entity {
         }
 
         boolean moved = false;
+        
+        
 
         if (keyH.isUpPressed() || keyH.isDownPressed() || keyH.isLeftPressed() || keyH.isRightPressed()) {
             moved = true;
@@ -98,7 +100,10 @@ public class Player extends Entity {
             int npcIndex =gp.getcChecker().checkEntity(this, gp.getNpc());
             int monsterIndex =gp.getcChecker().checkEntity(this, gp.getMonster());
             npcInteraction(npcIndex);
-
+            
+            contactMonster(monsterIndex);
+            
+            
             if (collisionOn==false) {
                 switch (direction) {
                     case "up": worldY -= speed; break;
@@ -170,6 +175,19 @@ public class Player extends Entity {
 		maxHealth=100;
 		setHealth(maxHealth);
 	}
+	
+	public void contactMonster(int i){
+		if(i!=999) {
+			if(Health>=0) {
+				
+				if(invincible==false) {
+					this.Health-=gp.getMonster()[i].getAttack();
+					invincible=true;
+				}
+				
+			}
+		}
+	}
 
 
 	public void draw(Graphics2D g2) {
@@ -207,6 +225,15 @@ public class Player extends Entity {
 	        int textY = drawY - 5;
 
 	        g2.drawString(usernamePlayer +" Lvl " + level, textX, textY);
+	    }
+	    
+	    //Change later for monster hit rate time
+	    if(invincible==true) {
+	    	invincibleCounter++;
+	    	if(invincibleCounter>60) {
+	    		invincible=false;
+	    		invincibleCounter = 0;
+	    	}
 	    }
 	}
 
