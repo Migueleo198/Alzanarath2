@@ -31,6 +31,8 @@ public abstract class Entity {
 	
 	GamePanel gp;
 	
+	protected int maxLife;
+	protected int life;
 	
 	
 	public Entity(GamePanel gp) {
