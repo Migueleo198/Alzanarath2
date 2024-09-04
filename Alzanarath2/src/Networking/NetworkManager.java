@@ -22,10 +22,7 @@ public class NetworkManager {
     private GamePanel gamePanel;
     private Map<String, PlayerData> otherPlayers = new ConcurrentHashMap<>();
     
-    // Initialize keyHandler here for the clients
     private KeyHandler keyH;
-    
-    // Data structures to manage client connections and their streams
     private Map<Socket, PrintWriter> clientWriters = new ConcurrentHashMap<>();
     private Map<Socket, BufferedReader> clientReaders = new ConcurrentHashMap<>();
 
@@ -49,6 +46,12 @@ public class NetworkManager {
             serverSocket = new ServerSocket(config.getPort());
             System.out.println("The server has started on port " + config.getPort() + "!");
 
+            // Register the host player immediately after the server starts
+            Player hostPlayer = gamePanel.getPlayer();
+            if (hostPlayer != null) {
+                registerPlayer(hostPlayer); // Ensure the host is registered and sent to all clients
+            }
+
             new Thread(() -> {
                 while (true) {
                     try {
@@ -60,6 +63,23 @@ public class NetworkManager {
 
                         clientWriters.put(clientSocket, clientOut);
                         clientReaders.put(clientSocket, clientIn);
+
+                        // Send initial data to the new client
+                        for (PlayerData playerData : otherPlayers.values()) {
+                            String message = "PLAYER_REGISTER " + playerData.getPlayerId() + " " + playerData.getX() + " " + playerData.getY() + " " + playerData.getDirection() + " " + playerData.getSpriteNum();
+                            clientOut.println(message);
+                        }
+
+                        // Slightly move the host player to ensure the client sees it
+                        if (isServer) {
+                            
+                            if (gamePanel.getPlayer() != null) {
+                                
+                                gamePanel.getPlayer().setDirection(gamePanel.getPlayer().getDirection());
+                                
+                                sendPlayerUpdate(gamePanel.getPlayer());
+                            }
+                        }
 
                         new Thread(() -> handleClient(clientSocket)).start();
                     } catch (IOException e) {
@@ -118,9 +138,18 @@ public class NetworkManager {
     }
 
     public void registerPlayer(Player player) {
+        if (player == null) {
+            System.err.println("Cannot register null player.");
+            return;
+        }
+
         String playerId = isServer ? nameServer : nameClient;
-        String message = "PLAYER_REGISTER " + playerId + " " + player.getUsername() + " " + player.getWorldX() + " " + player.getWorldY() + " " + player.getDirection();
+        String message = "PLAYER_REGISTER " + playerId + " " + player.getUsername() + " " + player.getWorldX() + " " + player.getWorldY() + " " + player.getDirection() + " " + player.getSpriteNum();
         
+        PlayerData playerData = new PlayerData(playerId, player.getWorldX(), player.getWorldY(), player.getDirection(), player.getSpriteNum(), System.currentTimeMillis());
+        otherPlayers.put(playerId, playerData);
+        gamePanel.updateOtherPlayer(playerId, playerData);
+
         if (isServer) {
             for (PrintWriter writer : clientWriters.values()) {
                 writer.println(message);
@@ -131,6 +160,11 @@ public class NetworkManager {
     }
 
     public void sendPlayerUpdate(Player player) {
+        if (player == null) {
+            System.err.println("Cannot update null player.");
+            return;
+        }
+
         String playerId = isServer ? nameServer : nameClient;
         int x = player.getWorldX();
         int y = player.getWorldY();
@@ -139,6 +173,10 @@ public class NetworkManager {
         long timestamp = System.currentTimeMillis();
 
         String message = "PLAYER_UPDATE " + playerId + " " + player.getUsername() + " " + x + " " + y + " " + direction + " " + spriteNum + " " + timestamp;
+
+        PlayerData playerData = new PlayerData(playerId, x, y, direction, spriteNum, timestamp);
+        otherPlayers.put(playerId, playerData);
+        gamePanel.updateOtherPlayer(playerId, playerData);
 
         if (isServer) {
             for (PrintWriter writer : clientWriters.values()) {
@@ -149,25 +187,27 @@ public class NetworkManager {
         }
     }
 
-
     private void handleReceivedData(String data) {
         String[] tokens = data.split(" ");
-        if (tokens[0].equals("PLAYER_UPDATE")) {
-            String playerId = tokens[1];
-            String username = tokens[2];
-            int x = Integer.parseInt(tokens[3]);
-            int y = Integer.parseInt(tokens[4]);
-            String direction = tokens[5];
-            int spriteNum = Integer.parseInt(tokens[6]); // Get animation state
-            long timestamp = Long.parseLong(tokens[7]);
+        if (tokens[0].equals("PLAYER_UPDATE") || tokens[0].equals("PLAYER_REGISTER")) {
+            try {
+                String playerId = tokens[1];
+                String username = tokens[2];
+                int x = Integer.parseInt(tokens[3]);
+                int y = Integer.parseInt(tokens[4]);
+                String direction = tokens[5]; // Correctly parse direction as a String
+                int spriteNum = Integer.parseInt(tokens[6]); // Get animation state
+                long timestamp = (tokens[0].equals("PLAYER_UPDATE")) ? Long.parseLong(tokens[7]) : System.currentTimeMillis();
 
-            PlayerData playerData = new PlayerData(playerId, x, y, direction, spriteNum, timestamp);
-            gamePanel.updateOtherPlayer(playerId, playerData);
-        } else if (tokens[0].equals("PLAYER_REGISTER")) {
-            // Handle player registration if needed
-            // No animation state here, if necessary add it similarly
+                PlayerData playerData = new PlayerData(playerId, x, y, direction, spriteNum, timestamp);
+                otherPlayers.put(playerId, playerData);
+                gamePanel.updateOtherPlayer(playerId, playerData);
+            } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
+                
+            }
         }
     }
+
     public String promptInputName(String role) {
         String name;
         while (true) {
@@ -208,4 +248,5 @@ public class NetworkManager {
         return isServer;
     }
 }
+
 

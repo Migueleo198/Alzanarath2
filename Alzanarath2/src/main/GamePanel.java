@@ -234,6 +234,12 @@ public class GamePanel extends JPanel implements Runnable {
             existingPlayer.correctPosition(playerData.getX(), playerData.getY(), playerData.getDirection());
             existingPlayer.setSpriteNum(playerData.getSpriteNum()); // Update animation state
         }
+        repaint();
+        
+    }
+    
+    public void refreshPlayers() {
+        repaint(); // Trigger redraw
     }
 
     public Map<String, Player> getOtherPlayers() {
