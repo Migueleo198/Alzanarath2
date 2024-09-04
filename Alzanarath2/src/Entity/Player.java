@@ -44,6 +44,8 @@ public class Player extends Entity {
         solidArea = new Rectangle();
         solidArea.x = 8;
         solidArea.y = 16;
+        setSolidAreaDefaultX(solidArea.x);
+        setSolidAreaDefaultY(solidArea.y);
         solidArea.width = 32;
         solidArea.height = 32;
 
@@ -73,17 +75,27 @@ public class Player extends Entity {
             } else if (keyH.isRightPressed()) {
                 direction = "right";
             }
+            
+            //Check Object collision(work in progess)
+            
+            //Check Npc collision
+          
+            	
+            
 
             spriteCounter++;
             if (spriteCounter > 10) {
                 spriteNum = (spriteNum == 1) ? 2 : 1;
                 spriteCounter = 0;
             }
-
-            collisionOn = false;
+            
+            collisionOn=false;
             gp.getcChecker().checkTile(this);
+            
+            int npcIndex =gp.getcChecker().checkEntity(this, gp.getNpc());
+            npcInteraction(npcIndex);
 
-            if (!collisionOn) {
+            if (collisionOn==false) {
                 switch (direction) {
                     case "up": worldY -= speed; break;
                     case "down": worldY += speed; break;
@@ -133,6 +145,12 @@ public class Player extends Entity {
         this.predictedX = x;
         this.predictedY = y;
         this.isPredicting = false;
+    }
+    
+    public void npcInteraction(int i) {
+    	if(i!=999) {
+    		//System.out.println("collision with npc");
+    	}
     }
 
    
