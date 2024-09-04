@@ -74,7 +74,7 @@ public class NetworkManager {
                         clientReaders.put(clientSocket, clientIn);
 
                         for (PlayerData playerData : otherPlayers.values()) {
-                            String message = "PLAYER_REGISTER " + playerData.getPlayerId() + " " + playerData.getX() + " " + playerData.getY() + + playerData.getSpriteNum();
+                            String message = "PLAYER_REGISTER " + playerData.getPlayerId() + " " + playerData.getX() + " " + playerData.getY() + " " + playerData.getDirection() + " " + playerData.getSpriteNum();
                             clientOut.println(message);
                         }
 
