@@ -22,6 +22,8 @@ public abstract class Entity {
 	protected int actionLockCounter=0;
 	protected int spriteCounter=0;
 	protected int spriteNum=1;
+	protected int solidAreaDefaultX;
+	protected int solidAreaDefaultY;
 	
 	public Rectangle solidArea = new Rectangle(0,0,48,48);
 	
@@ -42,6 +44,8 @@ public abstract class Entity {
 		
 		collisionOn=false;
 		gp.getcChecker().checkTile(this);
+		
+		gp.getcChecker().checkPlayer(this);
 		
 		spriteCounter++;
 
@@ -288,6 +292,22 @@ public abstract class Entity {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public int getSolidAreaDefaultX() {
+		return solidAreaDefaultX;
+	}
+
+	public void setSolidAreaDefaultX(int solidAreaDefaultX) {
+		this.solidAreaDefaultX = solidAreaDefaultX;
+	}
+
+	public int getSolidAreaDefaultY() {
+		return solidAreaDefaultY;
+	}
+
+	public void setSolidAreaDefaultY(int solidAreaDefaultY) {
+		this.solidAreaDefaultY = solidAreaDefaultY;
 	}
 	
 }

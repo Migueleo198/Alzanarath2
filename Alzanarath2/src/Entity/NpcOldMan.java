@@ -19,6 +19,12 @@ public class NpcOldMan extends Entity{
 		direction ="down";
 		speed=1;
 		
+		
+		
+		
+		
+		collisionOn=true;
+		
 		getNpcImage();
 		
 	}

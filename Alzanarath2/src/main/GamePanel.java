@@ -10,6 +10,7 @@ import Networking.Configuration;
 import Networking.NetworkManager;
 import Networking.PlayerData;
 import Entity.Entity;
+import Entity.NpcOldMan;
 import Entity.Player;
 import Inputs.KeyHandler;
 import Tile.TileManager;
@@ -161,6 +162,12 @@ public class GamePanel extends JPanel implements Runnable {
             System.err.println("KeyHandler is not initialized.");
             return;
         }
+        
+        for (int i=0; i<npc.length; i++) {
+            if (npc[i]!=null) {
+                npc[i].update();
+            }
+        }
 
         synchronized (keyH) {
             // Update local player and other entities
@@ -174,11 +181,7 @@ public class GamePanel extends JPanel implements Runnable {
                 }
             }
 
-            for (Entity entity : npc) {
-                if (entity != null) {
-                    entity.update();
-                }
-            }
+            
         }
     }
 
@@ -193,9 +196,9 @@ public class GamePanel extends JPanel implements Runnable {
             tileM.draw(g2);
 
             // Draw NPCs
-            for (Entity entity : npc) {
-                if (entity != null) {
-                    entity.draw(g2);
+            for (int i=0; i<npc.length; i++) {
+                if (npc[i]!=null) {
+                    npc[i].draw(g2);
                 }
             }
 
@@ -359,12 +362,16 @@ public class GamePanel extends JPanel implements Runnable {
         this.currentNpcNum = currentNpcNum;
     }
 
-    public Entity[] getNpc() {
-        return npc;
-    }
+   
 
     public void setNpc(Entity npc[]) {
         this.npc = npc;
     }
+
+
+	public Entity[] getNpc() {
+		// TODO Auto-generated method stub
+		return npc;
+	}
 }
 
