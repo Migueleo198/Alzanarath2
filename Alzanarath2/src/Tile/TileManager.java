@@ -14,6 +14,9 @@ public class TileManager {
 	GamePanel gp;
 	public Tile[] tile;
 	private int mapTileNum[][];
+	private int tileNum;
+	public int screenX;
+	public int screenY;
 	public TileManager(GamePanel gp) {
 		this.gp=gp;
 		
@@ -90,20 +93,20 @@ public class TileManager {
 		
 		while(worldRow<gp.getMaxWorldRow()){
 			
-			int tileNum = getMapTileNum()[worldCol][worldRow];
+			setTileNum(getMapTileNum()[worldCol][worldRow]);
 			
 			int checkCurrentWorldX = worldCol * gp.getTileSize();
 			int checkCurrentWorldY = worldRow * gp.getTileSize();
 			//WE SUBSTRACT THE POSITION OF THE PLAYER X AND Y TO THE 
 			// MAP DRAWING AND DRAW THE TILE X AND Y POSITION TAKING THAT INTO ACCOUNT
-			int screenX = checkCurrentWorldX - gp.getPlayer().getWorldX() + gp.getPlayer().getScreenX();
-			int screenY = checkCurrentWorldY - gp.getPlayer().getWorldY() + gp.getPlayer().getScreenY();
+			screenX = checkCurrentWorldX - gp.getPlayer().getWorldX() + gp.getPlayer().getScreenX();
+			screenY = checkCurrentWorldY - gp.getPlayer().getWorldY() + gp.getPlayer().getScreenY();
 			
 			if(checkCurrentWorldX + gp.getTileSize() > gp.getPlayer().getWorldX()-gp.getPlayer().getScreenX()
 					&& checkCurrentWorldX - gp.getTileSize() < gp.getPlayer().getWorldX()+gp.getPlayer().getScreenX()
 					&& checkCurrentWorldY + gp.getTileSize()> gp.getPlayer().getWorldY()-gp.getPlayer().getScreenY()
 					&& checkCurrentWorldY - gp.getTileSize() < gp.getPlayer().getWorldY()+gp.getPlayer().getScreenY()) {
-			g2.drawImage(tile[tileNum].getImage(),screenX,screenY,gp.getTileSize(),gp.getTileSize(),null);
+			g2.drawImage(tile[getTileNum()].getImage(),screenX,screenY,gp.getTileSize(),gp.getTileSize(),null);
 			}
 			
 			
@@ -119,10 +122,12 @@ public class TileManager {
 		
 		
 		
-		
+		setTileNum(0);
 		
 		}
 	}
+	
+	
 
 	public int[][] getMapTileNum() {
 		return mapTileNum;
@@ -130,6 +135,14 @@ public class TileManager {
 
 	public void setMapTileNum(int mapTileNum[][]) {
 		this.mapTileNum = mapTileNum;
+	}
+
+	public int getTileNum() {
+		return tileNum;
+	}
+
+	public void setTileNum(int tileNum) {
+		this.tileNum = tileNum;
 	}
 	
 	

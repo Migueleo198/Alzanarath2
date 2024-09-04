@@ -17,6 +17,8 @@ import Tile.TileManager;
 import UI.UI;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -65,7 +67,7 @@ public class GamePanel extends JPanel implements Runnable {
     
     
     // TILE MANAGER
-    TileManager tileM;
+    private TileManager tileM;
 
     // Check collisions
     private ColissionChecker cChecker;
@@ -104,7 +106,7 @@ public class GamePanel extends JPanel implements Runnable {
         keyH = new KeyHandler(this);  // Initialize KeyHandler
         this.addKeyListener(keyH);    // Add KeyHandler as KeyListener
         System.out.println("KeyHandler initialized: " + (keyH != null)); // Debugging line
-        tileM = new TileManager(this);
+        setTileM(new TileManager(this));
         sound = new Sound();
         aSetter = new AssetSetter(this);
         ui = new UI(this);
@@ -213,35 +215,46 @@ public class GamePanel extends JPanel implements Runnable {
 
         if (gameState == playState && this.player!=null) {
             g2.setColor(getBackground());
-            tileM.draw(g2);
-
-            // Draw NPCs
+            getTileM().draw(g2);
+            
+            entityList.add(player);
+            
             for (int i=0; i<npc.length; i++) {
-                if (npc[i]!=null) {
-                	setCurrentNpcNum(i);
-                    npc[i].draw(g2);
-                }
-            }
-            
-            for (int i=0; i<monster.length; i++) {
-            	if(monster[i]!=null) {
-            		setCurrentMonsterNum(i);
-             monster[i].draw(g2);
-            
+            	if(npc[i]!=null) {
+            entityList.add(npc[i]);
             	}
             }
+            
+            //SORT THE ARRAYLIST
+            Collections.sort(entityList, new Comparator<Entity>() {
 
-            // Draw local player
-            if (player != null) {
-                player.draw(g2);
-            } else {
-                System.err.println("Player is null! Cannot draw.");
+				@Override
+				public int compare(Entity e1, Entity e2) {
+					int result = Integer.compare(e1.getWorldY(),e2.getWorldY());
+					return result;
+				}
+            });
+        
+            	
+            //DRAW THE ENTITIES
+            
+            for (int i=0; i<entityList.size();i++) {
+            	entityList.get(i).draw(g2);
             }
+            
+            //Empty ENTITY LIST
+            
+            entityList.clear();
+            }
+
+           
+            
+             
 
             // Draw other players
             for (Player otherPlayer : otherPlayers.values()) {
                 if (otherPlayer != null) {
-                    otherPlayer.draw(g2);
+                   entityList.add(otherPlayer);
                     
                     if(joinSound==0) {
                     joinSound++;
@@ -250,7 +263,7 @@ public class GamePanel extends JPanel implements Runnable {
                     
                 }
             }
-        }
+          
 
         // Draw the UI
         ui.drawUI(g2);
@@ -432,6 +445,16 @@ public class GamePanel extends JPanel implements Runnable {
 
 	public void setCurrentMonsterNum(int currentMonsterNum) {
 		this.currentMonsterNum = currentMonsterNum;
+	}
+
+
+	public TileManager getTileM() {
+		return tileM;
+	}
+
+
+	public void setTileM(TileManager tileM) {
+		this.tileM = tileM;
 	}
 }
 

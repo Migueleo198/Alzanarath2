@@ -90,7 +90,10 @@ public class Player extends Entity {
             }
             
             collisionOn=false;
+            
             gp.getcChecker().checkTile(this);
+            
+            
             
             int npcIndex =gp.getcChecker().checkEntity(this, gp.getNpc());
             int monsterIndex =gp.getcChecker().checkEntity(this, gp.getMonster());
