@@ -62,6 +62,7 @@ public class GamePanel extends JPanel implements Runnable {
 
     // GAME BGM AND SE
     Sound sound;
+    int joinSound=0;
     
     // Asset setter
     AssetSetter aSetter;
@@ -213,6 +214,12 @@ public class GamePanel extends JPanel implements Runnable {
             for (Player otherPlayer : otherPlayers.values()) {
                 if (otherPlayer != null) {
                     otherPlayer.draw(g2);
+                    
+                    if(joinSound==0) {
+                    joinSound++;
+                    playSE(1);
+                    }
+                    
                 }
             }
         }
@@ -264,6 +271,7 @@ public class GamePanel extends JPanel implements Runnable {
     public void playSE(int i) {
         sound.setFile(i);
         sound.play();
+        
     }
 
     public int getScale() {

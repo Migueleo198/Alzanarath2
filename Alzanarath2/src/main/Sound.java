@@ -11,6 +11,7 @@ public class Sound {
 	URL soundURL[] = new URL[30];
 	public Sound() {
 		soundURL[0] = getClass().getResource("/Music/knights-of-camelot-8038.wav");
+		soundURL[1] = getClass().getResource("/Music/TalkingSE.wav");
 	}
 	
 	public void setFile(int i) {
