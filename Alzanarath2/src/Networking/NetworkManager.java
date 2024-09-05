@@ -100,7 +100,8 @@ public class NetworkManager {
      */
     public void startClient() {
         try {
-            clientSocket = new Socket(config.getIP(), config.getPort());
+        	 String hamachiIP = getHamachiIPAddress();
+            clientSocket = new Socket(InetAddress.getByName(hamachiIP), config.getPort());
             System.out.println("Connected to server at Hamachi IP " + config.getIP() + ":" + config.getPort());
 
             out = new PrintWriter(clientSocket.getOutputStream(), true);
