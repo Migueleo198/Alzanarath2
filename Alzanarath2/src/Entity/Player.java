@@ -236,6 +236,21 @@ public class Player extends Entity {
 	    	}
 	    }
 	}
+	
+	public void getPlayerAttackImage() {
+		try {
+		attackUp1 = ImageIO.read(getClass().getResourceAsStream("/Player/SpritesJava(up).png"));
+		attackUp2 = ImageIO.read(getClass().getResourceAsStream("/Player/SpritesJava(up2).png"));
+		attackDown1 = ImageIO.read(getClass().getResourceAsStream("/Player/SpritesJava(down).png"));
+		attackDown2 = ImageIO.read(getClass().getResourceAsStream("/Player/SpritesJava(down2).png"));
+		attackLeft1 = ImageIO.read(getClass().getResourceAsStream("/Player/SpritesJava(left).png"));
+		attackLeft2 = ImageIO.read(getClass().getResourceAsStream("/Player/SpritesJava(left2).png"));
+		attackRight1 = ImageIO.read(getClass().getResourceAsStream("/Player/SpritesJava(right).png"));
+		attackRight2 = ImageIO.read(getClass().getResourceAsStream("/Player/SpritesJava(right2).png"));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 
 
 	public void getPlayerModel() {

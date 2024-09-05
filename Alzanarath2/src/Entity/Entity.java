@@ -10,6 +10,7 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 
 import main.GamePanel;
+import main.Utility;
 
 public abstract class Entity {
 	protected String usernamePlayer;
@@ -18,6 +19,7 @@ public abstract class Entity {
 	protected int speed;
 	protected String name;
 	protected BufferedImage up1,up2,down1,down2,left1,left2,right1,right2;
+	protected BufferedImage attackUp1,attackUp2,attackDown1,attackDown2,attackLeft1,attackLeft2,attackRight1,attackRight2;
 	protected String direction;
 	protected int actionLockCounter=0;
 	protected int spriteCounter=0;
@@ -66,6 +68,23 @@ public abstract class Entity {
 	}
 	
 	public void setAction() {}
+	
+	public BufferedImage setup(String imagePath, int width, int height){
+		
+		Utility uTool = new Utility();
+		BufferedImage image = null;
+		//try {
+			
+		//}catch(IOException e) {
+		//	e.printStackTrace();
+		//}
+		
+		
+		
+		
+		return image;
+		
+	}
 	
 	public void update(){
 		setAction();

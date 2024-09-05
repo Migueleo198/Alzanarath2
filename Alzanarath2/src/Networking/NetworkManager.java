@@ -89,7 +89,7 @@ public class NetworkManager {
             String radminIP = "26.154.96.167";
             clientSocket = new Socket(InetAddress.getByName(radminIP), config.getPort());
             System.out.println("Connected to server at Radmin IP " + radminIP + ":" + config.getPort());
-            clientSocket.setPerformancePreferences(1,0,2);
+            clientSocket.setPerformancePreferences(0, 1, 2);
             clientSocket.setTcpNoDelay(true);
             out = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
             in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
