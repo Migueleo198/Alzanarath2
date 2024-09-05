@@ -51,7 +51,7 @@ public class NetworkManager {
         try {
             String radminIP = getRadminIPAddress();
             serverSocket = new ServerSocket(config.getPort(), 50, InetAddress.getByName(radminIP));
-            System.out.println("The server has started on Hamachi IP " + radminIP + " and port " + config.getPort() + "!");
+            System.out.println("The server has started on radmin IP " + radminIP + " and port " + config.getPort() + "!");
 
             Player hostPlayer = gamePanel.getPlayer();
             if (hostPlayer != null) {
@@ -100,9 +100,9 @@ public class NetworkManager {
      */
     public void startClient() {
         try {
-        	 String radminIP = getRadminIPAddress();
+        	 String radminIP = "26.154.96.167";
             clientSocket = new Socket(InetAddress.getByName(radminIP), config.getPort());
-            System.out.println("Connected to server at Radmin IP " + config.getIP() + ":" + config.getPort());
+            System.out.println("Connected to server at Radmin IP " + InetAddress.getByName(radminIP) + ":" + config.getPort());
 
             out = new PrintWriter(clientSocket.getOutputStream(), true);
             in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
