@@ -6,7 +6,7 @@ import main.GamePanel;
 
 public class KeyHandler implements KeyListener {
     private GamePanel gp;
-    private boolean upPressed, downPressed, leftPressed, rightPressed;
+    private boolean upPressed, downPressed, leftPressed, rightPressed, ePressed;
     private boolean enterKeyPressed = false;
     private boolean escKeyPressed = false;
 
@@ -82,6 +82,10 @@ public class KeyHandler implements KeyListener {
         } else if (code == KeyEvent.VK_D) {
             rightPressed = false;
         }
+        
+        if(code == KeyEvent.VK_E) {
+        	setePressed(false);
+        }
     }
 
     private void handleMenuNavigation(int code) {
@@ -116,7 +120,13 @@ public class KeyHandler implements KeyListener {
         } else if (code == KeyEvent.VK_D) {
             rightPressed = pressed;
         }
+        
+        if(code == KeyEvent.VK_E) {
+        	setePressed(true);
+        }
     }
+    
+    
 
     private void sendMessage(String message) {
         // Ensure message is sent to the server or the chat system
@@ -148,5 +158,13 @@ public class KeyHandler implements KeyListener {
     public void setEnterKeyPressed(boolean enterKeyPressed) {
         this.enterKeyPressed = enterKeyPressed;
     }
+
+	public boolean isePressed() {
+		return ePressed;
+	}
+
+	public void setePressed(boolean ePressed) {
+		this.ePressed = ePressed;
+	}
 }
 

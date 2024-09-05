@@ -103,14 +103,15 @@ public class NetworkManager {
 
     private void sendAllPlayersToClient(BufferedWriter clientOut) throws IOException {
         for (PlayerData playerData : otherPlayers.values()) {
-            String message = String.format("PLAYER_REGISTER %s %s %d %d %s %d %d", 
+            String message = String.format("PLAYER_REGISTER %s %s %d %d %s %d %d %b", 
                                             playerData.getPlayerId(),  
                                             playerData.getUsername(), 
                                             playerData.getX(), 
                                             playerData.getY(), 
                                             playerData.getDirection(), 
                                             playerData.getSpriteNum(),
-                                            playerData.getLevel());
+                                            playerData.getLevel(),
+                                            playerData.isAttacking()); // Include attacking state
             clientOut.write(message + "\n");
             clientOut.flush();
         }
@@ -182,12 +183,18 @@ public class NetworkManager {
         String playerId = isServer ? nameServer : nameClient;
         String username = player.getUsername();
         int level = player.getLevel();
-        String message = String.format("PLAYER_REGISTER %s %s %d %d %s %d %d",
-                                        playerId, username, 
-                                        player.getWorldX(), player.getWorldY(), 
-                                        player.getDirection(), player.getSpriteNum(), level);
+        boolean isAttacking = player.isAttacking(); // Get the player's attacking state
+        
+        // Update the message format to include the attacking state
+        String message = String.format("PLAYER_REGISTER %s %s %d %d %s %d %d %d %b", // Add %d for the timestamp
+                playerId, username, 
+                player.getWorldX(), player.getWorldY(), 
+                player.getDirection(), player.getSpriteNum(), 
+                System.currentTimeMillis(), level,
+                player.isAttacking()); // Add timestamp
 
-        PlayerData playerData = new PlayerData(playerId, username, player.getWorldX(), player.getWorldY(), player.getDirection(), player.getSpriteNum(), System.currentTimeMillis(), level);
+        // Create the PlayerData object with the attacking state
+        PlayerData playerData = new PlayerData(playerId, username, player.getWorldX(), player.getWorldY(), player.getDirection(), player.getSpriteNum(), System.currentTimeMillis(), level, isAttacking);
         otherPlayers.put(playerId, playerData);
         gamePanel.updateOtherPlayer(playerId, playerData);
 
@@ -215,13 +222,19 @@ public class NetworkManager {
 
         String playerId = isServer ? nameServer : nameClient;
         String username = player.getUsername();
-        String message = String.format(
-            "PLAYER_UPDATE %s %s %d %d %s %d %d %d",
-            playerId, username, player.getWorldX(), player.getWorldY(), player.getDirection(),
-            player.getSpriteNum(), System.currentTimeMillis(), player.getLevel()
-        );
-
-        PlayerData playerData = new PlayerData(playerId, username, player.getWorldX(), player.getWorldY(), player.getDirection(), player.getSpriteNum(), System.currentTimeMillis(), player.getLevel());
+        boolean isAttacking = player.isAttacking(); // New line to get the attacking state
+        String message;
+        int level = player.getLevel();
+        
+        
+        message = String.format("PLAYER_UPDATE %s %s %d %d %s %d %d %d %b", // Add %d for the timestamp
+                playerId, username, 
+                player.getWorldX(), player.getWorldY(), 
+                player.getDirection(), player.getSpriteNum(), 
+                System.currentTimeMillis(), level,
+                player.isAttacking()); // Add timestamp
+        
+        PlayerData playerData = new PlayerData(playerId, username, player.getWorldX(), player.getWorldY(), player.getDirection(), player.getSpriteNum(), System.currentTimeMillis(), player.getLevel(), isAttacking);
         otherPlayers.put(playerId, playerData);
         gamePanel.updateOtherPlayer(playerId, playerData);
 
@@ -242,7 +255,9 @@ public class NetworkManager {
                 e.printStackTrace();
             }
         }
-    }
+        }
+    
+
 
     public void sendChatMessage(String message) {
         String username = gamePanel.getPlayer().getUsername();
@@ -292,71 +307,76 @@ public class NetworkManager {
     	String username;
     	 String payload = null;
     	 String senderUsername = tokens[1];
-    	
-       
-    	
-        
-     //CHECK IF THERE ARE AT LEAST 3 TOKENS
-        if (tokens.length > 2) {
-            // Concatenate all tokens from index 2 onwards to form the payload
-            StringBuilder payloadBuilder = new StringBuilder();
-            for (int i = 2; i < tokens.length; i++) {
-                if (i > 2) {
-                    payloadBuilder.append(" "); // Add space between tokens
-                }
-                payloadBuilder.append(tokens[i]);
-            }
-            payload = payloadBuilder.toString();
-        } else {
-            // Handle the case where tokens[2] does not exist
-            payload = ""; // Set to empty if no message is present
-        }
-           
-        // Ensure the message is either an update or registration event
-        if (tokens[0].equals("PLAYER_UPDATE") || tokens[0].equals("PLAYER_REGISTER")) {
-            try {
-                String playerId = tokens[1];
-                username = tokens[2];  // Retrieve the username from the data
-                int x = Integer.parseInt(tokens[3]);
-                int y = Integer.parseInt(tokens[4]);
-                String direction = tokens[5];
-                int spriteNum = Integer.parseInt(tokens[6]);
-                
-                // Use timestamp if it's an update, otherwise set it to the current time
-                long timestamp = (tokens[0].equals("PLAYER_UPDATE")) ? Long.parseLong(tokens[7]) : System.currentTimeMillis();
-                int level = Integer.parseInt(tokens[tokens.length - 1]);
+    	 
+    	 
+  
+    		    
+    		    
+    		    // Check if there are at least 3 tokens
+    		    if (tokens.length > 2) {
+    		        // Concatenate all tokens from index 2 onwards to form the payload
+    		        StringBuilder payloadBuilder = new StringBuilder();
+    		        for (int i = 2; i < tokens.length; i++) {
+    		            if (i > 2) {
+    		                payloadBuilder.append(" "); // Add space between tokens
+    		            }
+    		            payloadBuilder.append(tokens[i]);
+    		        }
+    		        payload = payloadBuilder.toString();
+    		        
+    		    } else {
+    		        // Handle the case where tokens[2] does not exist
+    		        payload = ""; // Set to empty if no message is present
+    		        System.out.println("Insufficient tokens, payload set to empty.");
+    		    }
 
-                // Create PlayerData with the username and other data
-                PlayerData playerData = new PlayerData(playerId, username, x, y, direction, spriteNum, timestamp, level);
-                
-                // Update the otherPlayers map with the new or updated PlayerData
-                otherPlayers.put(playerId, playerData);
-                
-                // Update the game panel with the new or updated player
-                gamePanel.updateOtherPlayer(playerId, playerData);
-                
-            } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
-                e.printStackTrace();
-            }
-        }
-        
-        else if (tokens[0].equals("PLAYER_UPDATE") && !tokens[0].equals("CHAT")) {
-            // Handle chat message
-            receiveMessage(payload);
-        } else {
-            System.err.println("Unknown command received: " + tokens[0]);
-        }
-        
-        if (tokens[0].equals("CHAT") && !payload.isBlank()) {
-            if (!senderUsername.equals(gamePanel.getPlayer().getUsername())) {
-                // Add the message to the chat, showing the sender's username
-                receiveMessage(senderUsername + ": " + payload);
-            }
-        } else {
-            
-        }
+    		    // Ensure the message is either an update or registration event
+    		    if (tokens[0].equals("PLAYER_UPDATE") || tokens[0].equals("PLAYER_REGISTER")) {
+    		        try {
+    		            String playerId = tokens[1];
+    		            username = tokens[2];  // Retrieve the username from the data
+    		            int x = Integer.parseInt(tokens[3]);
+    		            int y = Integer.parseInt(tokens[4]);
+    		            String direction = tokens[5];
+    		            int spriteNum = Integer.parseInt(tokens[6]);
+    		            
+    		            // Use timestamp if it's an update, otherwise set it to the current time
+    		            long timestamp = Long.parseLong(tokens[7]);
+    		            int level = Integer.parseInt(tokens[tokens.length - 2]);
+    		            boolean isAttacking = Boolean.parseBoolean(tokens[tokens.length - 1]);
+    		            
+    		           
+    		            
+    		            
 
-    }
+    		            // Create PlayerData with the username and other data
+    		            PlayerData playerData = new PlayerData(playerId, username, x, y, direction, spriteNum, timestamp, level, isAttacking);
+    		            
+    		            // Update the otherPlayers map with the new or updated PlayerData
+    		            otherPlayers.put(playerId, playerData);
+    		            
+    		            // Update the game panel with the new or updated player
+    		            gamePanel.updateOtherPlayer(playerId, playerData);
+
+    		        } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
+    		            System.err.println("Error parsing data: " + e.getMessage());
+    		            e.printStackTrace();
+    		        }
+    		    } else if (tokens[0].equals("CHAT")) {
+    		        if (!payload.isBlank()) {
+    		            if (!senderUsername.equals(gamePanel.getPlayer().getUsername())) {
+    		                // Add the message to the chat, showing the sender's username
+    		                receiveMessage(senderUsername + ": " + payload);
+    		            }
+    		        } else {
+    		            System.out.println("Received chat message with blank payload.");
+    		        }
+    		    } else {
+    		        System.err.println("Unknown command received: " + tokens[0]);
+    		    }
+    		}
+
+
 
     public void close() {
     try {

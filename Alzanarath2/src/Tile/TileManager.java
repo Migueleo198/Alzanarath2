@@ -9,6 +9,7 @@ import java.io.InputStreamReader;
 import javax.imageio.ImageIO;
 
 import main.GamePanel;
+import main.Utility;
 
 public class TileManager {
 	GamePanel gp;
@@ -29,22 +30,12 @@ public class TileManager {
 	}
 	
 	public void getTileImage() {
+		setup(0, "5Grass",false);
+		setup(1, "0WallTile",true);
+		setup(2, "8WoodenFloor",false);
+		setup(3, "7Tree",true);
 		
-		try {
-		tile[0] = new Tile();
-		tile[0].setImage(ImageIO.read(getClass().getResourceAsStream("/Tiles/5Grass.png")));
-		tile[1] = new Tile();
-		tile[1].setImage(ImageIO.read(getClass().getResourceAsStream("/Tiles/0WallTile.png")));
-		tile[1].setCollision(true);
-		tile[2] = new Tile();
-		tile[2].setImage(ImageIO.read(getClass().getResourceAsStream("/Tiles/8WoodenFloor.png")));
-		tile[3] = new Tile();
-		tile[3].setImage(ImageIO.read(getClass().getResourceAsStream("/Tiles/7Tree.png")));
-		tile[3].setCollision(true);
-		}
-		catch(IOException e) {
-			e.printStackTrace();
-		}
+		
 	}
 	
 	public void loadMap(String filePath) {
@@ -106,7 +97,7 @@ public class TileManager {
 					&& checkCurrentWorldX - gp.getTileSize() < gp.getPlayer().getWorldX()+gp.getPlayer().getScreenX()
 					&& checkCurrentWorldY + gp.getTileSize()> gp.getPlayer().getWorldY()-gp.getPlayer().getScreenY()
 					&& checkCurrentWorldY - gp.getTileSize() < gp.getPlayer().getWorldY()+gp.getPlayer().getScreenY()) {
-			g2.drawImage(tile[getTileNum()].getImage(),screenX,screenY,gp.getTileSize(),gp.getTileSize(),null);
+			g2.drawImage(tile[getTileNum()].getImage(),screenX,screenY,null);
 			}
 			
 			
@@ -127,7 +118,18 @@ public class TileManager {
 		}
 	}
 	
-	
+	public void setup(int index, String imageName, boolean collision) {
+        Utility uTool = new Utility();
+
+        try {
+            tile[index] = new Tile();
+            tile[index].image = ImageIO.read(getClass().getResourceAsStream("/tiles/" + imageName + ".png"));
+            tile[index].image = uTool.scaleImage(tile[index].image, gp.getTileSize(), gp.getTileSize());
+            tile[index].collision = collision;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }	
 
 	public int[][] getMapTileNum() {
 		return mapTileNum;

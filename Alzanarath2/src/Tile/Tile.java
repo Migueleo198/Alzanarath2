@@ -5,8 +5,8 @@ import java.awt.image.BufferedImage;
 public class Tile {
 	//_*THIS CLASS REPRESENTS THE TILE*_
 	
-	private BufferedImage image;
-	private boolean collision=false;
+	BufferedImage image;
+    boolean collision=false;
 	
 	
 	public BufferedImage getImage() {

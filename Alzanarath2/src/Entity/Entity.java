@@ -23,6 +23,7 @@ public abstract class Entity {
 	protected String direction;
 	protected int actionLockCounter=0;
 	protected int spriteCounter=0;
+	protected int spriteCounter2=0;
 	protected int spriteNum=1;
 	protected int solidAreaDefaultX;
 	protected int solidAreaDefaultY;
@@ -30,6 +31,8 @@ public abstract class Entity {
 	protected int attack=0;
 	protected int type; //1= player 2 = slime
 	
+	//ATTACK ANIMATION VAR
+	protected boolean attacking=false;
 	
 	public Rectangle solidArea = new Rectangle(0,0,48,48);
 	
@@ -69,22 +72,18 @@ public abstract class Entity {
 	
 	public void setAction() {}
 	
-	public BufferedImage setup(String imagePath, int width, int height){
-		
-		Utility uTool = new Utility();
-		BufferedImage image = null;
-		//try {
-			
-		//}catch(IOException e) {
-		//	e.printStackTrace();
-		//}
-		
-		
-		
-		
-		return image;
-		
-	}
+	public BufferedImage setup(String imageName, int width, int height) {
+    	Utility uTool = new Utility();
+    	BufferedImage scaledImage = null;
+    	
+    	try {
+    	scaledImage = ImageIO.read(getClass().getResourceAsStream(imageName));
+    	scaledImage = uTool.scaleImage(scaledImage, width, height);
+    	}catch(IOException e){
+    		e.printStackTrace();
+    	}
+    	return scaledImage;
+    }
 	
 	public void update(){
 		setAction();
@@ -206,7 +205,7 @@ public abstract class Entity {
 				int textY = screenY - 5;
 				
 				g2.drawString(gp.getNpc()[gp.getCurrentNpcNum()].getName(), textX, textY);
-				g2.drawImage(image, screenX, screenY, gp.getTileSize(), gp.getTileSize(), null);
+				g2.drawImage(image, screenX, screenY, null);
 				
 				
 			
