@@ -49,7 +49,8 @@ public class NetworkManager {
             String radminIP = getRadminIPAddress();
             serverSocket = new ServerSocket(config.getPort(), 50, InetAddress.getByName(radminIP));
             System.out.println("Server started on Radmin IP " + radminIP + " and port " + config.getPort() + "!");
-
+            serverSocket.setPerformancePreferences(1,0,2);
+            
             Player hostPlayer = gamePanel.getPlayer();
             if (hostPlayer != null) {
                 registerPlayer(hostPlayer); // Register the host
@@ -88,7 +89,8 @@ public class NetworkManager {
             String radminIP = "26.154.96.167";
             clientSocket = new Socket(InetAddress.getByName(radminIP), config.getPort());
             System.out.println("Connected to server at Radmin IP " + radminIP + ":" + config.getPort());
-
+            clientSocket.setPerformancePreferences(1,0,2);
+            clientSocket.setTcpNoDelay(true);
             out = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
             in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 

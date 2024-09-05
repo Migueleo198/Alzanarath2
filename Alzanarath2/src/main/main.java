@@ -9,10 +9,7 @@ public class main {
 
 	public static void main(String[] args) {
 		GamePanel gp = new GamePanel();
-		
-		
-		
-		
+
 		window = new JFrame();
 		
 		window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
