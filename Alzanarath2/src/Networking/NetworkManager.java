@@ -171,7 +171,7 @@ public class NetworkManager {
                 // Print out the display names for debugging purposes
                 System.out.println("Network Interface: " + displayName);
                 
-                if (displayName.toLowerCase().contains("hamachi")) {
+                if (displayName.toLowerCase().contains("radmin")) {
                     Enumeration<InetAddress> inetAddresses = networkInterface.getInetAddresses();
                     
                     while (inetAddresses.hasMoreElements()) {
