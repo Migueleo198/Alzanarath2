@@ -47,9 +47,6 @@ public class NetworkManager {
         }
     }
 
-    /**
-     * Start the server and listen on the Hamachi IP.
-     */
     public void startServer() {
         try {
             String hamachiIP = getHamachiIPAddress();
@@ -62,7 +59,7 @@ public class NetworkManager {
             }
 
             new Thread(() -> {
-            	while (true) {
+                while (true) {
                     try {
                         Socket clientSocket = serverSocket.accept();
                         System.out.println("A new client has joined the game!");
@@ -73,24 +70,22 @@ public class NetworkManager {
                         clientWriters.put(clientSocket, clientOut);
                         clientReaders.put(clientSocket, clientIn);
 
-                        // Send initial data to the new client
+                        // Send the current state of all players to the new client
                         for (PlayerData playerData : otherPlayers.values()) {
-                            String message = "PLAYER_REGISTER " + playerData.getPlayerId() + " " + playerData.getX() + " " + playerData.getY() + " " + playerData.getDirection() + " " + playerData.getSpriteNum();
+                            String message = String.format("PLAYER_REGISTER %s %s %d %d %s %d %d", 
+                                                            playerData.getPlayerId(),  
+                                                            playerData.getUsername(), 
+                                                            playerData.getX(), 
+                                                            playerData.getY(), 
+                                                            playerData.getDirection(), 
+                                                            playerData.getSpriteNum(),
+                                                            playerData.getLevel());
                             clientOut.println(message);
                         }
 
-                        // Slightly move the host player to ensure the client sees it
-                        if (isServer) {
-                            
-                            if (gamePanel.getPlayer() != null) {
-                                
-                                gamePanel.getPlayer().setDirection(gamePanel.getPlayer().getDirection());
-                                
-                                sendPlayerUpdate(gamePanel.getPlayer());
-                            }
-                        }
-
+                        // Send new player data to all previously connected clients
                         new Thread(() -> handleClient(clientSocket)).start();
+
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -100,7 +95,6 @@ public class NetworkManager {
             e.printStackTrace();
         }
     }
-
     /**
      * Start the client and connect to the server using the Hamachi IP.
      */
@@ -124,6 +118,17 @@ public class NetworkManager {
             String inputLine;
             while ((inputLine = clientIn.readLine()) != null) {
                 handleReceivedData(inputLine);
+
+                // Broadcast this message (new player or update) to all connected clients, including the host
+                for (Map.Entry<Socket, PrintWriter> entry : clientWriters.entrySet()) {
+                    Socket s = entry.getKey();
+                    PrintWriter writer = entry.getValue();
+
+                    // Avoid broadcasting to the sender client, i.e., the client that just sent this message
+                    if (s != socket) {
+                        writer.println(inputLine);
+                    }
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -187,6 +192,7 @@ public class NetworkManager {
         return null;
     }
 
+    // Register a player and send the username as well
     public void registerPlayer(Player player) {
         if (player == null) {
             System.err.println("Cannot register null player.");
@@ -194,13 +200,23 @@ public class NetworkManager {
         }
 
         String playerId = isServer ? nameServer : nameClient;
+        String username = player.getUsername(); // Retrieve the username from the player object
         int level = player.getLevel();
-        String message = "PLAYER_REGISTER " + playerId + " " + player.getUsername() + " " + player.getWorldX() + " " + player.getWorldY() + " " + player.getDirection() + " " + player.getSpriteNum() + " " + level;
+        String message = String.format("PLAYER_REGISTER %s %s %d %d %s %d %d", 
+                                        playerId, 
+                                        username,  // Include username in the registration message
+                                        player.getWorldX(), 
+                                        player.getWorldY(), 
+                                        player.getDirection(), 
+                                        player.getSpriteNum(), 
+                                        level);
 
-        PlayerData playerData = new PlayerData(playerId, player.getWorldX(), player.getWorldY(), player.getDirection(), player.getSpriteNum(), System.currentTimeMillis(), level);
+        // Update the playerData object with the username
+        PlayerData playerData = new PlayerData(playerId, username, player.getWorldX(), player.getWorldY(), player.getDirection(), player.getSpriteNum(), System.currentTimeMillis(), level);
         otherPlayers.put(playerId, playerData);
         gamePanel.updateOtherPlayer(playerId, playerData);
 
+        // Broadcast the registration message to other clients
         if (isServer) {
             for (PrintWriter writer : clientWriters.values()) {
                 writer.println(message);
@@ -209,24 +225,33 @@ public class NetworkManager {
             out.println(message);
         }
     }
-    
+
     public void sendPlayerUpdate(Player player) {
         if (player == null) {
             System.err.println("Cannot update null player.");
             return;
         }
 
-        String playerId = isServer ? nameServer : nameClient;
+        String playerId = isServer ? nameServer : nameClient;  // Assuming playerId is a String
+        String username = player.getUsername();  // Assuming username is also a String
         int x = player.getWorldX();
         int y = player.getWorldY();
         String direction = player.getDirection();
         int spriteNum = player.getSpriteNum();
         long timestamp = System.currentTimeMillis();
-        int level = player.getLevel(); // Get the player's level
+        int level = player.getLevel();
 
-        String message = "PLAYER_UPDATE " + playerId + " " + player.getUsername() + " " + x + " " + y + " " + direction + " " + spriteNum + " " + timestamp + " " + level;
+        // Updated format to handle both String (playerId, username) and int (x, y, etc.)
+        String message = String.format(
+            "PLAYER_UPDATE %s %s %d %d %s %d %d %d",  // Correct the format specifiers
+            playerId, username, x, y, direction, spriteNum, timestamp, level
+        );
 
-        PlayerData playerData = new PlayerData(playerId, x, y, direction, spriteNum, timestamp, level);
+        // Log the message for debugging
+        System.out.println("Sending player update: " + message);
+
+        // Create PlayerData object and update
+        PlayerData playerData = new PlayerData(playerId, username, x, y, direction, spriteNum, timestamp, level);
         otherPlayers.put(playerId, playerData);
         gamePanel.updateOtherPlayer(playerId, playerData);
 
@@ -241,22 +266,34 @@ public class NetworkManager {
 
     private void handleReceivedData(String data) {
         String[] tokens = data.split(" ");
+        
+        // Ensure the message is either an update or registration event
         if (tokens[0].equals("PLAYER_UPDATE") || tokens[0].equals("PLAYER_REGISTER")) {
             try {
                 String playerId = tokens[1];
-                String username = tokens[2];
+                String username = tokens[2];  // Retrieve the username from the data
                 int x = Integer.parseInt(tokens[3]);
                 int y = Integer.parseInt(tokens[4]);
                 String direction = tokens[5];
                 int spriteNum = Integer.parseInt(tokens[6]);
+                
+                // Use timestamp if it's an update, otherwise set it to the current time
                 long timestamp = (tokens[0].equals("PLAYER_UPDATE")) ? Long.parseLong(tokens[7]) : System.currentTimeMillis();
                 int level = Integer.parseInt(tokens[tokens.length - 1]);
-                PlayerData playerData = new PlayerData(playerId, x, y, direction, spriteNum, timestamp, level);
+
+                // Create PlayerData with the username and other data
+                PlayerData playerData = new PlayerData(playerId, username, x, y, direction, spriteNum, timestamp, level);
+                
+                // Update the otherPlayers map with the new or updated PlayerData
                 otherPlayers.put(playerId, playerData);
+                
+                // Update the game panel with the new or updated player
                 gamePanel.updateOtherPlayer(playerId, playerData);
             } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
                 e.printStackTrace();
             }
+        } else {
+            System.err.println("Unknown command received: " + tokens[0]);
         }
     }
 

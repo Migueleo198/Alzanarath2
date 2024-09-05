@@ -281,10 +281,10 @@ public class GamePanel extends JPanel implements Runnable {
         if (!otherPlayers.containsKey(playerId)) {
             // Create a new Player instance if the player doesn't exist in the map
             Player newPlayer = new Player(this, null, networkManager);
+            newPlayer.setUsername(playerData.getUsername()); // Set the username
             newPlayer.setWorldX(playerData.getX());
             newPlayer.setWorldY(playerData.getY());
             newPlayer.setDirection(playerData.getDirection());
-            newPlayer.setUsername(playerId);
             newPlayer.setSpriteNum(playerData.getSpriteNum()); // Set animation state for new player
             newPlayer.setLevel(playerData.getLevel()); // Set the player's level
             otherPlayers.put(playerId, newPlayer);
@@ -298,10 +298,14 @@ public class GamePanel extends JPanel implements Runnable {
         repaint(); // Ensure the game panel is repainted to reflect the updates
     }
 
-    
+    // Ensure repaint happens when player updates
     public void refreshPlayers() {
         repaint(); // Trigger redraw
     }
+
+
+    
+    
 
     public Map<String, Player> getOtherPlayers() {
         return otherPlayers;
