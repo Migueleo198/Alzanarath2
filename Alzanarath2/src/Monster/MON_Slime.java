@@ -128,11 +128,18 @@ public class MON_Slime extends Entity{
 		// THE ENTITY POSITION WILL NEVER BE STATIC
 		Font customFont = new Font("Comic Sans", Font.BOLD, 16);
 		g2.setFont(customFont);
-		g2.setColor(Color.RED);
+		
+		
+		
 		int textWidth = g2.getFontMetrics().stringWidth(gp.getMonster()[gp.getCurrentMonsterNum()].getName());
 		int textX = screenX + (gp.getTileSize() / 2) - (textWidth / 2);
 		int textY = screenY - 5;
 		
+		g2.setColor(new Color(0,0,0));
+		g2.drawString(gp.getMonster()[gp.getCurrentMonsterNum()].getName(), textX+1, textY+1);
+		
+		
+		g2.setColor(Color.RED);
 		g2.drawString(gp.getMonster()[gp.getCurrentMonsterNum()].getName(), textX, textY);
 		g2.drawImage(image, screenX, screenY, gp.getTileSize(), gp.getTileSize(), null);
 		}

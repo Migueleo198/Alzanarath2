@@ -130,7 +130,9 @@ public class NpcOldMan extends Entity{
 			}
 			break;
 		}
-		
+		g2.setColor(new Color(0,0,0));
+		g2.drawString(gp.getNpc()[gp.getCurrentNpcNum()].getName(), textX+1, textY+1);
+		g2.setColor(Color.ORANGE);
 		g2.drawString(gp.getNpc()[gp.getCurrentNpcNum()].getName(), textX, textY);
 		g2.drawImage(image, screenX, screenY, gp.getTileSize(), gp.getTileSize(), null);
 		}
