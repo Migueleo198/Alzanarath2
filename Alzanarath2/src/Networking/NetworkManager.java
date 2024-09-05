@@ -62,7 +62,7 @@ public class NetworkManager {
             }
 
             new Thread(() -> {
-                while (true) {
+            	while (true) {
                     try {
                         Socket clientSocket = serverSocket.accept();
                         System.out.println("A new client has joined the game!");
@@ -73,9 +73,21 @@ public class NetworkManager {
                         clientWriters.put(clientSocket, clientOut);
                         clientReaders.put(clientSocket, clientIn);
 
+                        // Send initial data to the new client
                         for (PlayerData playerData : otherPlayers.values()) {
                             String message = "PLAYER_REGISTER " + playerData.getPlayerId() + " " + playerData.getX() + " " + playerData.getY() + " " + playerData.getDirection() + " " + playerData.getSpriteNum();
                             clientOut.println(message);
+                        }
+
+                        // Slightly move the host player to ensure the client sees it
+                        if (isServer) {
+                            
+                            if (gamePanel.getPlayer() != null) {
+                                
+                                gamePanel.getPlayer().setDirection(gamePanel.getPlayer().getDirection());
+                                
+                                sendPlayerUpdate(gamePanel.getPlayer());
+                            }
                         }
 
                         new Thread(() -> handleClient(clientSocket)).start();
