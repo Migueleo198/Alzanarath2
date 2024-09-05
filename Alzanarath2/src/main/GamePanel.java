@@ -24,10 +24,8 @@ import java.util.Map;
 
 public class GamePanel extends JPanel implements Runnable {
 
-    // SCREEN SETTINGS
-    private final int originalTileSize = 16; // 16x16 tile
-    private int scale = 3;
-    private final int tileSize = originalTileSize * scale;
+    
+    private final int tileSize = 48;
     private final int maxScreenCol = 16;
     private final int maxScreenRow = 12;
     private final int screenWidth = tileSize * maxScreenCol; // 768 pixels
@@ -297,6 +295,7 @@ public class GamePanel extends JPanel implements Runnable {
             newPlayer.setDirection(playerData.getDirection());
             newPlayer.setSpriteNum(playerData.getSpriteNum()); // Set animation state for new player
             newPlayer.setLevel(playerData.getLevel()); // Set the player's level
+            newPlayer.setAttacking(playerData.getIsAttacking()); // Set if its attacking
             otherPlayers.put(playerId, newPlayer);
         } else {
             // Update the existing player
@@ -304,6 +303,7 @@ public class GamePanel extends JPanel implements Runnable {
             existingPlayer.correctPosition(playerData.getX(), playerData.getY(), playerData.getDirection());
             existingPlayer.setSpriteNum(playerData.getSpriteNum()); // Update animation state
             existingPlayer.setLevel(playerData.getLevel()); // Update the player's level
+            existingPlayer.setAttacking(playerData.getIsAttacking()); // Set if its attacking
         }
         repaint(); // Ensure the game panel is repainted to reflect the updates
     }
@@ -349,13 +349,7 @@ public class GamePanel extends JPanel implements Runnable {
         
     }
 
-    public int getScale() {
-        return scale;
-    }
-
-    public void setScale(int scale) {
-        this.scale = scale;
-    }
+   
 
     public Player getPlayer() {
         return player;
@@ -365,10 +359,7 @@ public class GamePanel extends JPanel implements Runnable {
         this.player = player;
     }
 
-    public int getOriginalTileSize() {
-        return originalTileSize;
-    }
-
+   
     public int getTileSize() {
         return tileSize;
     }
