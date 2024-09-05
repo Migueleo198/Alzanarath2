@@ -112,19 +112,21 @@ public class NetworkManager {
         }
     }
 
-    private void handleClient(Socket socket) {
+    public void handleClient(Socket socket) {
         try {
             BufferedReader clientIn = clientReaders.get(socket);
             String inputLine;
             while ((inputLine = clientIn.readLine()) != null) {
+            	
                 handleReceivedData(inputLine);
+            	
 
-                // Broadcast this message (new player or update) to all connected clients, including the host
+                // Broadcast this message to all connected clients, including the host
                 for (Map.Entry<Socket, PrintWriter> entry : clientWriters.entrySet()) {
                     Socket s = entry.getKey();
                     PrintWriter writer = entry.getValue();
 
-                    // Avoid broadcasting to the sender client, i.e., the client that just sent this message
+                    // Avoid broadcasting to the sender client
                     if (s != socket) {
                         writer.println(inputLine);
                     }
@@ -232,8 +234,8 @@ public class NetworkManager {
             return;
         }
 
-        String playerId = isServer ? nameServer : nameClient;  // Assuming playerId is a String
-        String username = player.getUsername();  // Assuming username is also a String
+        String playerId = isServer ? nameServer : nameClient;
+        String username = player.getUsername();
         int x = player.getWorldX();
         int y = player.getWorldY();
         String direction = player.getDirection();
@@ -241,16 +243,13 @@ public class NetworkManager {
         long timestamp = System.currentTimeMillis();
         int level = player.getLevel();
 
-        // Updated format to handle both String (playerId, username) and int (x, y, etc.)
         String message = String.format(
-            "PLAYER_UPDATE %s %s %d %d %s %d %d %d",  // Correct the format specifiers
+            "PLAYER_UPDATE %s %s %d %d %s %d %d %d",
             playerId, username, x, y, direction, spriteNum, timestamp, level
         );
 
-        // Log the message for debugging
         System.out.println("Sending player update: " + message);
 
-        // Create PlayerData object and update
         PlayerData playerData = new PlayerData(playerId, username, x, y, direction, spriteNum, timestamp, level);
         otherPlayers.put(playerId, playerData);
         gamePanel.updateOtherPlayer(playerId, playerData);
@@ -263,15 +262,61 @@ public class NetworkManager {
             out.println(message);
         }
     }
+    
+    
+    
+    public void sendChatMessage(String message) {
+    	String username = gamePanel.getPlayer().getUsername();
+    
+    	String formattedMessage = "CHAT " + username + " " + message;
+        if (isServer) {
+        	
+        
+            for (PrintWriter writer : clientWriters.values()) {
+                writer.println(formattedMessage);
+            }
+        } else {
+            out.println(formattedMessage);
+        }
+        
+        
+    }
+
+
+    public void receiveMessage(String message) {
+        gamePanel.ui.appendGlobalChatMessage(message);
+    }
 
     private void handleReceivedData(String data) {
-        String[] tokens = data.split(" ");
+    	String[] tokens = data.split(" ");
+    	String username;
+    	 String payload = null;
+    	 String senderUsername = tokens[1];
+    	
+       
+    	
         
+     //CHECK IF THERE ARE AT LEAST 3 TOKENS
+        if (tokens.length > 2) {
+            // Concatenate all tokens from index 2 onwards to form the payload
+            StringBuilder payloadBuilder = new StringBuilder();
+            for (int i = 2; i < tokens.length; i++) {
+                if (i > 2) {
+                    payloadBuilder.append(" "); // Add space between tokens
+                }
+                payloadBuilder.append(tokens[i]);
+            }
+            payload = payloadBuilder.toString();
+        } else {
+            // Handle the case where tokens[2] does not exist
+            payload = ""; // Set to empty if no message is present
+        }
+           
         // Ensure the message is either an update or registration event
         if (tokens[0].equals("PLAYER_UPDATE") || tokens[0].equals("PLAYER_REGISTER")) {
             try {
                 String playerId = tokens[1];
-                String username = tokens[2];  // Retrieve the username from the data
+                username = tokens[2];  // Retrieve the username from the data
                 int x = Integer.parseInt(tokens[3]);
                 int y = Integer.parseInt(tokens[4]);
                 String direction = tokens[5];
@@ -289,17 +334,38 @@ public class NetworkManager {
                 
                 // Update the game panel with the new or updated player
                 gamePanel.updateOtherPlayer(playerId, playerData);
+                
             } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
                 e.printStackTrace();
             }
+        }
+        
+        else if (tokens[0].equals("PLAYER_UPDATE") && !tokens[0].equals("CHAT")) {
+            // Handle chat message
+            receiveMessage(payload);
         } else {
             System.err.println("Unknown command received: " + tokens[0]);
         }
+        
+        if (tokens[0].equals("CHAT") && !payload.isBlank()) {
+            if (!senderUsername.equals(gamePanel.getPlayer().getUsername())) {
+                // Add the message to the chat, showing the sender's username
+                receiveMessage(senderUsername + ": " + payload);
+            }
+        } else {
+            
+        }
+
     }
+
+
+    
+    
 
     public String promptInputName(String role) {
         String name;
         while (true) {
+        	
             name = JOptionPane.showInputDialog(null, "Input your username:", "Username Input", JOptionPane.PLAIN_MESSAGE);
             if (name == null || name.trim().isEmpty() || name.length() > 8) {
                 JOptionPane.showMessageDialog(null, "Invalid username. Please enter a valid name.", "Error", JOptionPane.ERROR_MESSAGE);

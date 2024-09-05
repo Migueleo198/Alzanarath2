@@ -62,11 +62,21 @@ public class GamePanel extends JPanel implements Runnable {
     private int currentMonsterNum;
     
     //ArrayListFor storing every non player entity array
-    ArrayList<Entity> entityList = new ArrayList<>();
+    private ArrayList<Entity> entityList = new ArrayList<>();
     
     
     
-    // TILE MANAGER
+    public ArrayList<Entity> getEntityList() {
+		return entityList;
+	}
+
+
+	public void setEntityList(ArrayList<Entity> entityList) {
+		this.entityList = entityList;
+	}
+
+
+	// TILE MANAGER
     private TileManager tileM;
 
     // Check collisions
@@ -298,7 +308,17 @@ public class GamePanel extends JPanel implements Runnable {
         repaint(); // Ensure the game panel is repainted to reflect the updates
     }
 
-    // Ensure repaint happens when player updates
+    public NetworkManager getNetworkManager() {
+		return networkManager;
+	}
+
+
+	public void setNetworkManager(NetworkManager networkManager) {
+		this.networkManager = networkManager;
+	}
+
+
+	// Ensure repaint happens when player updates
     public void refreshPlayers() {
         repaint(); // Trigger redraw
     }
