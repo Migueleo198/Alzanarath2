@@ -1,8 +1,8 @@
 package Networking;
-
 import java.io.*;
 import java.net.*;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.*;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Map;
 import javax.swing.JOptionPane;
@@ -10,16 +10,10 @@ import Entity.Player;
 import Inputs.KeyHandler;
 import main.GamePanel;
 
-import java.io.*;
-import java.net.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.Map;
-import javax.swing.JOptionPane;
-
 public class NetworkManager {
     private ServerSocket serverSocket;
     private Socket clientSocket;
-    private PrintWriter out;
+    private BufferedWriter out;
     private BufferedReader in;
     private String nameServer;
     private String nameClient;
@@ -29,8 +23,11 @@ public class NetworkManager {
     private GamePanel gamePanel;
     private Map<String, PlayerData> otherPlayers = new ConcurrentHashMap<>();
     private KeyHandler keyH;
-    private Map<Socket, PrintWriter> clientWriters = new ConcurrentHashMap<>();
+    private Map<Socket, BufferedWriter> clientWriters = new ConcurrentHashMap<>();
     private Map<Socket, BufferedReader> clientReaders = new ConcurrentHashMap<>();
+    
+    // Thread pool to handle client connections
+    private ExecutorService clientExecutor = Executors.newCachedThreadPool();
 
     public NetworkManager(boolean isServer, Configuration config, GamePanel gamePanel, KeyHandler keyH) {
         this.keyH = keyH;
@@ -51,98 +48,97 @@ public class NetworkManager {
         try {
             String radminIP = getRadminIPAddress();
             serverSocket = new ServerSocket(config.getPort(), 50, InetAddress.getByName(radminIP));
-            System.out.println("The server has started on radmin IP " + radminIP + " and port " + config.getPort() + "!");
+            System.out.println("Server started on Radmin IP " + radminIP + " and port " + config.getPort() + "!");
 
             Player hostPlayer = gamePanel.getPlayer();
             if (hostPlayer != null) {
                 registerPlayer(hostPlayer); // Register the host
             }
 
-            new Thread(() -> {
+            // Use thread pool to accept and handle client connections
+            clientExecutor.submit(() -> {
                 while (true) {
                     try {
                         Socket clientSocket = serverSocket.accept();
-                        System.out.println("A new client has joined the game!");
+                        System.out.println("New client joined!");
 
-                        PrintWriter clientOut = new PrintWriter(clientSocket.getOutputStream(), true);
+                        BufferedWriter clientOut = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
                         BufferedReader clientIn = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 
                         clientWriters.put(clientSocket, clientOut);
                         clientReaders.put(clientSocket, clientIn);
 
-                        // Send the current state of all players to the new client
-                        for (PlayerData playerData : otherPlayers.values()) {
-                            String message = String.format("PLAYER_REGISTER %s %s %d %d %s %d %d", 
-                                                            playerData.getPlayerId(),  
-                                                            playerData.getUsername(), 
-                                                            playerData.getX(), 
-                                                            playerData.getY(), 
-                                                            playerData.getDirection(), 
-                                                            playerData.getSpriteNum(),
-                                                            playerData.getLevel());
-                            clientOut.println(message);
-                        }
+                        // Send current state of all players to the new client
+                        sendAllPlayersToClient(clientOut);
 
-                        // Send new player data to all previously connected clients
-                        new Thread(() -> handleClient(clientSocket)).start();
-
+                        // Handle client communication in a separate thread
+                        clientExecutor.submit(() -> handleClient(clientSocket));
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
                 }
-            }).start();
+            });
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
-    /**
-     * Start the client and connect to the server using the Hamachi IP.
-     */
+
     public void startClient() {
         try {
-        	 String radminIP = "26.154.96.167";
+            String radminIP = "26.154.96.167";
             clientSocket = new Socket(InetAddress.getByName(radminIP), config.getPort());
-            System.out.println("Connected to server at Radmin IP " + InetAddress.getByName(radminIP) + ":" + config.getPort());
+            System.out.println("Connected to server at Radmin IP " + radminIP + ":" + config.getPort());
 
-            out = new PrintWriter(clientSocket.getOutputStream(), true);
+            out = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
             in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 
-            new Thread(this::readMessages).start();
+            // Handle incoming messages in a separate thread
+            clientExecutor.submit(this::readMessages);
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    private void sendAllPlayersToClient(BufferedWriter clientOut) throws IOException {
+        for (PlayerData playerData : otherPlayers.values()) {
+            String message = String.format("PLAYER_REGISTER %s %s %d %d %s %d %d", 
+                                            playerData.getPlayerId(),  
+                                            playerData.getUsername(), 
+                                            playerData.getX(), 
+                                            playerData.getY(), 
+                                            playerData.getDirection(), 
+                                            playerData.getSpriteNum(),
+                                            playerData.getLevel());
+            clientOut.write(message + "\n");
+            clientOut.flush();
         }
     }
 
     public void handleClient(Socket socket) {
-        try {
-            BufferedReader clientIn = clientReaders.get(socket);
+        try (BufferedReader clientIn = clientReaders.get(socket)) {
             String inputLine;
             while ((inputLine = clientIn.readLine()) != null) {
-            	
                 handleReceivedData(inputLine);
-            	
 
-                // Broadcast this message to all connected clients, including the host
-                for (Map.Entry<Socket, PrintWriter> entry : clientWriters.entrySet()) {
-                    Socket s = entry.getKey();
-                    PrintWriter writer = entry.getValue();
-
-                    // Avoid broadcasting to the sender client
-                    if (s != socket) {
-                        writer.println(inputLine);
+                // Broadcast to all clients except sender
+                for (Map.Entry<Socket, BufferedWriter> entry : clientWriters.entrySet()) {
+                    if (entry.getKey() != socket) {
+                        BufferedWriter writer = entry.getValue();
+                        writer.write(inputLine + "\n");
+                        writer.flush();
                     }
                 }
             }
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
+            clientWriters.remove(socket);
+            clientReaders.remove(socket);
             try {
                 socket.close();
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            clientWriters.remove(socket);
-            clientReaders.remove(socket);
         }
     }
 
@@ -157,136 +153,137 @@ public class NetworkManager {
         }
     }
 
-    /**
-     * Retrieves the Hamachi IP address.
-     */
     private String getRadminIPAddress() {
         try {
             Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
-            
             while (networkInterfaces.hasMoreElements()) {
                 NetworkInterface networkInterface = networkInterfaces.nextElement();
-                String displayName = networkInterface.getDisplayName();
-                
-                // Print out the display names for debugging purposes
-                System.out.println("Network Interface: " + displayName);
-                
-                if (displayName.toLowerCase().contains("radmin")) {
+                if (networkInterface.getDisplayName().toLowerCase().contains("radmin")) {
                     Enumeration<InetAddress> inetAddresses = networkInterface.getInetAddresses();
-                    
                     while (inetAddresses.hasMoreElements()) {
                         InetAddress inetAddress = inetAddresses.nextElement();
-                        
-                        // Check if it's an IPv4 address
                         if (inetAddress instanceof Inet4Address) {
-                            return inetAddress.getHostAddress(); // Hamachi IP address
+                            return inetAddress.getHostAddress();
                         }
                     }
                 }
             }
-            
         } catch (SocketException e) {
             e.printStackTrace();
-            // Log or handle the error appropriately
         }
-        
-        // Could not find Hamachi IP address
-        System.err.println("Hamachi IP address not found.");
         return null;
     }
 
-    // Register a player and send the username as well
     public void registerPlayer(Player player) {
-        if (player == null) {
-            System.err.println("Cannot register null player.");
-            return;
-        }
+        if (player == null) return;
 
         String playerId = isServer ? nameServer : nameClient;
-        String username = player.getUsername(); // Retrieve the username from the player object
+        String username = player.getUsername();
         int level = player.getLevel();
-        String message = String.format("PLAYER_REGISTER %s %s %d %d %s %d %d", 
-                                        playerId, 
-                                        username,  // Include username in the registration message
-                                        player.getWorldX(), 
-                                        player.getWorldY(), 
-                                        player.getDirection(), 
-                                        player.getSpriteNum(), 
-                                        level);
+        String message = String.format("PLAYER_REGISTER %s %s %d %d %s %d %d",
+                                        playerId, username, 
+                                        player.getWorldX(), player.getWorldY(), 
+                                        player.getDirection(), player.getSpriteNum(), level);
 
-        // Update the playerData object with the username
         PlayerData playerData = new PlayerData(playerId, username, player.getWorldX(), player.getWorldY(), player.getDirection(), player.getSpriteNum(), System.currentTimeMillis(), level);
         otherPlayers.put(playerId, playerData);
         gamePanel.updateOtherPlayer(playerId, playerData);
 
-        // Broadcast the registration message to other clients
         if (isServer) {
-            for (PrintWriter writer : clientWriters.values()) {
-                writer.println(message);
+            for (BufferedWriter writer : clientWriters.values()) {
+                try {
+                    writer.write(message + "\n");
+                    writer.flush();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         } else {
-            out.println(message);
+            try {
+                out.write(message + "\n");
+                out.flush();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
     public void sendPlayerUpdate(Player player) {
-        if (player == null) {
-            System.err.println("Cannot update null player.");
-            return;
-        }
+        if (player == null) return;
 
         String playerId = isServer ? nameServer : nameClient;
         String username = player.getUsername();
-        int x = player.getWorldX();
-        int y = player.getWorldY();
-        String direction = player.getDirection();
-        int spriteNum = player.getSpriteNum();
-        long timestamp = System.currentTimeMillis();
-        int level = player.getLevel();
-
         String message = String.format(
             "PLAYER_UPDATE %s %s %d %d %s %d %d %d",
-            playerId, username, x, y, direction, spriteNum, timestamp, level
+            playerId, username, player.getWorldX(), player.getWorldY(), player.getDirection(),
+            player.getSpriteNum(), System.currentTimeMillis(), player.getLevel()
         );
 
-        System.out.println("Sending player update: " + message);
-
-        PlayerData playerData = new PlayerData(playerId, username, x, y, direction, spriteNum, timestamp, level);
+        PlayerData playerData = new PlayerData(playerId, username, player.getWorldX(), player.getWorldY(), player.getDirection(), player.getSpriteNum(), System.currentTimeMillis(), player.getLevel());
         otherPlayers.put(playerId, playerData);
         gamePanel.updateOtherPlayer(playerId, playerData);
 
         if (isServer) {
-            for (PrintWriter writer : clientWriters.values()) {
-                writer.println(message);
+            for (BufferedWriter writer : clientWriters.values()) {
+                try {
+                    writer.write(message + "\n");
+                    writer.flush();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         } else {
-            out.println(message);
+            try {
+                out.write(message + "\n");
+                out.flush();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
-    
-    
-    
+
     public void sendChatMessage(String message) {
-    	String username = gamePanel.getPlayer().getUsername();
-    
-    	String formattedMessage = "CHAT " + username + " " + message;
+        String username = gamePanel.getPlayer().getUsername();
+        String formattedMessage = "CHAT " + username + " " + message;
+
         if (isServer) {
-        	
-        
-            for (PrintWriter writer : clientWriters.values()) {
-                writer.println(formattedMessage);
+            for (BufferedWriter writer : clientWriters.values()) {
+                try {
+                    writer.write(formattedMessage + "\n");
+                    writer.flush();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         } else {
-            out.println(formattedMessage);
+            try {
+                out.write(formattedMessage + "\n");
+                out.flush();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
-        
+
         
     }
 
-
+    public String promptInputName(String role) {
+        String name;
+        while (true) {
+        	
+            name = JOptionPane.showInputDialog(null, "Input your username:", "Username Input", JOptionPane.PLAIN_MESSAGE);
+            if (name == null || name.trim().isEmpty() || name.length() > 8) {
+                JOptionPane.showMessageDialog(null, "Invalid username. Please enter a valid name.", "Error", JOptionPane.ERROR_MESSAGE);
+            } else {
+                return name;
+            }
+        }
+    }
+    
     public void receiveMessage(String message) {
         gamePanel.ui.appendGlobalChatMessage(message);
     }
+
 
     private void handleReceivedData(String data) {
     	String[] tokens = data.split(" ");
@@ -359,43 +356,27 @@ public class NetworkManager {
 
     }
 
-
-    
-    
-
-    public String promptInputName(String role) {
-        String name;
-        while (true) {
-        	
-            name = JOptionPane.showInputDialog(null, "Input your username:", "Username Input", JOptionPane.PLAIN_MESSAGE);
-            if (name == null || name.trim().isEmpty() || name.length() > 8) {
-                JOptionPane.showMessageDialog(null, "Invalid username. Please enter a valid name.", "Error", JOptionPane.ERROR_MESSAGE);
-            } else {
-                return name;
-            }
-        }
-    }
-
     public void close() {
-        try {
-            if (clientSocket != null)
-                clientSocket.close();
-            if (serverSocket != null)
-                serverSocket.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public String getNameServer() {
-        return nameServer;
-    }
-
-    public String getNameClient() {
-        return nameClient;
-    }
-
-    public boolean isServer() {
-        return isServer;
+    try {
+        if (clientSocket != null)
+            clientSocket.close();
+        if (serverSocket != null)
+            serverSocket.close();
+    } catch (IOException e) {
+        e.printStackTrace();
     }
 }
+
+public String getNameServer() {
+    return nameServer;
+}
+
+public String getNameClient() {
+    return nameClient;
+}
+
+public boolean isServer() {
+    return isServer;
+}
+}
+
