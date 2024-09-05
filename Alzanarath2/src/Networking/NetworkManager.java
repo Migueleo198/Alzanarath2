@@ -49,9 +49,9 @@ public class NetworkManager {
 
     public void startServer() {
         try {
-            String hamachiIP = getHamachiIPAddress();
-            serverSocket = new ServerSocket(config.getPort(), 50, InetAddress.getByName(hamachiIP));
-            System.out.println("The server has started on Hamachi IP " + hamachiIP + " and port " + config.getPort() + "!");
+            String radminIP = getRadminIPAddress();
+            serverSocket = new ServerSocket(config.getPort(), 50, InetAddress.getByName(radminIP));
+            System.out.println("The server has started on Hamachi IP " + radminIP + " and port " + config.getPort() + "!");
 
             Player hostPlayer = gamePanel.getPlayer();
             if (hostPlayer != null) {
@@ -100,9 +100,9 @@ public class NetworkManager {
      */
     public void startClient() {
         try {
-        	 String hamachiIP = getHamachiIPAddress();
-            clientSocket = new Socket(InetAddress.getByName(hamachiIP), config.getPort());
-            System.out.println("Connected to server at Hamachi IP " + config.getIP() + ":" + config.getPort());
+        	 String radminIP = getRadminIPAddress();
+            clientSocket = new Socket(InetAddress.getByName(radminIP), config.getPort());
+            System.out.println("Connected to server at Radmin IP " + config.getIP() + ":" + config.getPort());
 
             out = new PrintWriter(clientSocket.getOutputStream(), true);
             in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
@@ -160,7 +160,7 @@ public class NetworkManager {
     /**
      * Retrieves the Hamachi IP address.
      */
-    private String getHamachiIPAddress() {
+    private String getRadminIPAddress() {
         try {
             Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
             
