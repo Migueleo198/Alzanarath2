@@ -284,7 +284,6 @@ public class GamePanel extends JPanel implements Runnable {
         g2.dispose();
     }
 
-    // Method to add or update other players
     public void updateOtherPlayer(String playerId, PlayerData playerData) {
         if (!otherPlayers.containsKey(playerId)) {
             // Create a new Player instance if the player doesn't exist in the map
@@ -295,17 +294,46 @@ public class GamePanel extends JPanel implements Runnable {
             newPlayer.setDirection(playerData.getDirection());
             newPlayer.setSpriteNum(playerData.getSpriteNum()); // Set animation state for new player
             newPlayer.setLevel(playerData.getLevel()); // Set the player's level
-            newPlayer.setIsAttacking(playerData.getIsAttacking()); // Set if its attacking
+            newPlayer.setIsAttacking(playerData.isAttacking()); // Set if its attacking
+
             otherPlayers.put(playerId, newPlayer);
         } else {
             // Update the existing player
             Player existingPlayer = otherPlayers.get(playerId);
-            existingPlayer.correctPosition(playerData.getX(), playerData.getY(), playerData.getDirection());
+            
+            // Correct position if not attacking, otherwise maintain attack position
+            if (!playerData.isAttacking()) {
+                existingPlayer.correctPosition(playerData.getX(), playerData.getY(), playerData.getDirection());
+            }
+
             existingPlayer.setSpriteNum(playerData.getSpriteNum()); // Update animation state
             existingPlayer.setLevel(playerData.getLevel()); // Update the player's level
-            existingPlayer.setIsAttacking(playerData.getIsAttacking()); // Set if its attacking
+            existingPlayer.setIsAttacking(playerData.isAttacking()); // Set if it's attacking
+
+            // Apply additional logic for when the player is attacking
+            if (playerData.isAttacking()) {
+                handleAttackMovement(existingPlayer, playerData);
+            }
         }
+        
         repaint(); // Ensure the game panel is repainted to reflect the updates
+    }
+
+    private void handleAttackMovement(Player player, PlayerData playerData) {
+        int tileSize = this.getTileSize(); // Assuming tileSize is 48 as mentioned
+
+        // Adjust position during attack based on direction
+        switch (playerData.getDirection()) {
+            case "left":
+                
+                break;
+            case "up":
+                
+                break;
+            // Add other directions as necessary (right, down, etc.)
+            default:
+                break;
+        }
     }
 
     public NetworkManager getNetworkManager() {

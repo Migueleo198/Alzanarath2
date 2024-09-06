@@ -22,14 +22,17 @@ public class Player extends Entity {
     private KeyHandler keyH;
     private NetworkManager networkManager;
 
-    private final int screenX;
-    private final int screenY;
-
+    public final int screenX;
+    public final int screenY;
+    public boolean moved;
     // Client-side prediction variables
     private int predictedX, predictedY;
     private boolean isPredicting;
     
     private PlayerData lastReceivedData; // Store the last received data
+    
+    private int drawX;
+    private int drawY;
 
     public Player(GamePanel gp, KeyHandler keyH, NetworkManager networkManager) {
         super(gp);
@@ -62,24 +65,30 @@ public class Player extends Entity {
             return;
         }
 
-        boolean moved = false;
+         moved = false;
         
         if (keyH.isePressed()) {
             attacking = true;
+            
             
         }
         
         
         
         if (attacking==true) {
-        	attacking();
-        	spriteNum=1;
         	networkManager.sendPlayerUpdate(this);
+        	attacking();
+        	networkManager.sendPlayerUpdate(this);
+        	spriteNum=1;
+        	
         }
+        
 
         else if(keyH.isUpPressed() || keyH.isDownPressed() || keyH.isLeftPressed() || keyH.isRightPressed()) {
             moved = true;
-
+           
+            	
+            
             if (keyH.isUpPressed()) {
                 direction = "up";
             } else if (keyH.isDownPressed()) {
@@ -154,24 +163,17 @@ public class Player extends Entity {
     }
     
     public void attacking() {
-    	spriteCounter++;
-    	
-    	if(spriteCounter <=5) {
-    		spriteNum=1;
-    		
-    	}
-    	
-    	if(spriteCounter>5 && spriteCounter <= 25) {
-    		
-    		spriteNum=1;
-    		
-    	}
-    	
-    	if (spriteCounter >	25) {
-    		spriteNum=1;
-    		spriteCounter=0;
-    		attacking=false;
-    	}
+        spriteCounter++;
+
+        if (spriteCounter <= 5) {
+            spriteNum = 1;
+        } else if (spriteCounter <= 25) {
+            spriteNum = 2;
+        } else {
+            spriteNum = 1;
+            spriteCounter = 0;
+            attacking = false;
+        }
     }
 
     public void setLastReceivedData(PlayerData playerData) {
@@ -232,90 +234,76 @@ public class Player extends Entity {
 	public void draw(Graphics2D g2) {
 	    BufferedImage image = null;
 
-	    // Draw the player at the correct position
+	    // Calculate draw position
 	    int drawX = screenX - gp.getPlayer().getWorldX() + worldX;
 	    int drawY = screenY - gp.getPlayer().getWorldY() + worldY;
-		
-		switch(direction) {
-		case "down":
-			
-		if (attacking==false){	
-		if (spriteNum==1) {image=down1;}
-		if (spriteNum==2) {image=down2;}
-		}
-		if(attacking==true) {
-			drawY-=5;
-			
-			if (spriteNum==1) {image=attackDown1;}
-			if (spriteNum==2) {image=attackDown2;}
-		}
-		break;
-		
-		case "up":
-		if (attacking==false){
-		if (spriteNum==1) {	image=up1;}
-        if (spriteNum==2) {image=up2;}
-		}
-		if (attacking==true){
-			drawY=screenY-gp.getTileSize();
-			drawX-=3;
-		if (spriteNum==1) {	image=attackUp1;}
-	       if (spriteNum==2) {image=attackUp2;}
-		}
-		
-		break;
-		
-		case "right":
-		if (attacking==false){
-			if (spriteNum==1) {	image=right1;}
-			if (spriteNum==2) {image=right2;}
-		}
-		if (attacking==true){
-			drawX-=3;
-			if (spriteNum==1) {	image=attackRight1;}
-			if (spriteNum==2) {image=attackRight2;}
-		}
-		break;
-		case "left":
-		if (attacking==false){
-			
-		if (spriteNum==1) {image=left1;}
-        if (spriteNum==2) {image=left2;}
-        }
-        if (attacking==true){
-        	drawX=screenX-gp.getTileSize()*2+13;
-        	if (spriteNum==1) {image=attackLeft1;}
-            if (spriteNum==2) {image=attackLeft2;}
-        }
-		break;
-				}
 
-		
-	    g2.drawImage(image, drawX, drawY,null);
-	    drawX = screenX - gp.getPlayer().getWorldX() + worldX;
-	    drawY = screenY - gp.getPlayer().getWorldY() + worldY;
+	    // Adjust draw position based on attack state
+	    switch (direction) {
+	        case "down":
+	            if (!attacking) {
+	                image = (spriteNum == 1) ? down1 : down2;
+	            } else {
+	                image = (spriteNum == 1) ? attackDown1 : attackDown2;
+	                // No need to adjust drawX or drawY here
+	            }
+	            break;
+
+	        case "up":
+	            if (!attacking) {
+	                image = (spriteNum == 1) ? up1 : up2;
+	            } else {
+	                image = (spriteNum == 1) ? attackUp1 : attackUp2;
+	                drawY -= (gp.getTileSize()); // Move up to align with attack image
+	            }
+	            break;
+
+	        case "right":
+	            if (!attacking) {
+	                image = (spriteNum == 1) ? right1 : right2;
+	            } else {
+	                image = (spriteNum == 1) ? attackRight1 : attackRight2;
+	                
+	            }
+	            break;
+
+	        case "left":
+	            if (!attacking) {
+	                image = (spriteNum == 1) ? left1 : left2;
+	            } else {
+	                image = (spriteNum == 1) ? attackLeft1 : attackLeft2;
+	                drawX -= (gp.getTileSize()); // Move left to align with attack image
+	            }
+	            break;
+	    }
+
+	    g2.drawImage(image, drawX, drawY, null);
+
 	    // Draw the player's username
 	    if (usernamePlayer != null && !usernamePlayer.isEmpty()) {
 	        Font customFont = new Font("Comic Sans", Font.BOLD, 16);
 	        g2.setFont(customFont);
 	        g2.setColor(Color.white);
 
-	        int textWidth = g2.getFontMetrics().stringWidth(usernamePlayer +" Lvl " + level);
+	        int textWidth = g2.getFontMetrics().stringWidth(usernamePlayer + " Lvl " + level);
 	        int textX = drawX + (gp.getTileSize() / 2) - (textWidth / 2);
 	        int textY = drawY - 5;
 
-	        g2.drawString(usernamePlayer +" Lvl " + level, textX, textY);
+	        g2.drawString(usernamePlayer + " Lvl " + level, textX, textY);
 	    }
-	    
-	    //Change later for monster hit rate time
-	    if(invincible==true) {
-	    	invincibleCounter++;
-	    	if(invincibleCounter>60) {
-	    		invincible=false;
-	    		invincibleCounter = 0;
-	    	}
+
+	    // Handle invincibility effect
+	    if (invincible) {
+	        invincibleCounter++;
+	        if (invincibleCounter > 60) {
+	            invincible = false;
+	            invincibleCounter = 0;
+	        }
 	    }
 	}
+
+
+
 	
 	public void getPlayerAttackImage() {
 		
@@ -384,6 +372,22 @@ public class Player extends Entity {
 	public void setIsAttacking(boolean isAttacking) {
 		// TODO Auto-generated method stub
 		this.attacking=isAttacking;
+	}
+
+	public int getDrawX() {
+		return drawX;
+	}
+
+	public void setDrawX(int drawX) {
+		this.drawX = drawX;
+	}
+
+	public int getDrawY() {
+		return drawY;
+	}
+
+	public void setDrawY(int drawY) {
+		this.drawY = drawY;
 	}
 
 }

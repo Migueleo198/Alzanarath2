@@ -1,10 +1,9 @@
 package Networking;
+
 import java.io.*;
 import java.net.*;
+import java.util.*;
 import java.util.concurrent.*;
-import java.util.Arrays;
-import java.util.Enumeration;
-import java.util.Map;
 import javax.swing.JOptionPane;
 import Entity.Player;
 import Inputs.KeyHandler;
@@ -26,9 +25,8 @@ public class NetworkManager {
     private Map<Socket, BufferedWriter> clientWriters = new ConcurrentHashMap<>();
     private Map<Socket, BufferedReader> clientReaders = new ConcurrentHashMap<>();
     
-    // Thread pool to handle client connections
     private ExecutorService clientExecutor = Executors.newCachedThreadPool();
-
+    
     public NetworkManager(boolean isServer, Configuration config, GamePanel gamePanel, KeyHandler keyH) {
         this.keyH = keyH;
         this.isServer = isServer;
@@ -49,14 +47,13 @@ public class NetworkManager {
             String radminIP = getRadminIPAddress();
             serverSocket = new ServerSocket(config.getPort(), 50, InetAddress.getByName(radminIP));
             System.out.println("Server started on Radmin IP " + radminIP + " and port " + config.getPort() + "!");
-            serverSocket.setPerformancePreferences(1,0,2);
+            serverSocket.setPerformancePreferences(1, 0, 2);
             
             Player hostPlayer = gamePanel.getPlayer();
             if (hostPlayer != null) {
                 registerPlayer(hostPlayer); // Register the host
             }
 
-            // Use thread pool to accept and handle client connections
             clientExecutor.submit(() -> {
                 while (true) {
                     try {
@@ -69,10 +66,7 @@ public class NetworkManager {
                         clientWriters.put(clientSocket, clientOut);
                         clientReaders.put(clientSocket, clientIn);
 
-                        // Send current state of all players to the new client
                         sendAllPlayersToClient(clientOut);
-
-                        // Handle client communication in a separate thread
                         clientExecutor.submit(() -> handleClient(clientSocket));
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -94,7 +88,6 @@ public class NetworkManager {
             out = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
             in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 
-            // Handle incoming messages in a separate thread
             clientExecutor.submit(this::readMessages);
         } catch (IOException e) {
             e.printStackTrace();
@@ -103,7 +96,7 @@ public class NetworkManager {
 
     private void sendAllPlayersToClient(BufferedWriter clientOut) throws IOException {
         for (PlayerData playerData : otherPlayers.values()) {
-            String message = String.format("PLAYER_REGISTER %s %s %d %d %s %d %d %b", 
+            String message = String.format("PLAYER_REGISTER %s %s %d %d %s %d %d %b %d", 
                                             playerData.getPlayerId(),  
                                             playerData.getUsername(), 
                                             playerData.getX(), 
@@ -111,7 +104,8 @@ public class NetworkManager {
                                             playerData.getDirection(), 
                                             playerData.getSpriteNum(),
                                             playerData.getLevel(),
-                                            playerData.isAttacking()); // Include attacking state
+                                            playerData.isAttacking(),
+                                            playerData.getSpriteCounter());
             clientOut.write(message + "\n");
             clientOut.flush();
         }
@@ -123,7 +117,6 @@ public class NetworkManager {
             while ((inputLine = clientIn.readLine()) != null) {
                 handleReceivedData(inputLine);
 
-                // Broadcast to all clients except sender
                 for (Map.Entry<Socket, BufferedWriter> entry : clientWriters.entrySet()) {
                     if (entry.getKey() != socket) {
                         BufferedWriter writer = entry.getValue();
@@ -183,18 +176,17 @@ public class NetworkManager {
         String playerId = isServer ? nameServer : nameClient;
         String username = player.getUsername();
         int level = player.getLevel();
-        boolean isAttacking = player.isAttacking(); // Get the player's attacking state
+        boolean isAttacking = player.isAttacking();
+        int spriteCounter = player.getSpriteCounter(); // Get the player's sprite counter
         
-        // Update the message format to include the attacking state
-        String message = String.format("PLAYER_REGISTER %s %s %d %d %s %d %d %d %b", // Add %d for the timestamp
+        String message = String.format("PLAYER_REGISTER %s %s %d %d %s %d %d %d %b %d", 
                 playerId, username, 
                 player.getWorldX(), player.getWorldY(), 
                 player.getDirection(), player.getSpriteNum(), 
                 System.currentTimeMillis(), level,
-                player.isAttacking()); // Add timestamp
+                isAttacking, spriteCounter);
 
-        // Create the PlayerData object with the attacking state
-        PlayerData playerData = new PlayerData(playerId, username, player.getWorldX(), player.getWorldY(), player.getDirection(), player.getSpriteNum(), System.currentTimeMillis(), level, isAttacking);
+        PlayerData playerData = new PlayerData(playerId, username, player.getWorldX(), player.getWorldY(), player.getDirection(), player.getSpriteNum(), System.currentTimeMillis(), level, isAttacking, spriteCounter);
         otherPlayers.put(playerId, playerData);
         gamePanel.updateOtherPlayer(playerId, playerData);
 
@@ -222,19 +214,44 @@ public class NetworkManager {
 
         String playerId = isServer ? nameServer : nameClient;
         String username = player.getUsername();
-        boolean isAttacking = player.isAttacking(); // New line to get the attacking state
-        String message;
+        boolean isAttacking = player.isAttacking();
         int level = player.getLevel();
-        
-        
-        message = String.format("PLAYER_UPDATE %s %s %d %d %s %d %d %d %b", // Add %d for the timestamp
+        long timestamp = System.currentTimeMillis();
+        int worldX = player.getWorldX();
+        int worldY = player.getWorldY();
+        int spriteCounter = player.getSpriteCounter(); // Get sprite counter from player
+
+        int attackOffsetX = 0;
+        int attackOffsetY = 0;
+
+        if (isAttacking) {
+            switch (player.getDirection()) {
+                case "left":
+                    attackOffsetX = -gamePanel.getTileSize(); 
+                    break;
+                case "right":
+                    attackOffsetX = gamePanel.getTileSize(); 
+                    break;
+                case "up":
+                    attackOffsetY = -gamePanel.getTileSize(); 
+                    break;
+                case "down":
+                    attackOffsetY = gamePanel.getTileSize(); 
+                    break;
+            }
+        }
+
+        worldX += attackOffsetX;
+        worldY += attackOffsetY;
+
+        String message = String.format("PLAYER_UPDATE %s %s %d %d %s %d %d %d %b %d",
                 playerId, username, 
-                player.getWorldX(), player.getWorldY(), 
+                worldX, worldY, 
                 player.getDirection(), player.getSpriteNum(), 
-                System.currentTimeMillis(), level,
-                player.isAttacking()); // Add timestamp
-        
-        PlayerData playerData = new PlayerData(playerId, username, player.getWorldX(), player.getWorldY(), player.getDirection(), player.getSpriteNum(), System.currentTimeMillis(), player.getLevel(), isAttacking);
+                timestamp, level,
+                isAttacking, spriteCounter);
+
+        PlayerData playerData = new PlayerData(playerId, username, worldX, worldY, player.getDirection(), player.getSpriteNum(), timestamp, level, isAttacking, spriteCounter);
         otherPlayers.put(playerId, playerData);
         gamePanel.updateOtherPlayer(playerId, playerData);
 
@@ -255,9 +272,7 @@ public class NetworkManager {
                 e.printStackTrace();
             }
         }
-        }
-    
-
+    }
 
     public void sendChatMessage(String message) {
         String username = gamePanel.getPlayer().getUsername();
@@ -280,14 +295,11 @@ public class NetworkManager {
                 e.printStackTrace();
             }
         }
-
-        
     }
 
     public String promptInputName(String role) {
         String name;
         while (true) {
-        	
             name = JOptionPane.showInputDialog(null, "Input your username:", "Username Input", JOptionPane.PLAIN_MESSAGE);
             if (name == null || name.trim().isEmpty() || name.length() > 8) {
                 JOptionPane.showMessageDialog(null, "Invalid username. Please enter a valid name.", "Error", JOptionPane.ERROR_MESSAGE);
@@ -296,109 +308,85 @@ public class NetworkManager {
             }
         }
     }
-    
+
     public void receiveMessage(String message) {
         gamePanel.ui.appendGlobalChatMessage(message);
     }
 
-
     private void handleReceivedData(String data) {
-    	String[] tokens = data.split(" ");
-    	String username;
-    	 String payload = null;
-    	 String senderUsername = tokens[1];
-    	 
-    	 
-  
-    		    
-    		    
-    		    // Check if there are at least 3 tokens
-    		    if (tokens.length > 2) {
-    		        // Concatenate all tokens from index 2 onwards to form the payload
-    		        StringBuilder payloadBuilder = new StringBuilder();
-    		        for (int i = 2; i < tokens.length; i++) {
-    		            if (i > 2) {
-    		                payloadBuilder.append(" "); // Add space between tokens
-    		            }
-    		            payloadBuilder.append(tokens[i]);
-    		        }
-    		        payload = payloadBuilder.toString();
-    		        
-    		    } else {
-    		        // Handle the case where tokens[2] does not exist
-    		        payload = ""; // Set to empty if no message is present
-    		        System.out.println("Insufficient tokens, payload set to empty.");
-    		    }
+        String[] tokens = data.split(" ");
+        if (tokens.length < 3) {
+            System.err.println("Insufficient data: " + data);
+            return;
+        }
 
-    		    // Ensure the message is either an update or registration event
-    		    if (tokens[0].equals("PLAYER_UPDATE") || tokens[0].equals("PLAYER_REGISTER")) {
-    		        try {
-    		            String playerId = tokens[1];
-    		            username = tokens[2];  // Retrieve the username from the data
-    		            int x = Integer.parseInt(tokens[3]);
-    		            int y = Integer.parseInt(tokens[4]);
-    		            String direction = tokens[5];
-    		            int spriteNum = Integer.parseInt(tokens[6]);
-    		            
-    		            // Use timestamp if it's an update, otherwise set it to the current time
-    		            long timestamp = Long.parseLong(tokens[7]);
-    		            int level = Integer.parseInt(tokens[tokens.length - 2]);
-    		            boolean isAttacking = Boolean.parseBoolean(tokens[tokens.length - 1]);
-    		            
-    		           
-    		            
-    		            
+        String command = tokens[0];
+        String senderUsername = tokens[1];
+        String payload = String.join(" ", Arrays.copyOfRange(tokens, 2, tokens.length));
 
-    		            // Create PlayerData with the username and other data
-    		            PlayerData playerData = new PlayerData(playerId, username, x, y, direction, spriteNum, timestamp, level, isAttacking);
-    		            
-    		            // Update the otherPlayers map with the new or updated PlayerData
-    		            otherPlayers.put(playerId, playerData);
-    		            
-    		            // Update the game panel with the new or updated player
-    		            gamePanel.updateOtherPlayer(playerId, playerData);
+        switch (command) {
+            case "PLAYER_UPDATE":
+            case "PLAYER_REGISTER":
+                try {
+                    String playerId = tokens[1];
+                    String username = tokens[2];
+                    int x = Integer.parseInt(tokens[3]);
+                    int y = Integer.parseInt(tokens[4]);
+                    String direction = tokens[5];
+                    int spriteNum = Integer.parseInt(tokens[6]);
+                    long timestamp = Long.parseLong(tokens[7]);
+                    int level = Integer.parseInt(tokens[tokens.length - 3]);
+                    boolean isAttacking = Boolean.parseBoolean(tokens[tokens.length - 2]);
+                    int spriteCounter = Integer.parseInt(tokens[tokens.length - 1]);
 
-    		        } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
-    		            System.err.println("Error parsing data: " + e.getMessage());
-    		            e.printStackTrace();
-    		        }
-    		    } else if (tokens[0].equals("CHAT")) {
-    		        if (!payload.isBlank()) {
-    		            if (!senderUsername.equals(gamePanel.getPlayer().getUsername())) {
-    		                // Add the message to the chat, showing the sender's username
-    		                receiveMessage(senderUsername + ": " + payload);
-    		            }
-    		        } else {
-    		            System.out.println("Received chat message with blank payload.");
-    		        }
-    		    } else {
-    		        System.err.println("Unknown command received: " + tokens[0]);
-    		    }
-    		}
+                    PlayerData playerData = new PlayerData(playerId, username, x, y, direction, spriteNum, timestamp, level, isAttacking, spriteCounter);;
+                    otherPlayers.put(playerId, playerData);
+                    gamePanel.updateOtherPlayer(playerId, playerData);
 
+                } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
+                    System.err.println("Error parsing data: " + e.getMessage());
+                    e.printStackTrace();
+                }
+                break;
 
+            case "CHAT":
+                if (!payload.isBlank() && !senderUsername.equals(gamePanel.getPlayer().getUsername())) {
+                    receiveMessage(senderUsername + ": " + payload);
+                } else {
+                    System.out.println("Received chat message with blank payload.");
+                }
+                break;
+
+            default:
+                System.err.println("Unknown command received: " + command);
+                break;
+        }
+    }
 
     public void close() {
-    try {
-        if (clientSocket != null)
-            clientSocket.close();
-        if (serverSocket != null)
-            serverSocket.close();
-    } catch (IOException e) {
-        e.printStackTrace();
+        try {
+            if (clientSocket != null) clientSocket.close();
+            if (serverSocket != null) serverSocket.close();
+            for (BufferedWriter writer : clientWriters.values()) {
+                writer.close();
+            }
+            for (BufferedReader reader : clientReaders.values()) {
+                reader.close();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public String getNameServer() {
+        return nameServer;
+    }
+
+    public String getNameClient() {
+        return nameClient;
+    }
+
+    public boolean isServer() {
+        return isServer;
     }
 }
-
-public String getNameServer() {
-    return nameServer;
-}
-
-public String getNameClient() {
-    return nameClient;
-}
-
-public boolean isServer() {
-    return isServer;
-}
-}
-
