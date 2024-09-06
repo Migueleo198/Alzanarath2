@@ -239,7 +239,7 @@ public class Player extends Entity {
     		}
     	}
     	else {
-    		System.out.println("miss");
+    		
     	}
     }
 

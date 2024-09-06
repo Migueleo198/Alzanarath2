@@ -1,6 +1,7 @@
 package Monster;
 
 import java.awt.AlphaComposite;
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
@@ -14,7 +15,8 @@ import Entity.Entity;
 import main.GamePanel;
 
 public class MON_Slime extends Entity{
-	
+	private int healthBarcounter;
+	private boolean gotHit=false;
 	public MON_Slime(GamePanel gp){
 		super(gp);
 		name = "Blue Slime";
@@ -31,6 +33,7 @@ public class MON_Slime extends Entity{
 		solidAreaDefaultY = solidArea.y;
 		direction="down";
 		getModel();
+		
 	}
 	
 	public void getModel() {
@@ -134,6 +137,7 @@ public class MON_Slime extends Entity{
 		    }
 		if(invincible==true) {
 			g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER,0.4f));
+			gotHit=true;
 		}
 		
 		// THE ENTITY POSITION WILL NEVER BE STATIC
@@ -147,16 +151,51 @@ public class MON_Slime extends Entity{
 		int textY = screenY - 5;
 		
 		g2.setColor(new Color(0,0,0));
-		if(gp.getMonster()[gp.getCurrentMonsterNum()]!=null) {
-		g2.drawString(gp.getMonster()[gp.getCurrentMonsterNum()].getName(), textX+1, textY+1);
+		
+		g2.drawString(this.getName(), textX+1, textY+1);
 		
 		
 		g2.setColor(Color.RED);
-		g2.drawString(gp.getMonster()[gp.getCurrentMonsterNum()].getName(), textX, textY);
+		g2.drawString(this.getName(), textX, textY);
 		g2.drawImage(image, screenX, screenY, gp.getTileSize(), gp.getTileSize(), null);
 		
 		g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER,1f));
+		
 		}
+		healthBarcounter++;
+		drawMonsterHealthBar(g2);
+	}
+	
+	public void drawMonsterHealthBar(Graphics2D g2) {
+		
+		if(gotHit==true && healthBarcounter<=180) {
+	    int screenX = worldX - gp.getPlayer().getWorldX() + gp.getPlayer().getScreenX();
+	    int screenY = worldY - gp.getPlayer().getWorldY() + gp.getPlayer().getScreenY();
+	    int textWidth = g2.getFontMetrics().stringWidth(this.getName());
+	    int textX = screenX + (gp.getTileSize() / 2) - (textWidth / 2);
+	    int textY = screenY - 5;
+
+	    // Set a fixed length for the health bar
+	    int barWidth = 80; 
+	    int barHeight = 12; // Height of the health bar
+
+	    // Calculate the proportion of health (currentHealth / maxHealth) to determine bar length
+	    int currentHealth = this.Health; // Monster's current health
+	    int maxHealth = this.maxHealth;  // Monster's maximum health
+	    int healthBarWidth = (int) ((double) currentHealth / maxHealth * barWidth);
+
+	    // Draw the background of the health bar (dark gray)
+	    g2.setFont(g2.getFont().deriveFont(Font.PLAIN, 20));
+	    g2.setColor(Color.DARK_GRAY);
+	    g2.fillRect(textX, textY + 10, barWidth, barHeight); // Full-length background
+
+	    // Draw the actual health bar (red) based on current health
+	    g2.setColor(Color.red);
+	    g2.fillRect(textX, textY + 10, healthBarWidth, barHeight); // Scaled by current health
+		}
+		if(healthBarcounter>=180){
+			healthBarcounter=0;
+			gotHit=false;
 		}
 	}
 }
