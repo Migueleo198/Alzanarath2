@@ -293,10 +293,22 @@ public class Player extends Entity {
 
 	public void draw(Graphics2D g2) {
 	    BufferedImage image = null;
-
+	   
 	    // Calculate draw position
 	    int drawX = screenX - gp.getPlayer().getWorldX() + worldX;
 	    int drawY = screenY - gp.getPlayer().getWorldY() + worldY;
+	    
+	    if (usernamePlayer != null && !usernamePlayer.isEmpty()) {
+            Font customFont = new Font("Comic Sans", Font.BOLD, 16);
+            g2.setFont(customFont);
+            g2.setColor(Color.white);
+
+            int textWidth = g2.getFontMetrics().stringWidth(usernamePlayer + " Lvl " + level);
+            int textX = drawX + (gp.getTileSize() / 2) - (textWidth / 2);
+            int textY = drawY - 5;
+
+            g2.drawString(usernamePlayer + " Lvl " + level, textX, textY);
+        }
 
 	    // Adjust draw position based on attack state
 	    switch (direction) {
@@ -332,25 +344,14 @@ public class Player extends Entity {
 	                image = (spriteNum == 1) ? left1 : left2;
 	            } else {
 	                image = (spriteNum == 1) ? attackLeft1 : attackLeft2;
-	                drawX -= (gp.getTileSize()); // Move left to align with attack image
+	                drawX -= (gp.getTileSize()*2-7); // Move left to align with attack image
 	            }
 	            break;
 	    }
 
 	    g2.drawImage(image, drawX, drawY, null);
 
-	    // Draw the player's username
-	    if (usernamePlayer != null && !usernamePlayer.isEmpty()) {
-	        Font customFont = new Font("Comic Sans", Font.BOLD, 16);
-	        g2.setFont(customFont);
-	        g2.setColor(Color.white);
-
-	        int textWidth = g2.getFontMetrics().stringWidth(usernamePlayer + " Lvl " + level);
-	        int textX = drawX + (gp.getTileSize() / 2) - (textWidth / 2);
-	        int textY = drawY - 5;
-
-	        g2.drawString(usernamePlayer + " Lvl " + level, textX, textY);
-	    }
+	   
 
 	    // Handle invincibility effect
 	    if (invincible) {
