@@ -72,6 +72,7 @@ public class Player extends Entity {
 		direction = "down";
 		maxHealth=100;
 		setHealth(maxHealth);
+		invincibleCounter=0;
 	}
 
     @Override
@@ -447,6 +448,14 @@ public class Player extends Entity {
 
 	public void setDrawY(int drawY) {
 		this.drawY = drawY;
+	}
+	
+	public int getInvincibleCounter() {
+		return this.invincibleCounter;
+	}
+	
+	public void setInvincibleCounter(int invincibleCounter) {
+		this.invincibleCounter=invincibleCounter;
 	}
 
 }

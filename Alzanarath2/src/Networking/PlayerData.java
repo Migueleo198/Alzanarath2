@@ -10,9 +10,10 @@ public class PlayerData {
     private int level;
     private boolean isAttacking;
     private int spriteCounter; // Add spriteCounter field
+    private int invincibleCounter; // Add invincibleCounter field
 
-    // Constructor with spriteCounter
-    public PlayerData(String playerId, String username, int x, int y, String direction, int spriteNum, long timestamp, int level, boolean isAttacking, int spriteCounter) {
+    // Constructor with spriteCounter and invincibleCounter
+    public PlayerData(String playerId, String username, int x, int y, String direction, int spriteNum, long timestamp, int level, boolean isAttacking, int spriteCounter, int invincibleCounter) {
         this.playerId = playerId;
         this.username = username;
         this.x = x;
@@ -23,19 +24,10 @@ public class PlayerData {
         this.level = level;
         this.isAttacking = isAttacking;
         this.spriteCounter = spriteCounter; // Initialize spriteCounter
+        this.invincibleCounter = invincibleCounter; // Initialize invincibleCounter
     }
+
     
-    // Constructor without position
-    public PlayerData(String playerId, String username, String direction, int spriteNum, long timestamp, int level, boolean isAttacking, int spriteCounter) {
-        this.playerId = playerId;
-        this.username = username;
-        this.direction = direction;
-        this.spriteNum = spriteNum;
-        this.timestamp = timestamp;
-        this.level = level;
-        this.isAttacking = isAttacking;
-        this.spriteCounter = spriteCounter; // Initialize spriteCounter
-    }
 
     // Getters and setters
     public String getPlayerId() {
@@ -117,5 +109,12 @@ public class PlayerData {
     public void setSpriteCounter(int spriteCounter) {
         this.spriteCounter = spriteCounter;
     }
-}
 
+    public int getInvincibleCounter() {
+        return invincibleCounter;
+    }
+
+    public void setInvincibleCounter(int invincibleCounter) {
+        this.invincibleCounter = invincibleCounter;
+    }
+}

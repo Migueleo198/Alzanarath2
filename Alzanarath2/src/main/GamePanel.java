@@ -298,6 +298,7 @@ public class GamePanel extends JPanel implements Runnable {
             newPlayer.setSpriteNum(playerData.getSpriteNum()); // Set animation state for new player
             newPlayer.setLevel(playerData.getLevel()); // Set the player's level
             newPlayer.setIsAttacking(playerData.isAttacking()); // Set if its attacking
+            newPlayer.setInvincibleCounter(playerData.getInvincibleCounter()); // Set if its attacking
 
             otherPlayers.put(playerId, newPlayer);
         } else {
@@ -312,7 +313,7 @@ public class GamePanel extends JPanel implements Runnable {
             existingPlayer.setSpriteNum(playerData.getSpriteNum()); // Update animation state
             existingPlayer.setLevel(playerData.getLevel()); // Update the player's level
             existingPlayer.setIsAttacking(playerData.isAttacking()); // Set if it's attacking
-
+            existingPlayer.setInvincibleCounter(playerData.getInvincibleCounter());
             // Apply additional logic for when the player is attacking
             if (playerData.isAttacking()) {
                 handleAttackMovement(existingPlayer, playerData);

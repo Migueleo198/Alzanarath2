@@ -40,7 +40,7 @@ public abstract class Entity {
 	
 	//Hit params
 	protected boolean invincible = false;
-	protected int invincibleCounter = 0;
+	public int invincibleCounter = 0;
 	
 	
 	

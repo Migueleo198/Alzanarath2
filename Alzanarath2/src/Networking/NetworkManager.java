@@ -95,17 +95,20 @@ public class NetworkManager {
     }
 
     private void sendAllPlayersToClient(BufferedWriter clientOut) throws IOException {
+    	long timestampo = System.currentTimeMillis();
         for (PlayerData playerData : otherPlayers.values()) {
-            String message = String.format("PLAYER_REGISTER %s %s %d %d %s %d %d %b %d", 
+            String message = String.format("PLAYER_REGISTER %s %s %d %d %s %d %d %b %d %d", 
                                             playerData.getPlayerId(),  
                                             playerData.getUsername(), 
                                             playerData.getX(), 
                                             playerData.getY(), 
-                                            playerData.getDirection(), 
+                                            playerData.getDirection(),
                                             playerData.getSpriteNum(),
                                             playerData.getLevel(),
                                             playerData.isAttacking(),
-                                            playerData.getSpriteCounter());
+                                            playerData.getSpriteCounter(),
+                                            playerData.getInvincibleCounter());
+            								
             clientOut.write(message + "\n");
             clientOut.flush();
         }
@@ -178,15 +181,15 @@ public class NetworkManager {
         int level = player.getLevel();
         boolean isAttacking = player.isAttacking();
         int spriteCounter = player.getSpriteCounter(); // Get the player's sprite counter
-        
-        String message = String.format("PLAYER_REGISTER %s %s %d %d %s %d %d %d %b %d", 
+        int invincibleCounter = player.getInvincibleCounter();
+        String message = String.format("PLAYER_REGISTER %s %s %d %d %s %d %d %d %b %d %d", 
                 playerId, username, 
                 player.getWorldX(), player.getWorldY(), 
                 player.getDirection(), player.getSpriteNum(), 
                 System.currentTimeMillis(), level,
-                isAttacking, spriteCounter);
+                isAttacking,spriteCounter,invincibleCounter);
 
-        PlayerData playerData = new PlayerData(playerId, username, player.getWorldX(), player.getWorldY(), player.getDirection(), player.getSpriteNum(), System.currentTimeMillis(), level, isAttacking, spriteCounter);
+        PlayerData playerData = new PlayerData(playerId, username, player.getWorldX(), player.getWorldY(), player.getDirection(), player.getSpriteNum(), System.currentTimeMillis(), level, isAttacking, spriteCounter,invincibleCounter);
         otherPlayers.put(playerId, playerData);
         gamePanel.updateOtherPlayer(playerId, playerData);
 
@@ -209,6 +212,7 @@ public class NetworkManager {
         }
     }
 
+
     public void sendPlayerUpdate(Player player) {
         if (player == null) return;
 
@@ -219,7 +223,8 @@ public class NetworkManager {
         long timestamp = System.currentTimeMillis();
         int worldX = player.getWorldX();
         int worldY = player.getWorldY();
-        int spriteCounter = player.getSpriteCounter(); // Get sprite counter from player
+        int spriteCounter = player.getSpriteCounter();
+        int invincibleCounter = player.getInvincibleCounter(); // Get invincibleCounter
 
         int attackOffsetX = 0;
         int attackOffsetY = 0;
@@ -244,14 +249,14 @@ public class NetworkManager {
         worldX += attackOffsetX;
         worldY += attackOffsetY;
 
-        String message = String.format("PLAYER_UPDATE %s %s %d %d %s %d %d %d %b %d",
+        String message = String.format("PLAYER_UPDATE %s %s %d %d %s %d %d %d %b %d %d",
                 playerId, username, 
                 worldX, worldY, 
                 player.getDirection(), player.getSpriteNum(), 
                 timestamp, level,
-                isAttacking, spriteCounter);
+                isAttacking, spriteCounter, invincibleCounter);
 
-        PlayerData playerData = new PlayerData(playerId, username, worldX, worldY, player.getDirection(), player.getSpriteNum(), timestamp, level, isAttacking, spriteCounter);
+        PlayerData playerData = new PlayerData(playerId, username, worldX, worldY, player.getDirection(), player.getSpriteNum(), timestamp, level, isAttacking, spriteCounter, invincibleCounter);
         otherPlayers.put(playerId, playerData);
         gamePanel.updateOtherPlayer(playerId, playerData);
 
@@ -315,7 +320,7 @@ public class NetworkManager {
 
     private void handleReceivedData(String data) {
         String[] tokens = data.split(" ");
-        if (tokens.length < 3) {
+        if (tokens.length < 10) { // Increased minimum required tokens for invincibleCounter
             System.err.println("Insufficient data: " + data);
             return;
         }
@@ -323,7 +328,9 @@ public class NetworkManager {
         String command = tokens[0];
         String senderUsername = tokens[1];
         String payload = String.join(" ", Arrays.copyOfRange(tokens, 2, tokens.length));
-
+        for(int i=0; i<tokens.length; i++) {
+        	System.out.println(tokens[i]);
+        }
         switch (command) {
             case "PLAYER_UPDATE":
             case "PLAYER_REGISTER":
@@ -335,11 +342,13 @@ public class NetworkManager {
                     String direction = tokens[5];
                     int spriteNum = Integer.parseInt(tokens[6]);
                     long timestamp = Long.parseLong(tokens[7]);
-                    int level = Integer.parseInt(tokens[tokens.length - 3]);
-                    boolean isAttacking = Boolean.parseBoolean(tokens[tokens.length - 2]);
-                    int spriteCounter = Integer.parseInt(tokens[tokens.length - 1]);
+                    int level = Integer.parseInt(tokens[tokens.length - 4]);
+                    boolean isAttacking = Boolean.parseBoolean(tokens[tokens.length - 3]);
+                    int spriteCounter = Integer.parseInt(tokens[tokens.length - 2]);
+                    int invincibleCounter = Integer.parseInt(tokens[tokens.length - 1]); // Added invincibleCounter
 
-                    PlayerData playerData = new PlayerData(playerId, username, x, y, direction, spriteNum, timestamp, level, isAttacking, spriteCounter);;
+                    // Updated PlayerData to include invincibleCounter
+                    PlayerData playerData = new PlayerData(playerId, username, x, y, direction, spriteNum, timestamp, level, isAttacking, spriteCounter, invincibleCounter);
                     otherPlayers.put(playerId, playerData);
                     gamePanel.updateOtherPlayer(playerId, playerData);
 
@@ -362,6 +371,7 @@ public class NetworkManager {
                 break;
         }
     }
+
 
     public void close() {
         try {
