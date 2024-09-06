@@ -51,11 +51,28 @@ public class Player extends Entity {
         setSolidAreaDefaultY(solidArea.y);
         solidArea.width = 32;
         solidArea.height = 26;
+        
+        //attack collision area //can be changed based on the players weapon size
+        
+        attackArea.width = 36;
+        attackArea.height = 36;
+        
         setLevel(1);
         setDefaultParams();
         getPlayerModel();
         getPlayerAttackImage();
     }
+    
+    public void setDefaultParams() {
+		worldX = 270;
+		worldY = 270;
+		usernamePlayer = networkManager != null ? (networkManager.isServer() ? networkManager.getNameServer() : networkManager.getNameClient()) : "SinglePlayer";
+		speed = 4;
+		attack=5;
+		direction = "down";
+		maxHealth=100;
+		setHealth(maxHealth);
+	}
 
     @Override
     public void update() {
@@ -169,11 +186,60 @@ public class Player extends Entity {
             spriteNum = 1;
         } else if (spriteCounter <= 25) {
             spriteNum = 2;
+            
+            //Save the original player parameters
+            int currentWorldX=worldX;
+            int currentWorldY=worldY;
+            int solidAreaWidth = solidArea.width;
+            int solidAreaHeight = solidArea.height;
+            
+            //Adjust player parameters for the attack area collision
+            
+            switch(direction) {
+    		case "up": worldY -= attackArea.height; break;
+    		case "down": worldY += attackArea.height; break;
+    		case "left": worldX -= attackArea.height; break;
+    		case "right": worldX += attackArea.height; break;
+    		}
+    		
+    		//attackArea become solidArea
+    		solidArea.width = attackArea.width;
+    		solidArea.height = attackArea.height;
+    		
+    		//check monster collision with the updated worldX, worldY and solidArea
+    		int monsterIndex = gp.getcChecker().checkEntity(this,gp.getMonster());
+    		damageMonster(monsterIndex);
+    		//After checking collision, restore the original data
+    		worldX=currentWorldX;
+    		worldY=currentWorldY;
+    		solidArea.width=solidAreaWidth;
+    		solidArea.height=solidAreaHeight;
+            
+            
         } else {
             spriteNum = 1;
             spriteCounter = 0;
             attacking = false;
         }
+        
+        
+    }
+    
+    public void damageMonster(int i) {
+    	if(i!=999) {
+    		
+    		if (gp.monster[i].invincible == false){
+    			
+    			gp.monster[i].Health-=this.attack;
+    		}
+    		
+    		if(gp.monster[i].getHealth()<=0  ) {
+    			gp.monster[i]=null;
+    		}
+    	}
+    	else {
+    		System.out.println("miss");
+    	}
     }
 
     public void setLastReceivedData(PlayerData playerData) {
@@ -207,15 +273,7 @@ public class Player extends Entity {
 
 
 	
-	public void setDefaultParams() {
-		worldX = 270;
-		worldY = 270;
-		usernamePlayer = networkManager != null ? (networkManager.isServer() ? networkManager.getNameServer() : networkManager.getNameClient()) : "SinglePlayer";
-		speed = 4;
-		direction = "down";
-		maxHealth=100;
-		setHealth(maxHealth);
-	}
+	
 	
 	public void contactMonster(int i){
 		if(i!=999) {

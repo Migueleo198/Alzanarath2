@@ -1,5 +1,6 @@
 package Monster;
 
+import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
@@ -13,10 +14,9 @@ import Entity.Entity;
 import main.GamePanel;
 
 public class MON_Slime extends Entity{
-	GamePanel gp;
+	
 	public MON_Slime(GamePanel gp){
 		super(gp);
-		this.gp=gp;
 		name = "Blue Slime";
 		speed=1;
 		maxHealth = 120;
@@ -125,23 +125,38 @@ public class MON_Slime extends Entity{
 			break;
 		}
 		
+		 if (invincible) {
+		        invincibleCounter++;
+		        if (invincibleCounter > 40) {
+		            invincible = false;
+		            invincibleCounter = 0;
+		        }
+		    }
+		if(invincible==true) {
+			g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER,0.4f));
+		}
+		
 		// THE ENTITY POSITION WILL NEVER BE STATIC
 		Font customFont = new Font("Comic Sans", Font.BOLD, 16);
 		g2.setFont(customFont);
 		
 		
 		
-		int textWidth = g2.getFontMetrics().stringWidth(gp.getMonster()[gp.getCurrentMonsterNum()].getName());
+		int textWidth = g2.getFontMetrics().stringWidth(this.getName());
 		int textX = screenX + (gp.getTileSize() / 2) - (textWidth / 2);
 		int textY = screenY - 5;
 		
 		g2.setColor(new Color(0,0,0));
+		if(gp.getMonster()[gp.getCurrentMonsterNum()]!=null) {
 		g2.drawString(gp.getMonster()[gp.getCurrentMonsterNum()].getName(), textX+1, textY+1);
 		
 		
 		g2.setColor(Color.RED);
 		g2.drawString(gp.getMonster()[gp.getCurrentMonsterNum()].getName(), textX, textY);
 		g2.drawImage(image, screenX, screenY, gp.getTileSize(), gp.getTileSize(), null);
+		
+		g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER,1f));
+		}
 		}
 	}
 }

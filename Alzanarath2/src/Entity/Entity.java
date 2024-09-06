@@ -1,5 +1,6 @@
 package Entity;
 
+import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
@@ -30,6 +31,7 @@ public abstract class Entity {
 	protected int level = 1;
 	protected int attack=0;
 	protected int type; //1= player 2 = slime
+	protected Rectangle attackArea = new Rectangle(0,0,0,0);
 	
 	//ATTACK ANIMATION VAR
 	protected boolean attacking=false;
@@ -45,7 +47,7 @@ public abstract class Entity {
 	
 	public boolean collisionOn =false;
 	
-	GamePanel gp;
+	protected GamePanel gp;
 	
 	protected int maxHealth;
 	protected int Health;
@@ -140,7 +142,8 @@ public abstract class Entity {
 							break;
 						}
 					}
-				
+					
+					
 				
 				
 	}
@@ -196,18 +199,33 @@ public abstract class Entity {
 					break;
 				}
 
-				// THE ENTITY POSITION WILL NEVER BE STATIC
-				Font customFont = new Font("Comic Sans", Font.BOLD, 16);
-				g2.setFont(customFont);
-				g2.setColor(Color.ORANGE);
-				int textWidth = g2.getFontMetrics().stringWidth(gp.getNpc()[gp.getCurrentNpcNum()].getName());
-				int textX = screenX + (gp.getTileSize() / 2) - (textWidth / 2);
-				int textY = screenY - 5;
-				
-				g2.drawString(gp.getNpc()[gp.getCurrentNpcNum()].getName(), textX, textY);
-				g2.drawImage(image, screenX, screenY, null);
 				
 				
+				
+				 // Handle invincibility effect
+			    if (invincible) {
+			        invincibleCounter++;
+			        if (invincibleCounter > 40) {
+			            invincible = false;
+			            invincibleCounter = 0;
+			        }
+			    }
+			if(invincible==true) {
+				g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER,0.4f));
+			}
+			
+			// THE ENTITY POSITION WILL NEVER BE STATIC
+			Font customFont = new Font("Comic Sans", Font.BOLD, 16);
+			g2.setFont(customFont);
+			g2.setColor(Color.ORANGE);
+			int textWidth = g2.getFontMetrics().stringWidth(gp.getNpc()[gp.getCurrentNpcNum()].getName());
+			int textX = screenX + (gp.getTileSize() / 2) - (textWidth / 2);
+			int textY = screenY - 5;
+			
+			g2.drawString(gp.getNpc()[gp.getCurrentNpcNum()].getName(), textX, textY);
+			g2.drawImage(image, screenX, screenY, null);
+			
+			g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER,1f));
 			
 	}
 		}

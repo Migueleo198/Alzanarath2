@@ -24,13 +24,13 @@ public class AssetSetter {
 	}
 	
 	public void setMonster() {
-		gp.getMonster()[0] = new MON_Slime(gp);
-		gp.getMonster()[0].setWorldX(gp.getTileSize()*23);
-		gp.getMonster()[0].setWorldY(gp.getTileSize()*15);
+		gp.monster[0] = new MON_Slime(gp);
+		gp.monster[0].setWorldX(gp.getTileSize()*23);
+		gp.monster[0].setWorldY(gp.getTileSize()*15);
 		
-		gp.getMonster()[1] = new MON_Slime(gp);
-		gp.getMonster()[1].setWorldX(gp.getTileSize()*26);
-		gp.getMonster()[1].setWorldY(gp.getTileSize()*15);
+		gp.monster[1] = new MON_Slime(gp);
+		gp.monster[1].setWorldX(gp.getTileSize()*26);
+		gp.monster[1].setWorldY(gp.getTileSize()*15);
 		
 	}
 }

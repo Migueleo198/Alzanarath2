@@ -56,8 +56,11 @@ public class GamePanel extends JPanel implements Runnable {
     private int currentNpcNum;
     
     //Monster entities instantiation
-    private Entity[] monster = new Entity[20];
-    private int currentMonsterNum;
+    public Entity[] monster = new Entity[20];
+    
+
+
+	private int currentMonsterNum;
     
     //ArrayListFor storing every non player entity array
     private ArrayList<Entity> entityList = new ArrayList<>();
@@ -464,6 +467,10 @@ public class GamePanel extends JPanel implements Runnable {
         this.currentNpcNum = currentNpcNum;
     }
 
+    @SuppressWarnings("unused")
+	public void setMonster(Entity monster) {
+		this.monster[getCurrentMonsterNum()] = monster;
+	}
    
 
     public void setNpc(Entity npc[]) {
@@ -482,9 +489,7 @@ public class GamePanel extends JPanel implements Runnable {
 	}
 
 
-	public void setMonster(Entity[] monster) {
-		this.monster = monster;
-	}
+	
 
 
 	public int getCurrentMonsterNum() {
