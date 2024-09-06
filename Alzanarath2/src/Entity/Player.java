@@ -234,7 +234,7 @@ public class Player extends Entity {
     			gp.monster[i].invincible=true;
     		}
     		
-    		if(gp.monster[i].getHealth()<=0  ) {
+    		if(gp.monster[i].Health<=0) {
     			gp.monster[i]=null;
     		}
     	}

@@ -20,7 +20,7 @@ public class MON_Slime extends Entity{
 		name = "Blue Slime";
 		speed=1;
 		maxHealth = 60;
-		setHealth(maxHealth);
+		Health = maxHealth;
 		attack=5;
 		type=2;
 		solidArea.x=3;
