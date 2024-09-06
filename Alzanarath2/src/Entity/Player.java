@@ -69,8 +69,12 @@ public class Player extends Entity {
             
         }
         
+        
+        
         if (attacking==true) {
         	attacking();
+        	spriteNum=1;
+        	networkManager.sendPlayerUpdate(this);
         }
 
         else if(keyH.isUpPressed() || keyH.isDownPressed() || keyH.isLeftPressed() || keyH.isRightPressed()) {
@@ -153,18 +157,18 @@ public class Player extends Entity {
     	spriteCounter++;
     	
     	if(spriteCounter <=5) {
-    		
+    		spriteNum=1;
     		
     	}
     	
     	if(spriteCounter>5 && spriteCounter <= 25) {
     		
-    		
+    		spriteNum=1;
     		
     	}
     	
     	if (spriteCounter >	25) {
-    		
+    		spriteNum=1;
     		spriteCounter=0;
     		attacking=false;
     	}
@@ -241,6 +245,7 @@ public class Player extends Entity {
 		}
 		if(attacking==true) {
 			drawY-=5;
+			
 			if (spriteNum==1) {image=attackDown1;}
 			if (spriteNum==2) {image=attackDown2;}
 		}
