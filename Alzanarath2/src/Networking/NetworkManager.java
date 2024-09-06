@@ -320,7 +320,7 @@ public class NetworkManager {
 
     private void handleReceivedData(String data) {
         String[] tokens = data.split(" ");
-        if (tokens.length < 10) { // Increased minimum required tokens for invincibleCounter
+        if (tokens.length < 1) { // Increased minimum required tokens for invincibleCounter
             System.err.println("Insufficient data: " + data);
             return;
         }
