@@ -92,8 +92,9 @@ public class GamePanel extends JPanel implements Runnable {
 
     // GAME STATES
     private int gameState;
-    private int titleState = 1;
-    private int playState = 2;
+    private final int titleState = 1;
+    private final int playState = 2;
+    private final int characterState = 3;
     
     // Initialize the UI management class
     public UI ui;
@@ -224,7 +225,7 @@ public class GamePanel extends JPanel implements Runnable {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
 
-        if (gameState == playState && this.player!=null) {
+        if (this.player!=null) {
             g2.setColor(getBackground());
             getTileM().draw(g2);
             
@@ -284,6 +285,7 @@ public class GamePanel extends JPanel implements Runnable {
 
         // Draw the UI
         ui.drawUI(g2);
+        
         g2.dispose();
     }
 
@@ -379,6 +381,7 @@ public class GamePanel extends JPanel implements Runnable {
         sound.setFile(i);
         sound.play();
         
+        
     }
 
    
@@ -440,9 +443,7 @@ public class GamePanel extends JPanel implements Runnable {
         return titleState;
     }
 
-    public void setTitleState(int titleState) {
-        this.titleState = titleState;
-    }
+   
 
     public int getGameState() {
         return gameState;
@@ -456,9 +457,7 @@ public class GamePanel extends JPanel implements Runnable {
         return playState;
     }
 
-    public void setPlayState(int playState) {
-        this.playState = playState;
-    }
+    
 
     public int getCurrentNpcNum() {
         return currentNpcNum;
@@ -510,6 +509,11 @@ public class GamePanel extends JPanel implements Runnable {
 
 	public void setTileM(TileManager tileM) {
 		this.tileM = tileM;
+	}
+
+
+	public int getCharacterState() {
+		return characterState;
 	}
 }
 

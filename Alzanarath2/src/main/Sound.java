@@ -12,6 +12,8 @@ public class Sound {
 	public Sound() {
 		soundURL[0] = getClass().getResource("/Music/knights-of-camelot-8038.wav");
 		soundURL[1] = getClass().getResource("/Music/TalkingSE.wav");
+		soundURL[2] = getClass().getResource("/Music/DamageSE.wav");
+		soundURL[3] = getClass().getResource("/Music/sword_clash.8.wav");
 	}
 	
 	public void setFile(int i) {

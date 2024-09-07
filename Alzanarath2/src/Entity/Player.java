@@ -16,6 +16,8 @@ import javax.swing.JOptionPane;
 
 import Networking.NetworkManager;
 import Networking.PlayerData;
+import Objects.OBJ_BloodSword;
+import Objects.OBJ_WoodenShield;
 
 public class Player extends Entity {
     private GamePanel gp;
@@ -33,6 +35,7 @@ public class Player extends Entity {
     
     private int drawX;
     private int drawY;
+    private int countAttackDelayTime=0;
 
     public Player(GamePanel gp, KeyHandler keyH, NetworkManager networkManager) {
         super(gp);
@@ -57,7 +60,7 @@ public class Player extends Entity {
         attackArea.width = 36;
         attackArea.height = 36;
         
-        setLevel(1);
+        
         setDefaultParams();
         getPlayerModel();
         getPlayerAttackImage();
@@ -66,13 +69,28 @@ public class Player extends Entity {
     public void setDefaultParams() {
 		worldX = 270;
 		worldY = 270;
-		usernamePlayer = networkManager != null ? (networkManager.isServer() ? networkManager.getNameServer() : networkManager.getNameClient()) : "SinglePlayer";
+		setUsernamePlayer(networkManager != null ? (networkManager.isServer() ? networkManager.getNameServer() : networkManager.getNameClient()) : "SinglePlayer");
 		speed = 4;
-		attack=5;
+
 		direction = "down";
 		maxHealth=100;
 		setHealth(maxHealth);
 		invincibleCounter=0;
+		
+		//DEFAULT STATS
+		level =1;
+		setStrength(1); //The more strength the more damage he gives even with worse weapons
+		setDexterity(1); // same as attack but for defense
+		setExp(0);
+		setNextLevelExp(200);
+		setGold(0);
+		currentWeapon = new OBJ_BloodSword(gp);
+		attack=5;
+		currentShield = new OBJ_WoodenShield(gp);
+		
+		attack = getAttack(); // the total ATK value is decided by strength and the weapon ATK value
+		
+		setDefense(getDefense()); // The total DEF value is decided by dexterity and shield and armor DEF values
 	}
 
     @Override
@@ -81,6 +99,14 @@ public class Player extends Entity {
         if (keyH == null) {
             
             return;
+        }
+        
+        
+        countAttackDelayTime++;
+      //DELAY BETWEEN EACH PLAYER ATTCK SO YOU CANT KEEP THE KEY PRESSED AND ATTACK INFINITELY
+        if( countAttackDelayTime>=30) {
+        	gp.keyH.attackDelay=1;
+        	countAttackDelayTime=0;
         }
 
          moved = false;
@@ -93,11 +119,13 @@ public class Player extends Entity {
         
         
         
+        
         if (attacking==true) {
         	networkManager.sendPlayerUpdate(this);
         	attacking();
         	networkManager.sendPlayerUpdate(this);
         	spriteNum=1;
+        	
         	
         }
         
@@ -181,48 +209,68 @@ public class Player extends Entity {
     }
     
     public void attacking() {
+    	
+    	//FIRST WE REGISTER THE ATTACK TO THE MONSTER SO IT DOESNT TAKE THE DELAY
+    	//OF THE ATTACK INTO ACCOUNT FOR THE MONSTERS TO RECEIVE DAMAGE SINCE THAT IS
+    	//HANDLED BY THE INVENCIBILITY TIME OF THE MONSTER
+    	
+    	
+    	//Save the original player parameters
+        int currentWorldX=worldX;
+        int currentWorldY=worldY;
+        int solidAreaWidth = solidArea.width;
+        int solidAreaHeight = solidArea.height;
+        
+        //Adjust player parameters for the attack area collision
+        
+        switch(direction) {
+		case "up": worldY -= attackArea.height; break;
+		case "down": worldY += attackArea.height; break;
+		case "left": worldX -= attackArea.height; break;
+		case "right": worldX += attackArea.height; break;
+		}
+		
+		//attackArea become solidArea
+		solidArea.width = attackArea.width;
+		solidArea.height = attackArea.height;
+		
+		//check monster collision with the updated worldX, worldY and solidArea
+		int monsterIndex = gp.getcChecker().checkEntity(this,gp.getMonster());
+		damageMonster(monsterIndex);
+		//After checking collision, restore the original data
+		worldX=currentWorldX;
+		worldY=currentWorldY;
+		solidArea.width=solidAreaWidth;
+		solidArea.height=solidAreaHeight;
+		
+		
+		
+    	if(gp.keyH.attackDelay==1) {
         spriteCounter++;
-
+        
         if (spriteCounter <= 5) {
             spriteNum = 1;
+            
         } else if (spriteCounter <= 25) {
             spriteNum = 2;
             
-            //Save the original player parameters
-            int currentWorldX=worldX;
-            int currentWorldY=worldY;
-            int solidAreaWidth = solidArea.width;
-            int solidAreaHeight = solidArea.height;
-            
-            //Adjust player parameters for the attack area collision
-            
-            switch(direction) {
-    		case "up": worldY -= attackArea.height; break;
-    		case "down": worldY += attackArea.height; break;
-    		case "left": worldX -= attackArea.height; break;
-    		case "right": worldX += attackArea.height; break;
-    		}
+           
     		
-    		//attackArea become solidArea
-    		solidArea.width = attackArea.width;
-    		solidArea.height = attackArea.height;
     		
-    		//check monster collision with the updated worldX, worldY and solidArea
-    		int monsterIndex = gp.getcChecker().checkEntity(this,gp.getMonster());
-    		damageMonster(monsterIndex);
-    		//After checking collision, restore the original data
-    		worldX=currentWorldX;
-    		worldY=currentWorldY;
-    		solidArea.width=solidAreaWidth;
-    		solidArea.height=solidAreaHeight;
-            
+        
             
         } else {
-            spriteNum = 1;
+            
+        	spriteNum = 1;
             spriteCounter = 0;
             attacking = false;
         }
         
+        
+        spriteNum = 1;
+        spriteCounter = 0;
+        attacking = false;
+    	}
         
     }
     
@@ -233,6 +281,8 @@ public class Player extends Entity {
     			
     			gp.monster[i].Health-=this.attack;
     			gp.monster[i].invincible=true;
+    			gp.playSE(2);
+    			
     		}
     		
     		if(gp.monster[i].Health<=0) {
@@ -298,16 +348,16 @@ public class Player extends Entity {
 	    int drawX = screenX - gp.getPlayer().getWorldX() + worldX;
 	    int drawY = screenY - gp.getPlayer().getWorldY() + worldY;
 	    
-	    if (usernamePlayer != null && !usernamePlayer.isEmpty()) {
+	    if (getUsernamePlayer() != null && !getUsernamePlayer().isEmpty()) {
             Font customFont = new Font("Comic Sans", Font.BOLD, 16);
             g2.setFont(customFont);
             g2.setColor(Color.white);
 
-            int textWidth = g2.getFontMetrics().stringWidth(usernamePlayer + " Lvl " + level);
+            int textWidth = g2.getFontMetrics().stringWidth(getUsernamePlayer() + " Lvl " + level);
             int textX = drawX + (gp.getTileSize() / 2) - (textWidth / 2);
             int textY = drawY - 5;
 
-            g2.drawString(usernamePlayer + " Lvl " + level, textX, textY);
+            g2.drawString(getUsernamePlayer() + " Lvl " + level, textX, textY);
         }
 
 	    // Adjust draw position based on attack state
@@ -393,6 +443,14 @@ public class Player extends Entity {
 			right1 = setup("/Player/SpritesJava(right).png",gp.getTileSize(),gp.getTileSize());
 			right2 = setup("/Player/SpritesJava(right2).png",gp.getTileSize(),gp.getTileSize());
 		
+	}
+	
+	public int getAttack() {
+		return attack = getStrength() * currentWeapon.attackValue;
+	}
+	
+	public int getDefense() {
+		return defense = getDexterity() * currentShield.defenseValue;
 	}
 	
 	public boolean isAttacking() {

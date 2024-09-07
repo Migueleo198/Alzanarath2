@@ -14,7 +14,7 @@ import main.GamePanel;
 import main.Utility;
 
 public abstract class Entity {
-	protected String usernamePlayer;
+	private String usernamePlayer;
 	protected int worldX;
 	protected int worldY;
 	protected int speed;
@@ -29,7 +29,18 @@ public abstract class Entity {
 	protected int solidAreaDefaultX;
 	protected int solidAreaDefaultY;
 	protected int level = 1;
+	private int strength=0;
+	private int dexterity=0;
 	protected int attack=0;
+	protected int defense=0;
+	private int exp=0;
+	private int nextLevelExp;
+	private int gold;
+	public Entity currentWeapon;
+	public Entity currentShield;
+	
+	
+	
 	protected int type; //1= player 2 = slime
 	protected Rectangle attackArea = new Rectangle(0,0,0,0);
 	
@@ -51,6 +62,10 @@ public abstract class Entity {
 	
 	protected int maxHealth;
 	protected int Health;
+	
+	//ITEM ATTRIBUTES
+	protected int attackValue;
+	protected int defenseValue;
 	
 	public int getAttack() {
 		return attack;
@@ -233,11 +248,11 @@ public abstract class Entity {
 	// [ This is the entity username ]
 	
 	public String getUsername() {
-		return usernamePlayer;
+		return getUsernamePlayer();
 	}
 	
 	public void setUsername(String usernamePlayer) {
-		this.usernamePlayer = usernamePlayer;
+		this.setUsernamePlayer(usernamePlayer);
 	}
 	
 	// 
@@ -408,6 +423,62 @@ public abstract class Entity {
 
 	public void setHealth(int health) {
 		Health = health;
+	}
+
+	public int getGold() {
+		return gold;
+	}
+
+	public void setGold(int gold) {
+		this.gold = gold;
+	}
+
+	public int getNextLevelExp() {
+		return nextLevelExp;
+	}
+
+	public void setNextLevelExp(int nextLevelExp) {
+		this.nextLevelExp = nextLevelExp;
+	}
+
+	public int getExp() {
+		return exp;
+	}
+
+	public void setExp(int exp) {
+		this.exp = exp;
+	}
+
+	public int getDefense() {
+		return defense;
+	}
+
+	public void setDefense(int defense) {
+		this.defense = defense;
+	}
+
+	public int getDexterity() {
+		return dexterity;
+	}
+
+	public void setDexterity(int dexterity) {
+		this.dexterity = dexterity;
+	}
+
+	public int getStrength() {
+		return strength;
+	}
+
+	public void setStrength(int strength) {
+		this.strength = strength;
+	}
+
+	public String getUsernamePlayer() {
+		return usernamePlayer;
+	}
+
+	public void setUsernamePlayer(String usernamePlayer) {
+		this.usernamePlayer = usernamePlayer;
 	}
 	
 }

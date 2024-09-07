@@ -9,6 +9,8 @@ public class KeyHandler implements KeyListener {
     private boolean upPressed, downPressed, leftPressed, rightPressed, ePressed;
     private boolean enterKeyPressed = false;
     private boolean escKeyPressed = false;
+    private boolean cPressed;
+    public int attackDelay=0;
 
     public KeyHandler(GamePanel gp) {
         this.gp = gp;
@@ -16,51 +18,94 @@ public class KeyHandler implements KeyListener {
 
     @Override
     public void keyPressed(KeyEvent e) {
-        synchronized (gp.keyH) {
-            int code = e.getKeyCode();
+    	 synchronized (gp.keyH) {
+    	 int code = e.getKeyCode();
 
-            // Handle chat input if chat is visible
-            if (gp.ui.isChatVisible()) {
-                if (code == KeyEvent.VK_ENTER) {
-                    // Send the message and clear the input
-                    String message = gp.ui.getCurrentMessage();
-                    sendMessage(message);
-                    gp.ui.appendGlobalChatMessage("You: " + message); // Add message to local chat
-                    gp.ui.setCurrentMessage(""); // Clear the input
-                   
-                } else if (code == KeyEvent.VK_ESCAPE) {
-                    // Hide chat
-                    gp.ui.hideChat();
-                } else if (code == KeyEvent.VK_BACK_SPACE) {
-                    // Handle backspace to remove characters
-                    String currentMessage = gp.ui.getCurrentMessage();
-                    if (currentMessage.length() > 0) {
-                        gp.ui.setCurrentMessage(currentMessage.substring(0, currentMessage.length() - 1));
-                    }
-                } else {
-                    // Update current message while typing
-                    gp.ui.setCurrentMessage(gp.ui.getCurrentMessage() + e.getKeyChar());
-                }
-                return; // Skip player movement when chat is visible
-            }
-
-            // Handle chat visibility toggle
-            if (code == KeyEvent.VK_ENTER && gp.getGameState() != gp.getTitleState()) {
-               
-                if (gp.ui.isChatVisible()) {
-                    // Start typing mode and reset the current message
-                    gp.ui.setCurrentMessage("");
-                }
-            } else if (code == KeyEvent.VK_ESCAPE) {
-                gp.ui.toggleChatVisibility(); // Show or hide chat
-                return; // Skip other actions if chat is being toggled
-            }
-
-            // Handle menu navigation and player movement
+           
             if (gp.getGameState() == gp.getTitleState()) {
-                handleMenuNavigation(code);
+               titleState(code);
+            } 
+            
+           if (gp.getGameState() == gp.getPlayState()) {
+            	playState(code,e);
+            
+            }
+            
+        
+    	
+           else if (gp.getGameState() == gp.getCharacterState()) {
+    		characterState(code);
+    	}
+    }
+    }
+    
+    public void titleState(int code) {
+    	 handleMenuNavigation(code);
+    }
+    
+    public void playState(int code,KeyEvent e) {
+    	 // Handle chat input if chat is visible
+        if (gp.ui.isChatVisible()) {
+            if (code == KeyEvent.VK_ENTER) {
+                // Send the message and clear the input
+                String message = gp.ui.getCurrentMessage();
+                sendMessage(message);
+                gp.ui.appendGlobalChatMessage("You: " + message); // Add message to local chat
+                gp.ui.setCurrentMessage(""); // Clear the input
+               
+            } else if (code == KeyEvent.VK_ESCAPE) {
+                // Hide chat
+                gp.ui.hideChat();
+            } else if (code == KeyEvent.VK_BACK_SPACE) {
+                // Handle backspace to remove characters
+                String currentMessage = gp.ui.getCurrentMessage();
+                if (currentMessage.length() > 0) {
+                    gp.ui.setCurrentMessage(currentMessage.substring(0, currentMessage.length() - 1));
+                }
             } else {
-                handlePlayerMovement(code, true);
+                // Update current message while typing
+                gp.ui.setCurrentMessage(gp.ui.getCurrentMessage() + e.getKeyChar());
+            }
+            return; // Skip player movement when chat is visible
+        }
+
+        // Handle chat visibility toggle
+        if (code == KeyEvent.VK_ENTER && gp.getGameState() != gp.getTitleState()) {
+           
+            if (gp.ui.isChatVisible()) {
+                // Start typing mode and reset the current message
+                gp.ui.setCurrentMessage("");
+            }
+        } else if (code == KeyEvent.VK_ESCAPE) {
+            gp.ui.toggleChatVisibility(); // Show or hide chat
+            return; // Skip other actions if chat is being toggled
+        }
+    	
+    	
+        else {
+    	
+    	
+    	
+    	 handlePlayerMovement(code, true);
+        }
+        
+      //Open inventory 
+        if(code == KeyEvent.VK_C) {
+        	
+        	gp.setGameState(gp.getCharacterState());
+        	
+        }
+    }
+    
+    public void characterState(int code) {
+    	
+    	
+        
+        //Close Inventory
+        
+         if(gp.getGameState()==gp.getCharacterState()) {
+       	 if(code == KeyEvent.VK_C) {
+            	gp.setGameState(gp.getPlayState());
             }
         }
     }
@@ -82,9 +127,11 @@ public class KeyHandler implements KeyListener {
         } else if (code == KeyEvent.VK_D) {
             rightPressed = false;
         }
+       
         
         if(code == KeyEvent.VK_E) {
         	setePressed(false);
+        	
         }
     }
 
@@ -120,10 +167,14 @@ public class KeyHandler implements KeyListener {
         } else if (code == KeyEvent.VK_D) {
             rightPressed = pressed;
         }
-        
-        if(code == KeyEvent.VK_E) {
-        	setePressed(true);
+       
+        if(code == KeyEvent.VK_E && attackDelay==1) {
+        	ePressed=true;
+        	gp.playSE(3);
+        	attackDelay=0;
+        	
         }
+        
     }
     
     
