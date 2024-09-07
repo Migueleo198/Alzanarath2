@@ -19,7 +19,7 @@ public class MON_Slime extends Entity{
 	private boolean gotHit=false;
 	public MON_Slime(GamePanel gp){
 		super(gp);
-		name = "Blue Slime";
+		name = "Blue_Slime";
 		speed=1;
 		maxHealth = 60;
 		Health = maxHealth;
@@ -197,5 +197,9 @@ public class MON_Slime extends Entity{
 			healthBarcounter=0;
 			gotHit=false;
 		}
+	}
+	
+	public String getMonsterId() {
+		return "" + System.currentTimeMillis();
 	}
 }

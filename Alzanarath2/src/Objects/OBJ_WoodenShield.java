@@ -13,4 +13,9 @@ public class OBJ_WoodenShield extends Entity{
 			down1=setup("/Object/WoodShield.png",GamePanel.getTileSize(),GamePanel.getTileSize());
 			defenseValue=3;
 		}
+		@Override
+		public String getMonsterId() {
+			// TODO Auto-generated method stub
+			return null;
+		}
 }

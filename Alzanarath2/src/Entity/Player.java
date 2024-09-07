@@ -517,4 +517,10 @@ public class Player extends Entity {
 		this.invincibleCounter=invincibleCounter;
 	}
 
+	@Override
+	public String getMonsterId() {
+		// TODO Auto-generated method stub
+		return "" + System.currentTimeMillis();
+	}
+
 }

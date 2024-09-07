@@ -7,12 +7,14 @@ import java.awt.Graphics2D;
 import javax.swing.JPanel;
 
 import Networking.Configuration;
+import Networking.MonsterData;
 import Networking.NetworkManager;
 import Networking.PlayerData;
 import Entity.Entity;
 import Entity.NpcOldMan;
 import Entity.Player;
 import Inputs.KeyHandler;
+import Monster.MON_Slime;
 import Tile.TileManager;
 import UI.UI;
 
@@ -162,6 +164,9 @@ public class GamePanel extends JPanel implements Runnable {
         System.out.println("Game initialized. Player: " + (player != null ? "Initialized" : "Not Initialized"));
     }
 
+    long lastMonsterUpdateTime = 0;
+    long monsterUpdateInterval = 1000000000 / 60; // Update every 180 frames (assuming FPS = 60)
+
     @Override
     public void run() {
         double drawInterval = 1000000000 / FPS;
@@ -176,8 +181,17 @@ public class GamePanel extends JPanel implements Runnable {
 
             if (delta >= 1) {
                 update();
-                repaint();
+                repaint(); // Repaint after all updates
                 delta--;
+
+                long currentUpdateTime = System.nanoTime();
+                if (currentUpdateTime - lastMonsterUpdateTime >= monsterUpdateInterval) {
+                    // Update monster data only if networkManager is available
+                    if (networkManager != null) {
+                        networkManager.sendMonsterDataToAllClients();
+                    }
+                    lastMonsterUpdateTime = currentUpdateTime;
+                }
             }
         }
         System.out.println("ERROR: PROGRAM STOPPED RUNNING");
@@ -188,21 +202,32 @@ public class GamePanel extends JPanel implements Runnable {
             System.err.println("KeyHandler is not initialized.");
             return;
         }
-        
-        for (int i=0; i<npc.length; i++) {
-            if (npc[i]!=null) {
+
+        // Update NPCs
+        for (int i = 0; i < npc.length; i++) {
+            if (npc[i] != null) {
                 npc[i].update();
             }
         }
-        
-        for(int i=0; i<monster.length; i++) {
-        	if(monster[i] != null) {
-        		monster[i].update();
-        	}
+
+        // Update Monsters
+        for (int i = 0; i < monster.length; i++) {
+            if (monster[i] != null) {
+                monster[i].update();
+                
+            }
         }
 
+                // Send monster data only when necessary
+             // Check if monster state has changed
+               
+        
+    
+        
+
+
+        // Update player and other players
         synchronized (keyH) {
-            // Update local player and other entities
             if (player != null) {
                 player.update();
             }
@@ -212,119 +237,142 @@ public class GamePanel extends JPanel implements Runnable {
                     otherPlayer.update();
                 }
             }
-
-            
         }
-        
-       
     }
-
 
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
 
-        if (this.player!=null) {
+        if (this.player != null) {
             g2.setColor(getBackground());
-            getTileM().draw(g2);
-            
+
+            // Add all entities to the entityList
             entityList.add(player);
-            
-            for (int i=0; i<npc.length; i++) {
-            	if(npc[i]!=null) {
-            entityList.add(npc[i]);
-            	}
-            }
-            
-            for (int i=0; i<monster.length; i++) {
-            	if(monster[i]!=null) {
-            entityList.add(monster[i]);
-            	}
-            }
-            
-            //SORT THE ARRAYLIST
-            Collections.sort(entityList, new Comparator<Entity>() {
+            getTileM().draw(g2);
 
-				@Override
-				public int compare(Entity e1, Entity e2) {
-					int result = Integer.compare(e1.getWorldY(),e2.getWorldY());
-					return result;
-				}
-            });
-        
-            	
-            //DRAW THE ENTITIES
-            
-            for (int i=0; i<entityList.size();i++) {
-            	entityList.get(i).draw(g2);
-            }
-            
-            //Empty ENTITY LIST
-            
-            entityList.clear();
-            }
-
-           
-            
-             
-
-            // Draw other players
-            for (Player otherPlayer : otherPlayers.values()) {
-                if (otherPlayer != null) {
-                   entityList.add(otherPlayer);
-                    
-                    if(joinSound==0) {
-                    joinSound++;
-                    playSE(1);
-                    }
-                    
+            for (int i = 0; i < npc.length; i++) {
+                if (npc[i] != null) {
+                    entityList.add(npc[i]);
                 }
             }
-          
+
+            for (int i = 0; i < monster.length; i++) {
+                if (monster[i] != null && isServer) {
+                    entityList.add(monster[i]);
+                }
+            }
+
+            // Sort the entityList by Y coordinate
+            Collections.sort(entityList, (e1, e2) -> Integer.compare(e1.getWorldY(), e2.getWorldY()));
+
+            // Draw entities
+            for (Entity entity : entityList) {
+            	
+                entity.draw(g2);
+            }
+            
+            
+
+            // Clear entityList after drawing
+            entityList.clear();
+        }
+
+        // Draw other players
+        for (Player otherPlayer : otherPlayers.values()) {
+            if (otherPlayer != null) {
+                otherPlayer.draw(g2);
+            }
+        }
 
         // Draw the UI
         ui.drawUI(g2);
-        
+
         g2.dispose();
     }
+    
+    
 
     public void updateOtherPlayer(String playerId, PlayerData playerData) {
         if (!otherPlayers.containsKey(playerId)) {
-            // Create a new Player instance if the player doesn't exist in the map
+            // Create new player if it doesn't exist
             Player newPlayer = new Player(this, null, networkManager);
-            newPlayer.setUsername(playerData.getUsername()); // Set the username
+            newPlayer.setUsername(playerData.getUsername());
             newPlayer.setWorldX(playerData.getX());
             newPlayer.setWorldY(playerData.getY());
             newPlayer.setDirection(playerData.getDirection());
-            newPlayer.setSpriteNum(playerData.getSpriteNum()); // Set animation state for new player
-            newPlayer.setLevel(playerData.getLevel()); // Set the player's level
-            newPlayer.setIsAttacking(playerData.isAttacking()); // Set if its attacking
-            newPlayer.setInvincibleCounter(playerData.getInvincibleCounter()); // Set if its attacking
+            newPlayer.setSpriteNum(playerData.getSpriteNum());
+            newPlayer.setLevel(playerData.getLevel());
+            newPlayer.setIsAttacking(playerData.isAttacking());
+            newPlayer.setInvincibleCounter(playerData.getInvincibleCounter());
 
             otherPlayers.put(playerId, newPlayer);
         } else {
-            // Update the existing player
+            // Update existing player
             Player existingPlayer = otherPlayers.get(playerId);
-            
-            // Correct position if not attacking, otherwise maintain attack position
             if (!playerData.isAttacking()) {
                 existingPlayer.correctPosition(playerData.getX(), playerData.getY(), playerData.getDirection());
             }
-
-            existingPlayer.setSpriteNum(playerData.getSpriteNum()); // Update animation state
-            existingPlayer.setLevel(playerData.getLevel()); // Update the player's level
-            existingPlayer.setIsAttacking(playerData.isAttacking()); // Set if it's attacking
+            existingPlayer.setSpriteNum(playerData.getSpriteNum());
+            existingPlayer.setLevel(playerData.getLevel());
+            existingPlayer.setIsAttacking(playerData.isAttacking());
             existingPlayer.setInvincibleCounter(playerData.getInvincibleCounter());
-            // Apply additional logic for when the player is attacking
+
+            // Handle attack movement
             if (playerData.isAttacking()) {
                 handleAttackMovement(existingPlayer, playerData);
             }
         }
-        
-        repaint(); // Ensure the game panel is repainted to reflect the updates
+
+        repaint();
     }
 
+    public void updateMonster(String monsterId, MonsterData monsterData) {
+        boolean monsterExists = false;
+
+        for (Entity entity : entityList) {
+            if (entity.isMonster && entity.getMonsterId().equals(monsterId)) {
+                // Update the existing monster
+                entity.setWorldX(monsterData.getWorldX());
+                entity.setWorldY(monsterData.getWorldY());
+                entity.setDirection(monsterData.getDirection());
+                entity.setSpriteNum(monsterData.getSpriteNum());
+                entity.setSpeed(monsterData.getSpeed());
+                entity.setHealth(monsterData.getHealth());
+                entity.setMaxHealth(monsterData.getMaxHealth());
+                entity.setAttack(monsterData.getAttack());
+                monsterExists = true;
+                
+                
+                networkManager.sendMonsterData(entity.getMonsterId(), entity, monsterExists);
+                networkManager.sendMonsterDataToAllClients();
+                break;
+                
+               
+            }
+        }
+
+        // Add a new monster if it doesn't exist
+        if (!monsterExists) {
+            Entity newMonster = new MON_Slime(this);
+            newMonster.setWorldX(monsterData.getWorldX());
+            newMonster.setWorldY(monsterData.getWorldY());
+            newMonster.setDirection(monsterData.getDirection());
+            newMonster.setSpriteNum(monsterData.getSpriteNum());
+            newMonster.setSpeed(monsterData.getSpeed());
+            newMonster.setHealth(monsterData.getHealth());
+            newMonster.setMaxHealth(monsterData.getMaxHealth());
+            newMonster.setAttack(monsterData.getAttack());
+            networkManager.sendMonsterData(newMonster.getMonsterId(), newMonster, monsterExists);
+            
+            entityList.add(newMonster);
+            
+            networkManager.sendMonsterDataToAllClients();
+        }
+
+        repaint(); // Repaint after the update
+    }
     private void handleAttackMovement(Player player, PlayerData playerData) {
         int tileSize = this.getTileSize(); // Assuming tileSize is 48 as mentioned
 

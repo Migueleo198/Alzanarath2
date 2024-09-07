@@ -39,6 +39,12 @@ public class OBJ_BloodSword extends Entity{
 	public static void changeDescription() {
 	
 	}
+
+	@Override
+	public String getMonsterId() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 	
 
 

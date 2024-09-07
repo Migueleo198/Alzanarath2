@@ -137,6 +137,14 @@ public class NpcOldMan extends Entity{
 		g2.drawImage(image, screenX, screenY, gp.getTileSize(), gp.getTileSize(), null);
 		}
 	}
+
+
+
+	@Override
+	public String getMonsterId() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 		
 	
 	

@@ -5,6 +5,8 @@ import java.net.*;
 import java.util.*;
 import java.util.concurrent.*;
 import javax.swing.JOptionPane;
+
+import Entity.Entity;
 import Entity.Player;
 import Inputs.KeyHandler;
 import main.GamePanel;
@@ -24,6 +26,8 @@ public class NetworkManager {
     private KeyHandler keyH;
     private Map<Socket, BufferedWriter> clientWriters = new ConcurrentHashMap<>();
     private Map<Socket, BufferedReader> clientReaders = new ConcurrentHashMap<>();
+    
+    private Map<Socket, String> socketToPlayerId = new ConcurrentHashMap<>();
     
     private ExecutorService clientExecutor = Executors.newCachedThreadPool();
     
@@ -65,7 +69,7 @@ public class NetworkManager {
 
                         clientWriters.put(clientSocket, clientOut);
                         clientReaders.put(clientSocket, clientIn);
-
+                        sendMonsterDataToAllClients(); // Send updated monster data to all clients
                         sendAllPlayersToClient(clientOut);
                         clientExecutor.submit(() -> handleClient(clientSocket));
                     } catch (IOException e) {
@@ -193,8 +197,18 @@ public class NetworkManager {
         otherPlayers.put(playerId, playerData);
         gamePanel.updateOtherPlayer(playerId, playerData);
 
+        // Update socket to player ID mapping
         if (isServer) {
-            for (BufferedWriter writer : clientWriters.values()) {
+            for (Map.Entry<Socket, BufferedWriter> entry : clientWriters.entrySet()) {
+                Socket clientSocket = entry.getKey();
+                String clientId = socketToPlayerId.get(clientSocket); // Assuming client ID is updated somewhere
+                if (clientId != null) {
+                    // Update player info on the server
+                    if (clientId.equals(playerId)) {
+                        socketToPlayerId.put(clientSocket, playerId);
+                    }
+                }
+                BufferedWriter writer = entry.getValue();
                 try {
                     writer.write(message + "\n");
                     writer.flush();
@@ -319,21 +333,33 @@ public class NetworkManager {
     }
 
     private void handleReceivedData(String data) {
+        // Split the data by space
         String[] tokens = data.split(" ");
-        if (tokens.length < 1) { // Increased minimum required tokens for invincibleCounter
+        
+        // Ensure we have at least two tokens for command and username
+        if (tokens.length < 2) {
             System.err.println("Insufficient data: " + data);
             return;
         }
 
+        // Extract the command and sender username
         String command = tokens[0];
         String senderUsername = tokens[1];
         String payload = String.join(" ", Arrays.copyOfRange(tokens, 2, tokens.length));
-        for(int i=0; i<tokens.length; i++) {
-        	System.out.println(tokens[i]);
+        
+        // Debug: Print tokens for inspection
+        for (int i = 0; i < tokens.length; i++) {
+            System.out.println(tokens[i]);
         }
+        
         switch (command) {
             case "PLAYER_UPDATE":
             case "PLAYER_REGISTER":
+                if (tokens.length < 11) { // Ensure there are enough tokens
+                    System.err.println("Error: Data format is incorrect for player. Expected at least 11 parts, but got " + tokens.length);
+                    return;
+                }
+                
                 try {
                     String playerId = tokens[1];
                     String username = tokens[2];
@@ -345,7 +371,7 @@ public class NetworkManager {
                     int level = Integer.parseInt(tokens[tokens.length - 4]);
                     boolean isAttacking = Boolean.parseBoolean(tokens[tokens.length - 3]);
                     int spriteCounter = Integer.parseInt(tokens[tokens.length - 2]);
-                    int invincibleCounter = Integer.parseInt(tokens[tokens.length - 1]); // Added invincibleCounter
+                    int invincibleCounter = Integer.parseInt(tokens[tokens.length - 1]);
 
                     // Updated PlayerData to include invincibleCounter
                     PlayerData playerData = new PlayerData(playerId, username, x, y, direction, spriteNum, timestamp, level, isAttacking, spriteCounter, invincibleCounter);
@@ -353,7 +379,57 @@ public class NetworkManager {
                     gamePanel.updateOtherPlayer(playerId, playerData);
 
                 } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
-                    System.err.println("Error parsing data: " + e.getMessage());
+                    System.err.println("Error parsing player data: " + e.getMessage());
+                    e.printStackTrace();
+                }
+                break;
+
+            case "MONSTER_UPDATE":
+            case "MONSTER_REGISTER":
+                if (tokens.length < 11) { // Ensure enough tokens for monster data
+                    System.err.println("Error: Data format is incorrect for monster. Expected at least 11 parts, but got " + tokens.length);
+                    return;
+                }
+                
+                System.out.println("works");
+
+                try {
+                    // Extract monsterId
+                    String monsterId = tokens[1];
+                    
+                    // Reconstruct name from the tokens (enclosed in quotes)
+                    StringBuilder nameBuilder = new StringBuilder();
+                    boolean insideQuotes = false;
+                    for (int i = 2; i < tokens.length; i++) {
+                        if (tokens[i].startsWith("\"") && !insideQuotes) {
+                            insideQuotes = true;
+                            nameBuilder.append(tokens[i].substring(1)); // Remove starting quote
+                        } else if (tokens[i].endsWith("\"") && insideQuotes) {
+                            insideQuotes = false;
+                            nameBuilder.append(" ").append(tokens[i].substring(0, tokens[i].length() - 1)); // Remove ending quote
+                            break;
+                        } else if (insideQuotes) {
+                            nameBuilder.append(" ").append(tokens[i]);
+                        }
+                    }
+                    String name = nameBuilder.toString();
+                    
+                    // Extract other monster data
+                    int x = Integer.parseInt(tokens[3]);
+                    int y = Integer.parseInt(tokens[4]);
+                    String direction = tokens[5];
+                    int spriteNum = Integer.parseInt(tokens[6]);
+                    int health = Integer.parseInt(tokens[7]);
+                    int maxHealth = Integer.parseInt(tokens[8]);
+                    int speed = Integer.parseInt(tokens[9]);
+                    int attack = Integer.parseInt(tokens[10]);
+
+                    // Update or register the monster
+                    MonsterData monsterData = new MonsterData(x, y, name, speed, health, maxHealth, attack, direction, spriteNum);
+                    gamePanel.updateMonster(monsterId, monsterData);
+
+                } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
+                    System.err.println("Error parsing monster data: " + e.getMessage());
                     e.printStackTrace();
                 }
                 break;
@@ -371,6 +447,124 @@ public class NetworkManager {
                 break;
         }
     }
+    
+    public void sendMonsterDataToAllClients() {
+        for (Entity monster : gamePanel.monster) {
+            if (monster != null) {
+                String data = formatMonsterData(monster);
+                System.out.println("Sending monster data: " + data); // Add this line
+                for (BufferedWriter writer : clientWriters.values()) {
+                    try {
+                        writer.write(data + "\n");
+                        writer.flush();
+                    } catch (IOException e) {
+                        System.err.println("Error sending monster data to client: " + e.getMessage());
+                    }
+                }
+            }
+        }
+    }
+    
+    public String formatMonsterData(Entity monster) {
+        // Generate a unique ID for the monster if not provided (assuming monsters have an ID field)
+        String monsterId = monster.getMonsterId(); // Ensure this method exists in your Entity class
+
+        // Format the monster data into a string
+        String data = String.format("%s %s \"%s\" %d %d %s %d %d %d %d %d",
+            "MONSTER_UPDATE",  // Command for updating monster data
+            monsterId,         // Unique monster ID
+            monster.getName(), // Name (enclosed in quotes)
+            monster.getWorldX(), // X position
+            monster.getWorldY(), // Y position
+            monster.getDirection(), // Current direction
+            monster.getSpeed(), // Speed
+            monster.getHealth(), // Current health
+            monster.getMaxHealth(), // Maximum health
+            monster.getAttack(), // Attack power
+            monster.getSpriteNum() // Sprite number (for animation state)
+        );
+
+        return data;
+    }
+    
+    public void sendMonsterData(String monsterId, Entity monster, boolean isRegister) {
+        // Check if this code is running on the server side
+        if (!isServer) {
+            return; // Exit if not on the server
+        }
+
+        String command = isRegister ? "MONSTER_REGISTER" : "MONSTER_UPDATE";
+        
+        String data = String.format("%s %s \"%s\" %d %d %s %d %d %d %d %d",
+            command,
+            monsterId,                 // Unique monster ID
+            monster.getName(),         // Name (enclosed in quotes)
+            monster.getWorldX(),       // X position
+            monster.getWorldY(),       // Y position
+            monster.getDirection(),    // Current direction
+            monster.getSpeed(),        // Speed
+            monster.getHealth(),       // Current health
+            monster.getMaxHealth(),    // Maximum health
+            monster.getAttack(),       // Attack power
+            monster.getSpriteNum()     // Sprite number (for animation state)
+        );
+
+        // Send data to all clients
+        for (String playerId : socketToPlayerId.values()) {
+            sendMonsterDataToPlayer(playerId, data);
+        }
+    }
+
+    
+   
+    
+   
+    
+    //HANDLING MONSTERS 
+    
+   
+
+    // Converts the MonsterData object to a string or format appropriate for your network protocol
+    private String convertMonsterDataToString(MonsterData monsterData) {
+        return String.format("%s %d %d %s %d %d %d %d %d",
+            monsterData.getName(),               // Monster name
+            monsterData.getWorldX(),             // X position
+            monsterData.getWorldY(),             // Y position
+            monsterData.getDirection(),          // Direction the monster is facing
+            monsterData.getSpriteNum(),          // Sprite number (for animation state)
+            monsterData.getHealth(),             // Current health
+            monsterData.getMaxHealth(),          // Maximum health
+            monsterData.getSpeed(),              // Speed
+            monsterData.getAttack()              // Attack power
+        );
+    }
+
+    private void sendMonsterDataToPlayer(String playerId, String monsterData) {
+        // Find the corresponding socket for the playerId
+        Socket playerSocket = socketToPlayerId.entrySet().stream()
+            .filter(entry -> playerId.equals(entry.getValue()))
+            .map(Map.Entry::getKey)
+            .findFirst()
+            .orElse(null);
+
+        if (playerSocket != null) {
+            BufferedWriter writer = clientWriters.get(playerSocket);
+
+            if (writer != null) {
+                try {
+                    writer.write(monsterData + "\n");
+                    writer.flush();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                System.err.println("BufferedWriter for player with ID " + playerId + " not found.");
+            }
+        } else {
+            System.err.println("Player with ID " + playerId + " not found.");
+        }
+    }
+
 
 
     public void close() {

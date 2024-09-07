@@ -38,8 +38,8 @@ public abstract class Entity {
 	private int gold;
 	public Entity currentWeapon;
 	public Entity currentShield;
-	
-	
+	public boolean isMonster=false;
+	public boolean hasChanged=false;
 	
 	protected int type; //1= player 2 = slime
 	protected Rectangle attackArea = new Rectangle(0,0,0,0);
@@ -130,30 +130,31 @@ public abstract class Entity {
 		
 		
 		spriteCounter++;
-
-		if (spriteCounter > 10) {
-			if (spriteNum == 1) {
-				spriteNum = 2;
-			} else if (spriteNum == 2) {
-				spriteNum = 1;
-			}
-			spriteCounter = 0;
-		}
+        if (spriteCounter > 10) {
+            spriteNum = (spriteNum == 1) ? 2 : 1;
+            spriteCounter = 0;
+            hasChanged=true; // Sprite changed
+           
+        }
 		
 		// IF COLLISION IS FALSE THE NPC CAN MOVE
 					if (collisionOn == false) {
 						switch (direction) {
 						case "up":
 							worldY -= speed;
+							 hasChanged=true; // Sprite changed
 							break;
 						case "down":
 							worldY += speed;
+							 hasChanged=true; // Sprite changed
 							break;
 						case "left":
 							worldX -= speed;
+							 hasChanged=true; // Sprite changed
 							break;
 						case "right":
 							worldX += speed;
+							 hasChanged=true; // Sprite changed
 							break;
 						}
 					}
@@ -480,5 +481,7 @@ public abstract class Entity {
 	public void setUsernamePlayer(String usernamePlayer) {
 		this.usernamePlayer = usernamePlayer;
 	}
+
+	public abstract String getMonsterId();
 	
 }
