@@ -124,6 +124,7 @@ public class NetworkManager {
             while ((inputLine = clientIn.readLine()) != null) {
                 handleReceivedData(inputLine);
 
+                // Broadcast data to all clients except the sender
                 for (Map.Entry<Socket, BufferedWriter> entry : clientWriters.entrySet()) {
                     if (entry.getKey() != socket) {
                         BufferedWriter writer = entry.getValue();
@@ -449,10 +450,12 @@ public class NetworkManager {
     }
     
     public void sendMonsterDataToAllClients() {
+    	
+        long timestamp = System.currentTimeMillis(); // Add timestamp if necessary
         for (Entity monster : gamePanel.monster) {
             if (monster != null) {
-                String data = formatMonsterData(monster);
-                System.out.println("Sending monster data: " + data); // Add this line
+                String data = formatMonsterData(monster, timestamp); // Pass timestamp if required
+                System.out.println("Sending monster data: " + data);
                 for (BufferedWriter writer : clientWriters.values()) {
                     try {
                         writer.write(data + "\n");
@@ -464,14 +467,13 @@ public class NetworkManager {
             }
         }
     }
-    
-    public String formatMonsterData(Entity monster) {
+
+    public String formatMonsterData(Entity monster, long timestamp) {
         // Generate a unique ID for the monster if not provided (assuming monsters have an ID field)
         String monsterId = monster.getMonsterId(); // Ensure this method exists in your Entity class
 
         // Format the monster data into a string
-        String data = String.format("%s %s \"%s\" %d %d %s %d %d %d %d %d",
-            "MONSTER_UPDATE",  // Command for updating monster data
+        String data = String.format("MONSTER_UPDATE %s \"%s\" %d %d %s %d %d %d %d %d %d",
             monsterId,         // Unique monster ID
             monster.getName(), // Name (enclosed in quotes)
             monster.getWorldX(), // X position
@@ -481,7 +483,8 @@ public class NetworkManager {
             monster.getHealth(), // Current health
             monster.getMaxHealth(), // Maximum health
             monster.getAttack(), // Attack power
-            monster.getSpriteNum() // Sprite number (for animation state)
+            monster.getSpriteNum(), // Sprite number (for animation state)
+            timestamp // Current timestamp, if relevant
         );
 
         return data;

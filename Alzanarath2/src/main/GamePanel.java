@@ -185,7 +185,7 @@ public class GamePanel extends JPanel implements Runnable {
                 delta--;
 
                 long currentUpdateTime = System.nanoTime();
-                if (currentUpdateTime - lastMonsterUpdateTime >= monsterUpdateInterval) {
+                if (currentUpdateTime - lastMonsterUpdateTime >= monsterUpdateInterval && isServer) {
                     // Update monster data only if networkManager is available
                     if (networkManager != null) {
                         networkManager.sendMonsterDataToAllClients();
@@ -563,5 +563,7 @@ public class GamePanel extends JPanel implements Runnable {
 	public int getCharacterState() {
 		return characterState;
 	}
+	
+	 
 }
 
