@@ -4,6 +4,9 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
+
 import javax.swing.JOptionPane;
 
 import Entity.Entity;
@@ -54,13 +57,14 @@ public class NetworkManager {
             serverSocket = new ServerSocket(config.getPort(), 50, InetAddress.getByName(radminIP));
             System.out.println("Server started on Radmin IP " + radminIP + " and port " + config.getPort() + "!");
             serverSocket.setPerformancePreferences(1, 1, 2);
+            serverSocket.setReceiveBufferSize(1024 * 64);
             
             
-
             clientExecutor.submit(() -> {
                 while (true) {
                     try {
                         Socket clientSocket = serverSocket.accept();
+                        clientSocket.setTcpNoDelay(true);  // Disable Nagle's algorithm for real-time
                         System.out.println("New client joined!");
 
                         BufferedWriter clientOut = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
@@ -69,11 +73,9 @@ public class NetworkManager {
                         clientWriters.put(clientSocket, clientOut);
                         clientReaders.put(clientSocket, clientIn);
 
-                        // Send all existing clients to the newly connected client
-                        sendAllPlayersToClient(clientOut);
+                        sendAllPlayersToClient(clientOut); // Send existing players
 
-                        // Register the new client
-                        clientExecutor.submit(() -> handleClient(clientSocket));
+                        clientExecutor.submit(() -> handleClient(clientSocket)); // Handle client
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -93,7 +95,8 @@ public class NetworkManager {
             System.out.println("Connected to server at Radmin IP " + radminIP + ":" + config.getPort());
             clientSocket.setPerformancePreferences(1, 0, 2);
             clientSocket.setTcpNoDelay(true);
-
+            clientSocket.setReceiveBufferSize(1024 * 64);
+            clientSocket.setSendBufferSize(1024 * 64);
             // Initialize BufferedWriter and BufferedReader
             out = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
             in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
@@ -160,14 +163,19 @@ public class NetworkManager {
         try (BufferedReader clientIn = clientReaders.get(socket)) {
             String inputLine;
             while ((inputLine = clientIn.readLine()) != null) {
-                handleReceivedData(inputLine);
+                if (inputLine.equals("REQUEST_PLAYERS_DATA")) {
+                    // Send all players' data to the client
+                    sendAllPlayersToClient(clientWriters.get(socket));
+                } else {
+                    handleReceivedData(inputLine);
 
-                // Broadcast data to all clients except the sender
-                for (Map.Entry<Socket, BufferedWriter> entry : clientWriters.entrySet()) {
-                    if (entry.getKey() != socket) {
-                        BufferedWriter writer = entry.getValue();
-                        writer.write(inputLine + "\n");
-                        writer.flush();
+                    // Broadcast data to all clients except the sender
+                    for (Map.Entry<Socket, BufferedWriter> entry : clientWriters.entrySet()) {
+                        if (entry.getKey() != socket) {
+                            BufferedWriter writer = entry.getValue();
+                            writer.write(inputLine + "\n");
+                            writer.flush();
+                        }
                     }
                 }
             }
@@ -181,6 +189,36 @@ public class NetworkManager {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+        }
+    }
+    
+    private String compressData(String data) {
+        try {
+            ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+            GZIPOutputStream gzipStream = new GZIPOutputStream(byteStream);
+            gzipStream.write(data.getBytes("UTF-8"));
+            gzipStream.close();
+            return Base64.getEncoder().encodeToString(byteStream.toByteArray());
+        } catch (IOException e) {
+            e.printStackTrace();
+            return data; // Fallback to original data if compression fails
+        }
+    }
+
+    private String decompressData(String compressedData) {
+        try {
+            byte[] compressedBytes = Base64.getDecoder().decode(compressedData);
+            GZIPInputStream gzipStream = new GZIPInputStream(new ByteArrayInputStream(compressedBytes));
+            BufferedReader reader = new BufferedReader(new InputStreamReader(gzipStream, "UTF-8"));
+            StringBuilder decompressed = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                decompressed.append(line);
+            }
+            return decompressed.toString();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return compressedData; // Fallback if decompression fails
         }
     }
 

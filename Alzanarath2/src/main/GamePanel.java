@@ -223,13 +223,12 @@ public class GamePanel extends JPanel implements Runnable {
             lastTime = currentTime;
             
            
-            }
+            
 
             if (delta >= 1) {
                 update();  // Game update logic
                 repaint(); // Repaint after all updates
                 delta--;
-
                 // Perform monster updates at the specified interval
                 long currentUpdateTime = System.nanoTime();
                 if (currentUpdateTime - lastMonsterUpdateTime >= updateInterval) {
@@ -248,6 +247,8 @@ public class GamePanel extends JPanel implements Runnable {
                     // Update the last monster update time
                     lastMonsterUpdateTime = currentUpdateTime;
             }
+            }
+               
         }
         System.out.println("ERROR: PROGRAM STOPPED RUNNING");
     }
