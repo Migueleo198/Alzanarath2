@@ -383,7 +383,12 @@ public class GamePanel extends JPanel implements Runnable {
             newPlayer.setLevel(playerData.getLevel());
             newPlayer.setIsAttacking(playerData.isAttacking());
             newPlayer.setInvincibleCounter(playerData.getInvincibleCounter());
-
+            newPlayer.solidArea.x=8;
+            newPlayer.solidArea.y=16;
+            newPlayer.solidArea.width=36;
+            newPlayer.solidArea.height=36;
+            newPlayer.setSolidAreaDefaultX(newPlayer.solidArea.x);
+            newPlayer.setSolidAreaDefaultY(newPlayer.solidArea.y);
             otherPlayers.put(playerId, newPlayer);
         } else {
             // Update existing player
@@ -430,6 +435,7 @@ public class GamePanel extends JPanel implements Runnable {
             existingMonster.setAttack(monsterData.getAttack());
             existingMonster.setSpriteNum(monsterData.getSpriteNum());
             
+            
             // Notify all clients of the updated monster
             networkManager.sendMonsterData(monsterId, existingMonster, true);
         } else {
@@ -447,6 +453,7 @@ public class GamePanel extends JPanel implements Runnable {
                     newMonster.setHealth(monsterData.getHealth());
                     newMonster.setMaxHealth(monsterData.getMaxHealth());
                     newMonster.setAttack(monsterData.getAttack());
+                    
                     monster[i] = newMonster; // Assign the new monster to the slot
                     entityList.add(newMonster);
                     
