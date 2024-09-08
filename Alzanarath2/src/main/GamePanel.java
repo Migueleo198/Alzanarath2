@@ -296,7 +296,7 @@ public class GamePanel extends JPanel implements Runnable {
             }
 
             for (Player otherPlayer : otherPlayers.values()) {
-                if (otherPlayer != null) {
+                if (otherPlayer != null && !networkManager.isServer()) {
                     otherPlayer.update();
                 }
             }

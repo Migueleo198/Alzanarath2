@@ -146,7 +146,7 @@ public class KeyHandler implements KeyListener {
             }
         } else if (code == KeyEvent.VK_ENTER) {
             if (gp.ui.getCommandNum() == 0) {
-               
+            	
                 gp.isServer = true;
                 gp.initializeServer();
                 gp.stopMusic();
