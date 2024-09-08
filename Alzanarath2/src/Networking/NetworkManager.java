@@ -48,13 +48,12 @@ public class NetworkManager {
         }
     }
 
-    public void startServer() {
+    private void startServer() {
         try {
             String radminIP = getRadminIPAddress();
             serverSocket = new ServerSocket(config.getPort(), 50, InetAddress.getByName(radminIP));
             System.out.println("Server started on Radmin IP " + radminIP + " and port " + config.getPort() + "!");
-            serverSocket.setPerformancePreferences(1, 0, 2);
-            
+            serverSocket.setPerformancePreferences(1, 1, 2);
             
             
 
@@ -94,7 +93,7 @@ public class NetworkManager {
             System.out.println("Connected to server at Radmin IP " + radminIP + ":" + config.getPort());
             clientSocket.setPerformancePreferences(1, 0, 2);
             clientSocket.setTcpNoDelay(true);
-           
+
             // Initialize BufferedWriter and BufferedReader
             out = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
             in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
