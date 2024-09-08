@@ -55,7 +55,7 @@ public class NetworkManager {
             System.out.println("Server started on Radmin IP " + radminIP + " and port " + config.getPort() + "!");
             serverSocket.setPerformancePreferences(0, 1, 2);
             
-            serverSocket.setReceiveBufferSize(64 * 1024); // 64 KB
+            
             
 
             clientExecutor.submit(() -> {
@@ -94,8 +94,7 @@ public class NetworkManager {
             System.out.println("Connected to server at Radmin IP " + radminIP + ":" + config.getPort());
             clientSocket.setPerformancePreferences(0, 1, 2);
             clientSocket.setTcpNoDelay(true);
-            clientSocket.setReceiveBufferSize(64 * 1024);
-            clientSocket.setSendBufferSize(64 * 1024);
+            
             // Initialize BufferedWriter and BufferedReader
             out = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
             in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
