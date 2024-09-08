@@ -222,22 +222,7 @@ public class GamePanel extends JPanel implements Runnable {
             delta += (currentTime - lastTime) / drawInterval;
             lastTime = currentTime;
             
-            long currentUpdateTime = System.nanoTime();
-            if (currentUpdateTime - lastMonsterUpdateTime >= updateInterval) {
-                // Check if this instance is the server and networkManager is initialized
-                if (isServer && networkManager != null) {
-                    // Loop through the monsters and send data for each active one
-                    for (int i = 0; i < monster.length; i++) {
-                        Entity currentMonster = monster[i]; // Correctly reference each monster
-
-                        if (currentMonster != null) {
-                            // Send monster data to all clients
-                        	 networkManager.sendMonsterDataToAllClients(currentMonster.getMonsterId(), currentMonster);
-                        }
-                    }
-                }
-                // Update the last monster update time
-                lastMonsterUpdateTime = currentUpdateTime;
+           
             }
 
             if (delta >= 1) {
@@ -246,7 +231,22 @@ public class GamePanel extends JPanel implements Runnable {
                 delta--;
 
                 // Perform monster updates at the specified interval
-               
+                long currentUpdateTime = System.nanoTime();
+                if (currentUpdateTime - lastMonsterUpdateTime >= updateInterval) {
+                    // Check if this instance is the server and networkManager is initialized
+                    if (isServer && networkManager != null) {
+                        // Loop through the monsters and send data for each active one
+                        for (int i = 0; i < monster.length; i++) {
+                            Entity currentMonster = monster[i]; // Correctly reference each monster
+
+                            if (currentMonster != null) {
+                                // Send monster data to all clients
+                            	 networkManager.sendMonsterDataToAllClients(currentMonster.getMonsterId(), currentMonster);
+                            }
+                        }
+                    }
+                    // Update the last monster update time
+                    lastMonsterUpdateTime = currentUpdateTime;
             }
         }
         System.out.println("ERROR: PROGRAM STOPPED RUNNING");
