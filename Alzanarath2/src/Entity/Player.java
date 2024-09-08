@@ -279,24 +279,25 @@ public class Player extends Entity {
     public void damageMonster(int i) {
         if (i != 999) {
             Entity monster = gp.monster[i];
-
+            
             if (monster != null && !monster.isInvincible()) {
-                monster.setInvincible(true); // Set monster to invincible to avoid multiple hits
-                gp.playSE(2); // Play sound effect for the hit
+                synchronized (monster) {
+                    monster.setInvincible(true); // Set monster to invincible to avoid multiple hits
+                    gp.playSE(2); // Play sound effect for the hit
+                   
+                    // Apply damage to the monster
+                    monster.hitMonster(monster.getMonsterId(), this.attack, monster.getHealth());
+                    
+                    // Check if monster is dead
+                    if (monster.getHealth() <= 0) {
+                        // Notify server and other clients about the monster's death
+                        if (gp.getNetworkManager().isServer()) {
+                        	gp.monster[i]=null;
+                        	
+                        }
 
-                // Apply damage to the monster
-                monster.hitMonster(monster.getMonsterId(), this.attack, monster.getHealth());
-
-                // Check if monster is dead
-                if (monster.getHealth() <= 0) {
-                    // Notify server and other clients about the monster's death
-                    if (gp.getNetworkManager().isServer()) {
-                        gp.getNetworkManager().sendMonsterDeathToAllClients(monster.getMonsterId());
-                    }
-
-                    // Optionally set the monster to null in the local game panel
-                    if (gp.isStopUpdatingMonstersOnDeath()) {
-                        gp.monster[i] = null;
+                        // Optionally set the monster to null in the local game panel
+                        
                     }
                 }
             }

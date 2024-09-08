@@ -183,6 +183,8 @@ public class GamePanel extends JPanel implements Runnable {
                     e.printStackTrace();
                 }
             }).start();
+        }else {
+        	
         }
 
         aSetter = new AssetSetter(this, networkManager);
@@ -201,7 +203,8 @@ public class GamePanel extends JPanel implements Runnable {
         long lastTime = System.nanoTime();
         long currentTime;
 
-        long lastMonsterUpdateTime = System.nanoTime();
+        long lastMonsterUpdateTime = System.nanoTime(); // Last time monster data was updated
+        long updateInterval = 1000000000 / 60; // Example interval (60 updates per second)
 
         while (gameThread != null) {
             currentTime = System.nanoTime();
@@ -209,28 +212,33 @@ public class GamePanel extends JPanel implements Runnable {
             lastTime = currentTime;
 
             if (delta >= 1) {
-                update();
+                update();  // Game update logic
                 repaint(); // Repaint after all updates
                 delta--;
-                
-                
 
-                // Perform monster updates at specified intervals
+                // Perform monster updates at the specified interval
                 long currentUpdateTime = System.nanoTime();
                 if (currentUpdateTime - lastMonsterUpdateTime >= updateInterval) {
-                    
-                	if (isServer && networkManager != null) {
-                        // Send monster data updates to all clients
-                        networkManager.sendMonsterDataToAllClients();
-                        lastMonsterUpdateTime = currentUpdateTime;
-                       
+                    // Check if this instance is the server and networkManager is initialized
+                    if (isServer && networkManager != null) {
+                        // Loop through the monsters and send data for each active one
+                        for (int i = 0; i < monster.length; i++) {
+                            Entity currentMonster = monster[i]; // Correctly reference each monster
+
+                            if (currentMonster != null) {
+                                // Send monster data to all clients
+                                networkManager.sendMonsterDataToAllClients(currentMonster.getMonsterId(), currentMonster);
+                            }
+                        }
                     }
-                	 
+                    // Update the last monster update time
+                    lastMonsterUpdateTime = currentUpdateTime;
                 }
             }
         }
         System.out.println("ERROR: PROGRAM STOPPED RUNNING");
     }
+
 
     public void update() {
         if (keyH == null) {
@@ -381,53 +389,53 @@ public class GamePanel extends JPanel implements Runnable {
         boolean monsterExists = false;
         int indexToUpdate = -1;
         
-        // Find the index of the existing monster
+        // Check if the monster already exists
         for (int i = 0; i < monster.length; i++) {
             if (monster[i] != null && monster[i].getMonsterId().equals(monsterId)) {
                 indexToUpdate = i;
                 monsterExists = true;
                 break;
             }
-            
         }
 
         if (monsterExists) {
             // Update the existing monster
-            monster[indexToUpdate].setWorldX(monsterData.getWorldX());
-            monster[indexToUpdate].setWorldY(monsterData.getWorldY());
-            monster[indexToUpdate].setDirection(monsterData.getDirection());
-            monster[indexToUpdate].setSpeed(monsterData.getSpeed());
-            monster[indexToUpdate].setHealth(monsterData.getHealth());
-            monster[indexToUpdate].setMaxHealth(monsterData.getMaxHealth());
-            monster[indexToUpdate].setAttack(monsterData.getAttack());
-           
+            Entity existingMonster = monster[indexToUpdate];
+            existingMonster.setWorldX(monsterData.getWorldX());
+            existingMonster.setWorldY(monsterData.getWorldY());
+            existingMonster.setDirection(monsterData.getDirection());
+            existingMonster.setSpeed(monsterData.getSpeed());
+            existingMonster.setHealth(monsterData.getHealth());
+            existingMonster.setMaxHealth(monsterData.getMaxHealth());
+            existingMonster.setAttack(monsterData.getAttack());
+            existingMonster.setSpriteNum(monsterData.getSpriteNum());
+            
             // Notify all clients of the updated monster
-            networkManager.sendMonsterData(monsterId, monster[indexToUpdate], true);
-
-        } else 
-            // Find an empty slot for a new monster
+            networkManager.sendMonsterData(monsterId, existingMonster, true);
+        } else {
+            // Create a new monster if it doesn't exist
             for (int i = 0; i < monster.length; i++) {
                 if (monster[i] == null) {
-                    monster[i] = new MON_Slime(this);
-                    monster[i].setMonsterId(monsterId); // Ensure you set the ID for the new monster
-                    monster[i].setName(monsterData.getName());
-                    monster[i].setWorldX(monsterData.getWorldX());
-                    monster[i].setWorldY(monsterData.getWorldY());
-                    monster[i].setDirection(monsterData.getDirection());
-                    monster[i].setSpriteNum(monsterData.getSpriteNum());
-                    monster[i].setSpeed(monsterData.getSpeed());
-                    monster[i].setHealth(monsterData.getHealth());
-                    monster[i].setMaxHealth(monsterData.getMaxHealth());
-                    monster[i].setAttack(monsterData.getAttack());
-                    entityList.add(monster[i]);
-                    // Notify all clients of the new monster
-                    networkManager.sendMonsterData(monsterId, monster[i], false);
+                    Entity newMonster = new MON_Slime(this);
+                    newMonster.setMonsterId(monsterId); // Set the ID for the new monster
+                    newMonster.setName(monsterData.getName());
+                    newMonster.setWorldX(monsterData.getWorldX());
+                    newMonster.setWorldY(monsterData.getWorldY());
+                    newMonster.setDirection(monsterData.getDirection());
+                    newMonster.setSpriteNum(monsterData.getSpriteNum());
+                    newMonster.setSpeed(monsterData.getSpeed());
+                    newMonster.setHealth(monsterData.getHealth());
+                    newMonster.setMaxHealth(monsterData.getMaxHealth());
+                    newMonster.setAttack(monsterData.getAttack());
+                    monster[i] = newMonster; // Assign the new monster to the slot
+                    entityList.add(newMonster);
                     
+                    // Notify all clients of the new monster
+                    networkManager.sendMonsterData(monsterId, newMonster, false);
                     break;
                 }
             }
-        
-        
+        }
 
         repaint(); // Repaint after the update
     }

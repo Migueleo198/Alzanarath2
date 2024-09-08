@@ -72,7 +72,7 @@ public class NetworkManager {
                         // Register the client player (you may need to handle initial registration)
                         // Add logic to register client players here
 
-                        sendMonsterDataToAllClients(); // Send updated monster data to all clients
+                        
                         sendAllPlayersToClient(clientOut);
 
                         clientExecutor.submit(() -> handleClient(clientSocket));
@@ -197,6 +197,36 @@ public class NetworkManager {
             e.printStackTrace();
         }
         return null;
+    }
+    //Register the Server as a player (HOST)
+    public synchronized void registerServerPlayer(Player serverPlayer) {
+        if (serverPlayer == null) return;
+
+        // Assign the server a unique player ID, like "SERVER"
+        String playerId = "SERVER";
+        String username = serverPlayer.getUsername();
+        int level = serverPlayer.getLevel();
+        boolean isAttacking = serverPlayer.isAttacking();
+        int spriteCounter = serverPlayer.getSpriteCounter();
+        int invincibleCounter = serverPlayer.getInvincibleCounter();
+
+        // Create the registration message
+        String message = String.format("PLAYER_REGISTER %s %s %d %d %s %d %d %d %b %d %d", 
+                playerId, username, 
+                serverPlayer.getWorldX(), serverPlayer.getWorldY(), 
+                serverPlayer.getDirection(), serverPlayer.getSpriteNum(), 
+                System.currentTimeMillis(), level,
+                isAttacking, spriteCounter, invincibleCounter);
+
+        // Register the server player
+        PlayerData playerData = new PlayerData(playerId, username, serverPlayer.getWorldX(), serverPlayer.getWorldY(), serverPlayer.getDirection(), serverPlayer.getSpriteNum(), System.currentTimeMillis(), level, isAttacking, spriteCounter, invincibleCounter);
+
+        // Store the player data and map it to the "server" socket (can be null if server-side)
+        otherPlayers.put(playerId, playerData);
+        gamePanel.updateOtherPlayer(playerId, playerData);
+
+        // Server player doesn't need a socket mapping, but if you're using one:
+        playerToSocket.put(playerId, null);  // Null socket for server player
     }
 
     public synchronized void registerPlayer(Player player) {
@@ -489,9 +519,16 @@ public class NetworkManager {
     private void removeMonsterById(String monsterId) {
         for (int i = 0; i < gamePanel.monster.length; i++) {
             Entity monster = gamePanel.monster[i];
-            if (monster != null && monster.getMonsterId().equals(monsterId)) {
-            	gamePanel.monster[i] = null;
-                break;
+            
+            if (monster != null) {
+                if (monster.getMonsterId() != null && monster.getMonsterId().equals(monsterId)) {
+                    // Remove the monster if the ID matches
+                    gamePanel.monster[i] = null;
+                    break;
+                } else if (monster.getMonsterId() == null) {
+                    // Assign the monster ID if it doesn't already have one
+                    monster.setMonsterId(monsterId);
+                }
             }
         }
     }
@@ -501,26 +538,53 @@ public class NetworkManager {
 
 
 
-    public void sendMonsterDataToAllClients() {
-        long timestamp = System.currentTimeMillis(); // Add timestamp if necessary
+    public void sendMonsterDataToAllClients(String monsterId, Entity monster) {
+        long timestamp = System.currentTimeMillis(); // Optional timestamp
 
-        for (Entity monster : gamePanel.monster) {
-            if (monster != null) {
-                // Format the monster data string with relevant fields
-                String data = formatMonsterData(monster, timestamp);
+        // Format the monster data string with relevant fields
+        String data = formatMonsterData(monster, timestamp);
 
-                // Send the data to all clients
-                for (BufferedWriter writer : clientWriters.values()) {
-                    try {
-                        writer.write(data + "\n");
-                        writer.flush();
-                    } catch (IOException e) {
-                        System.err.println("Error sending monster data to client: " + e.getMessage());
-                    }
-                }
+        // Send the data to all clients
+        for (BufferedWriter writer : clientWriters.values()) {
+            try {
+                writer.write(data + "\n");
+                writer.flush();
+            } catch (IOException e) {
+                System.err.println("Error sending monster data to client: " + e.getMessage());
             }
         }
     }
+    
+    public void damageMonsterFromServer(String monsterId, int attackDamage) {
+        // Loop through the monster array to find the monster by its ID
+        for (int i = 0; i < gamePanel.monster.length; i++) {
+             
+            
+            if (gamePanel.monster[i] != null && monsterId.equals(gamePanel.monster[i].getMonsterId())) {
+                // Apply damage to the monster
+                int newHealth = gamePanel.monster[i].getHealth() - attackDamage;
+                gamePanel.monster[i].setHealth(newHealth);
+                
+                
+                // Check if the monster is dead
+                if (newHealth <= 0) {
+                    // Remove the monster from the array
+                    gamePanel.monster[i] = null;
+
+                    // Notify clients that the monster is dead
+                    sendMonsterDeathToAllClients(monsterId);
+                } else {
+                    // Notify clients of the updated monster state
+                    sendMonsterDataToAllClients(monsterId, gamePanel.monster[i]);
+                }
+                return; // Exit after processing the monster with the given ID
+            }
+        }
+
+        // If no monster was found with the given ID
+        System.out.println("Monster with ID " + monsterId + " not found.");
+    }
+
     
     //ON MONSTER DEATH
     
@@ -585,6 +649,8 @@ public class NetworkManager {
 
         
     }
+    
+    
 
     public void sendMonsterDataToServer(String playerId, String monsterId, Entity monster) {
         System.out.println("Player ID: " + playerId);
