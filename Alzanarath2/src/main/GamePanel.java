@@ -176,40 +176,34 @@ public class GamePanel extends JPanel implements Runnable {
    
     
 
-    public void initializeGame() {
-        if (keyH == null) {
-            System.err.println("KeyHandler is null! Initialization might be missing.");
-            return;
-        }
-       
-        networkManager = new NetworkManager(isServer, config, this, this.keyH);
-        
-        this.player = new Player(this, keyH, networkManager);
+   public void initializeGame() {
+	    if (keyH == null) {
+	        System.err.println("KeyHandler is null! Initialization might be missing.");
+	        return;
+	    }
 
-        if (!networkManager.isServer()) {
-            // Start the client connection
-            networkManager.startClient();
+	    networkManager = new NetworkManager(isServer, config, this, this.keyH);
 
-            // Register the player with the server once the client is started
-            // Using a callback or a state check might be necessary to ensure the connection is established before registering
-            new Thread(() -> {
-                try {
-                    // Wait a bit to ensure connection is established
-                    Thread.sleep(1000);
-                    networkManager.registerPlayer(this.player);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }).start();
-        }else {
-        	
-        }
+	    this.player = new Player(this, keyH, networkManager);
 
-        aSetter = new AssetSetter(this, networkManager);
-        setupGame();
+	    // Start the client connection
+	    networkManager.startClient();
+	    
+	    // Register the player with the server once the client is started
+	    new Thread(() -> {
+	        try {
+	            Thread.sleep(1000); // Ensure connection is established
+	            networkManager.registerPlayer(this.player);
+	        } catch (InterruptedException e) {
+	            e.printStackTrace();
+	        }
+	    }).start();
 
-        System.out.println("Game initialized. Player: " + (player != null ? "Initialized" : "Not Initialized"));
-    }
+	    aSetter = new AssetSetter(this, networkManager);
+	    setupGame();
+
+	    System.out.println("Game initialized. Player: " + (player != null ? "Initialized" : "Not Initialized"));
+	}
 
     long lastMonsterUpdateTime = 0;
     double updateInterval = 1000000000 / 60.00; // Update every 100 ms // Update every 180 frames (assuming FPS = 60)
@@ -361,7 +355,7 @@ public class GamePanel extends JPanel implements Runnable {
 
         // Draw other players
         for (Player otherPlayer : otherPlayers.values()) {
-            if (otherPlayer != null && !networkManager.isServer()) {
+            if (otherPlayer != null) {
                 otherPlayer.draw(g2);
                 
             }

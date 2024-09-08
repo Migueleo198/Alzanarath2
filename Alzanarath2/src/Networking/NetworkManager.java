@@ -93,11 +93,11 @@ public class NetworkManager {
             System.out.println("Connected to server at Radmin IP " + radminIP + ":" + config.getPort());
             clientSocket.setPerformancePreferences(1, 0, 2);
             clientSocket.setTcpNoDelay(true);
-            
+
             // Initialize BufferedWriter and BufferedReader
             out = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
             in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-            
+
             // Store the BufferedWriter in clientWriters
             synchronized (this) {
                 clientWriters.put(clientSocket, out);
@@ -111,10 +111,22 @@ public class NetworkManager {
             Player clientPlayer = gamePanel.getPlayer();
             if (clientPlayer != null) {
                 registerPlayer(clientPlayer);
+                requestExistingPlayersData();
             }
+
+            // Request existing players' data from the server
+           
 
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    private void requestExistingPlayersData() throws IOException {
+        if (out != null) {
+            // Send a request to the server to get existing player data
+            out.write("REQUEST_PLAYERS_DATA\n");
+            out.flush();
         }
     }
 
@@ -125,17 +137,18 @@ public class NetworkManager {
         // Iterate through all registered players
         for (PlayerData playerData : otherPlayers.values()) {
             // Format the player data message
-            String message = String.format("PLAYER_REGISTER %s %s %d %d %s %d %d %b %d %d", 
-                                            playerData.getPlayerId(),  
-                                            playerData.getUsername(), 
-                                            playerData.getX(), 
-                                            playerData.getY(), 
-                                            playerData.getDirection(),
-                                            playerData.getSpriteNum(),
-                                            playerData.getLevel(),
-                                            playerData.isAttacking(),
-                                            playerData.getSpriteCounter(),
-                                            playerData.getInvincibleCounter());
+            String message = String.format("PLAYER_REGISTER %s %s %d %d %s %d %d %d %b %d %d", 
+                    playerData.getPlayerId(),  
+                    playerData.getUsername(), 
+                    playerData.getX(), 
+                    playerData.getY(), 
+                    playerData.getDirection(),
+                    playerData.getSpriteNum(),
+                    timestamp, // Current timestamp
+                    playerData.getLevel(),
+                    playerData.isAttacking(),
+                    playerData.getSpriteCounter(),
+                    playerData.getInvincibleCounter());
 
             // Send the message to the client
             clientOut.write(message + "\n");
@@ -147,14 +160,19 @@ public class NetworkManager {
         try (BufferedReader clientIn = clientReaders.get(socket)) {
             String inputLine;
             while ((inputLine = clientIn.readLine()) != null) {
-                handleReceivedData(inputLine);
+                if (inputLine.equals("REQUEST_PLAYERS_DATA")) {
+                    // Send all players' data to the client
+                    sendAllPlayersToClient(clientWriters.get(socket));
+                } else {
+                    handleReceivedData(inputLine);
 
-                // Broadcast data to all clients except the sender
-                for (Map.Entry<Socket, BufferedWriter> entry : clientWriters.entrySet()) {
-                    if (entry.getKey() != socket) {
-                        BufferedWriter writer = entry.getValue();
-                        writer.write(inputLine + "\n");
-                        writer.flush();
+                    // Broadcast data to all clients except the sender
+                    for (Map.Entry<Socket, BufferedWriter> entry : clientWriters.entrySet()) {
+                        if (entry.getKey() != socket) {
+                            BufferedWriter writer = entry.getValue();
+                            writer.write(inputLine + "\n");
+                            writer.flush();
+                        }
                     }
                 }
             }
@@ -171,7 +189,7 @@ public class NetworkManager {
         }
     }
 
-   
+ 
 
     private void readMessages() {
         try {
