@@ -245,18 +245,22 @@ public class UI {
         int chatY = gp.getScreenHeight() - (globalChatVisible ? 200 : 20); // Position depends on visibility
         int chatWidth = 400;
         int chatHeight = globalChatVisible ? 180 : 100; // Adjust height based on visibility
-        
+
         g2.setColor(new Color(0, 0, 0, 150));
         g2.fillRect(chatX, chatY, chatWidth, chatHeight);
         g2.setColor(Color.black);
         g2.setStroke(new BasicStroke(5));
-        g2.drawRect(chatX, chatY, chatWidth+2, chatHeight+2);
+        g2.drawRect(chatX, chatY, chatWidth + 2, chatHeight + 2);
         g2.setFont(new Font("Comic Sans", Font.PLAIN, 20));
         g2.setColor(Color.white);
-       
 
         int y = chatY + 20;
-        for (String message : globalChatMessages) {
+        // Display only the last 5 messages
+        List<String> lastMessages = getGlobalChatMessages().size() > 5 
+                                    ? getGlobalChatMessages().subList(getGlobalChatMessages().size() - 5, getGlobalChatMessages().size()) 
+                                    : getGlobalChatMessages();
+
+        for (String message : lastMessages) {
             g2.drawString(message, chatX + 10, y);
             y += 20; // Move down for each new line
             if (y > chatY + chatHeight - 20) { // Prevent drawing outside the visible area
@@ -293,10 +297,10 @@ public class UI {
     }
 
     public void appendGlobalChatMessage(String message) {
-        if (globalChatMessages.size() >= 10) { // Limit the number of messages
-            globalChatMessages.remove(0); // Remove the oldest message
+        if (getGlobalChatMessages().size() >= 10) { // Limit the number of messages
+            getGlobalChatMessages().remove(0); // Remove the oldest message
         }
-        globalChatMessages.add(message); // Add the new message
+        getGlobalChatMessages().add(message); // Add the new message
     }
 
     private void drawTitleScreen(Graphics2D g2) {
@@ -364,6 +368,14 @@ public class UI {
     public void setGlobalChatVisible(boolean globalChatVisible) {
         this.globalChatVisible = globalChatVisible;
     }
+
+	public List<String> getGlobalChatMessages() {
+		return globalChatMessages;
+	}
+
+	public void setGlobalChatMessages(List<String> globalChatMessages) {
+		this.globalChatMessages = globalChatMessages;
+	}
 }
 
 

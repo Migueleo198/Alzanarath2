@@ -447,6 +447,11 @@ public class NetworkManager {
 
     public void receiveMessage(String message) {
         gamePanel.ui.appendGlobalChatMessage(message);
+
+        // Limit the number of messages in the chat to 5
+        if (gamePanel.ui.getGlobalChatMessages().size() > 5) {
+            gamePanel.ui.getGlobalChatMessages().remove(0); // Remove the oldest message
+        }
     }
 
     private void handleReceivedData(String data) {
