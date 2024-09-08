@@ -75,39 +75,41 @@ public class TileManager {
 	}
 	
 	public void draw(Graphics2D g2) {
-	    // Get player position and screen dimensions
-	    int playerX = gp.getPlayer().getWorldX();
-	    int playerY = gp.getPlayer().getWorldY();
 	    int tileSize = gp.getTileSize();
-	    int screenWidth = gp.getScreenWidth();
-	    int screenHeight = gp.getScreenHeight();
+	    int maxWorldCol = gp.getMaxWorldCol();
+	    int maxWorldRow = gp.getMaxWorldRow();
 	    
-	    // Calculate the number of tiles needed to cover the screen horizontally and vertically
-	    int tilesAcross = (int) Math.ceil((double) screenWidth / tileSize) + 2;
-	    int tilesDown = (int) Math.ceil((double) screenHeight / tileSize) + 2;
-
-	    // Calculate the starting tile positions to draw
-	    int startCol = (playerX / tileSize) - (tilesAcross / 2);
-	    int startRow = (playerY / tileSize) - (tilesDown / 2);
-
-	    // Ensure starting positions are within bounds
-	    startCol = Math.max(0, startCol);
-	    startRow = Math.max(0, startRow);
+	    // Get player's current position and screen position
+	    int playerWorldX = gp.getPlayer().getWorldX();
+	    int playerWorldY = gp.getPlayer().getWorldY();
+	    int playerScreenX = gp.getPlayer().getScreenX();
+	    int playerScreenY = gp.getPlayer().getScreenY();
 	    
-	    int endCol = Math.min(gp.getMaxWorldCol(), startCol + tilesAcross);
-	    int endRow = Math.min(gp.getMaxWorldRow(), startRow + tilesDown);
-
-	    // Draw tiles from startCol, startRow to endCol, endRow
-	    for (int row = startRow; row < endRow; row++) {
-	        for (int col = startCol; col < endCol; col++) {
-	            int tileNum = mapTileNum[col][row];
-	            int drawX = (col * tileSize) - (playerX - (screenWidth / 2));
-	            int drawY = (row * tileSize) - (playerY - (screenHeight / 2));
-
-	            g2.drawImage(tile[tileNum].getImage(), drawX, drawY, null);
+	    for (int worldRow = 0; worldRow < maxWorldRow; worldRow++) {
+	        for (int worldCol = 0; worldCol < maxWorldCol; worldCol++) {
+	            
+	            // Calculate the world position of the current tile
+	            int tileWorldX = worldCol * tileSize;
+	            int tileWorldY = worldRow * tileSize;
+	            
+	            // Calculate the screen position of the tile based on the player's position
+	            int screenX = tileWorldX - playerWorldX + playerScreenX;
+	            int screenY = tileWorldY - playerWorldY + playerScreenY;
+	            
+	            // Check if the tile is within the visible screen bounds
+	            if (tileWorldX + tileSize > playerWorldX - playerScreenX &&
+	                tileWorldX - tileSize < playerWorldX + playerScreenX &&
+	                tileWorldY + tileSize > playerWorldY - playerScreenY &&
+	                tileWorldY - tileSize < playerWorldY + playerScreenY) {
+	                
+	                // Draw the tile if it's within the visible screen bounds
+	                int tileNum = getMapTileNum()[worldCol][worldRow];
+	                g2.drawImage(tile[tileNum].getImage(), screenX, screenY, null);
+	            }
 	        }
 	    }
 	}
+
 	
 	public void setup(int index, String imageName, boolean collision) {
         Utility uTool = new Utility();
