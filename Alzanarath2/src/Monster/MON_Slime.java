@@ -33,6 +33,8 @@ public class MON_Slime extends Entity{
 		solidAreaDefaultY = solidArea.y;
 		direction="down";
 		getModel();
+		monsterId = ""+ System.currentTimeMillis();
+		spriteNum=1;
 		
 	}
 	
@@ -61,18 +63,22 @@ public class MON_Slime extends Entity{
 		
 		if(i<=25) {
 			direction="up";
+			
 		}
 		
 		if(i>25 && i<=50) {
 			direction="down";
+			
 		}
 		
 		if(i>50 && i<=75) {
 			direction="left";
+			
 		}
 		
 		if(i>75 && i<=100) {
 			direction="right";
+			
 		}
 		actionLockCounter=0;
 		}
@@ -128,14 +134,14 @@ public class MON_Slime extends Entity{
 			break;
 		}
 		
-		 if (invincible) {
+		 if (isInvincible()) {
 		        invincibleCounter++;
 		        if (invincibleCounter > 40) {
-		            invincible = false;
+		            setInvincible(false);
 		            invincibleCounter = 0;
 		        }
 		    }
-		if(invincible==true) {
+		if(isInvincible()==true) {
 			g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER,0.4f));
 			gotHit=true;
 		}
@@ -200,6 +206,48 @@ public class MON_Slime extends Entity{
 	}
 	
 	public String getMonsterId() {
-		return "" + System.currentTimeMillis();
+		return monsterId;
+	}
+
+	public void setMonsterId(String id) {
+		monsterId=id;
+		
+	}
+	
+	public void updateSprite() {
+		collisionOn=false;
+		gp.getcChecker().checkTile(this);
+		gp.getcChecker().checkEntity(this,gp.getNpc());
+		gp.getcChecker().checkEntity(this,gp.getMonster());
+		boolean contactPlayer = gp.getcChecker().checkPlayer(this);
+		
+		
+		
+		if(this.type==2 && contactPlayer==true) {
+			
+			if(gp.getPlayer().getHealth()>=0) {
+				
+				if(gp.getPlayer().isInvincible()==false) {
+					
+					gp.getPlayer().Health-=this.getAttack();
+					gp.getPlayer().setInvincible(true);
+						
+					
+				}
+				
+			}
+		}
+		
+		
+		spriteCounter++;
+        if (spriteCounter > 10) {
+            spriteNum = (spriteNum == 1) ? 2 : 1;
+            spriteCounter = 0;
+            hasChanged=true; // Sprite changed
+           
+        }
+		
+		
+					
 	}
 }

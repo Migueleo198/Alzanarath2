@@ -5,6 +5,7 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 
 import Inputs.KeyHandler;
+import Monster.MON_Slime;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -23,7 +24,7 @@ public class Player extends Entity {
     private GamePanel gp;
     private KeyHandler keyH;
     private NetworkManager networkManager;
-
+    
     public final int screenX;
     public final int screenY;
     public boolean moved;
@@ -277,10 +278,10 @@ public class Player extends Entity {
     public void damageMonster(int i) {
     	if(i!=999) {
     		
-    		if (gp.monster[i].invincible == false){
+    		if (gp.monster[i].isInvincible() == false){
     			
     			gp.monster[i].Health-=this.attack;
-    			gp.monster[i].invincible=true;
+    			gp.monster[i].setInvincible(true);
     			gp.playSE(2);
     			
     		}
@@ -331,9 +332,9 @@ public class Player extends Entity {
 		if(i!=999) {
 			if(Health>=0) {
 				
-				if(invincible==false) {
+				if(isInvincible()==false) {
 					this.Health-=gp.getMonster()[i].getAttack();
-					invincible=true;
+					setInvincible(true);
 				}
 				
 			}
@@ -404,10 +405,10 @@ public class Player extends Entity {
 	   
 
 	    // Handle invincibility effect
-	    if (invincible) {
+	    if (isInvincible()) {
 	        invincibleCounter++;
 	        if (invincibleCounter > 60) {
-	            invincible = false;
+	            setInvincible(false);
 	            invincibleCounter = 0;
 	        }
 	    }

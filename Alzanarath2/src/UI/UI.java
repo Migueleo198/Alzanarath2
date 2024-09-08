@@ -39,7 +39,7 @@ public class UI {
             drawTitleScreen(g2);
         }
 
-        if (gp.getGameState() == gp.getPlayState() ) {
+        if (gp.getGameState() == gp.getPlayState() && gp.getPlayer()!=null) {
             g2.setFont(new Font("Comic Sans", Font.BOLD, 30));
             g2.setColor(Color.white);
 

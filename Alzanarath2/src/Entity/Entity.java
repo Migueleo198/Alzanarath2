@@ -23,9 +23,9 @@ public abstract class Entity {
 	protected BufferedImage attackUp1,attackUp2,attackDown1,attackDown2,attackLeft1,attackLeft2,attackRight1,attackRight2;
 	protected String direction;
 	protected int actionLockCounter=0;
-	protected int spriteCounter=0;
+	public int spriteCounter=0;
 	protected int spriteCounter2=0;
-	protected int spriteNum=1;
+	public int spriteNum=1;
 	protected int solidAreaDefaultX;
 	protected int solidAreaDefaultY;
 	protected int level = 1;
@@ -50,7 +50,7 @@ public abstract class Entity {
 	public Rectangle solidArea = new Rectangle(0,0,48,48);
 	
 	//Hit params
-	protected boolean invincible = false;
+	private boolean invincible = false;
 	public int invincibleCounter = 0;
 	
 	
@@ -61,11 +61,13 @@ public abstract class Entity {
 	protected GamePanel gp;
 	
 	protected int maxHealth;
-	protected int Health;
+	public int Health;
 	
 	//ITEM ATTRIBUTES
 	protected int attackValue;
 	protected int defenseValue;
+	
+	protected String monsterId;
 	
 	public int getAttack() {
 		return attack;
@@ -117,10 +119,10 @@ public abstract class Entity {
 			
 			if(gp.getPlayer().Health>=0) {
 				
-				if(gp.getPlayer().invincible==false) {
+				if(gp.getPlayer().isInvincible()==false) {
 					
 					gp.getPlayer().Health-=this.getAttack();
-					gp.getPlayer().invincible=true;
+					gp.getPlayer().setInvincible(true);
 						
 					
 				}
@@ -143,18 +145,22 @@ public abstract class Entity {
 						case "up":
 							worldY -= speed;
 							 hasChanged=true; // Sprite changed
+							 //gp.getNetworkManager().sendMonsterDataToAllClients();
 							break;
 						case "down":
 							worldY += speed;
 							 hasChanged=true; // Sprite changed
+							
 							break;
 						case "left":
 							worldX -= speed;
 							 hasChanged=true; // Sprite changed
+							
 							break;
 						case "right":
 							worldX += speed;
 							 hasChanged=true; // Sprite changed
+							
 							break;
 						}
 					}
@@ -219,14 +225,14 @@ public abstract class Entity {
 				
 				
 				 // Handle invincibility effect
-			    if (invincible) {
+			    if (isInvincible()) {
 			        invincibleCounter++;
 			        if (invincibleCounter > 40) {
-			            invincible = false;
+			            setInvincible(false);
 			            invincibleCounter = 0;
 			        }
 			    }
-			if(invincible==true) {
+			if(isInvincible()==true) {
 				g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER,0.4f));
 			}
 			
@@ -483,5 +489,23 @@ public abstract class Entity {
 	}
 
 	public abstract String getMonsterId();
+
+	public void setMonsterId(String monsterId2) {
+		
+		
+	}
+
+	public void updateSprite() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public boolean isInvincible() {
+		return invincible;
+	}
+
+	public void setInvincible(boolean invincible) {
+		this.invincible = invincible;
+	}
 	
 }

@@ -69,7 +69,7 @@ public class NetworkManager {
 
                         clientWriters.put(clientSocket, clientOut);
                         clientReaders.put(clientSocket, clientIn);
-                        sendMonsterDataToAllClients(); // Send updated monster data to all clients
+                        sendMonsterDataToAllClients();
                         sendAllPlayersToClient(clientOut);
                         clientExecutor.submit(() -> handleClient(clientSocket));
                     } catch (IOException e) {
@@ -376,7 +376,6 @@ public class NetworkManager {
 
                     // Updated PlayerData to include invincibleCounter
                     PlayerData playerData = new PlayerData(playerId, username, x, y, direction, spriteNum, timestamp, level, isAttacking, spriteCounter, invincibleCounter);
-                    otherPlayers.put(playerId, playerData);
                     gamePanel.updateOtherPlayer(playerId, playerData);
 
                 } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
@@ -391,31 +390,18 @@ public class NetworkManager {
                     System.err.println("Error: Data format is incorrect for monster. Expected at least 11 parts, but got " + tokens.length);
                     return;
                 }
-                
-                System.out.println("works");
-
                 try {
                     // Extract monsterId
                     String monsterId = tokens[1];
-                    
-                    // Reconstruct name from the tokens (enclosed in quotes)
-                    StringBuilder nameBuilder = new StringBuilder();
-                    boolean insideQuotes = false;
-                    for (int i = 2; i < tokens.length; i++) {
-                        if (tokens[i].startsWith("\"") && !insideQuotes) {
-                            insideQuotes = true;
-                            nameBuilder.append(tokens[i].substring(1)); // Remove starting quote
-                        } else if (tokens[i].endsWith("\"") && insideQuotes) {
-                            insideQuotes = false;
-                            nameBuilder.append(" ").append(tokens[i].substring(0, tokens[i].length() - 1)); // Remove ending quote
-                            break;
-                        } else if (insideQuotes) {
-                            nameBuilder.append(" ").append(tokens[i]);
-                        }
+
+                    // Log each token to verify the data is being read correctly
+                    for (int i = 0; i < tokens.length; i++) {
+                        System.out.println("Token " + i + ": " + tokens[i]);
                     }
-                    String name = nameBuilder.toString();
-                    
-                    // Extract other monster data
+
+                    // Reconstruct name from the tokens (enclosed in quotes)
+                    String name = tokens[2];
+                    // Extract other monster data and log each value to verify correctness
                     int x = Integer.parseInt(tokens[3]);
                     int y = Integer.parseInt(tokens[4]);
                     String direction = tokens[5];
@@ -428,7 +414,7 @@ public class NetworkManager {
                     // Update or register the monster
                     MonsterData monsterData = new MonsterData(x, y, name, speed, health, maxHealth, attack, direction, spriteNum);
                     gamePanel.updateMonster(monsterId, monsterData);
-
+                    System.out.println("Monster " + monsterId + " updated successfully.");
                 } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
                     System.err.println("Error parsing monster data: " + e.getMessage());
                     e.printStackTrace();
@@ -450,12 +436,25 @@ public class NetworkManager {
     }
     
     public void sendMonsterDataToAllClients() {
-    	
         long timestamp = System.currentTimeMillis(); // Add timestamp if necessary
+
         for (Entity monster : gamePanel.monster) {
             if (monster != null) {
-                String data = formatMonsterData(monster, timestamp); // Pass timestamp if required
-                System.out.println("Sending monster data: " + data);
+                // Format the monster data string with relevant fields
+                String data = String.format("MONSTER_UPDATE %s \"%s\" %d %d %s %d %d %d %d %d",
+                    monster.getMonsterId(),            // Unique monster ID
+                    monster.getName(),          // Monster name (enclosed in quotes)
+                    monster.getWorldX(),        // X position
+                    monster.getWorldY(),        // Y position
+                    monster.getDirection(),     // Current direction (e.g., "up", "down")
+                    monster.getSpeed(),         // Movement speed
+                    monster.getHealth(),        // Current health
+                    monster.getMaxHealth(),     // Maximum health
+                    monster.getAttack(),        // Attack power
+                    monster.getSpriteNum()
+                    );    // Sprite number (for animation)
+
+                // Send the data to all clients
                 for (BufferedWriter writer : clientWriters.values()) {
                     try {
                         writer.write(data + "\n");
@@ -479,11 +478,11 @@ public class NetworkManager {
             monster.getWorldX(), // X position
             monster.getWorldY(), // Y position
             monster.getDirection(), // Current direction
-            monster.getSpeed(), // Speed
+            monster.getSpriteNum(), // Sprite number (for animation state)
             monster.getHealth(), // Current health
             monster.getMaxHealth(), // Maximum health
+            monster.getSpeed(), // Speed
             monster.getAttack(), // Attack power
-            monster.getSpriteNum(), // Sprite number (for animation state)
             timestamp // Current timestamp, if relevant
         );
 
@@ -491,7 +490,6 @@ public class NetworkManager {
     }
     
     public void sendMonsterData(String monsterId, Entity monster, boolean isRegister) {
-        // Check if this code is running on the server side
         if (!isServer) {
             return; // Exit if not on the server
         }
@@ -513,33 +511,14 @@ public class NetworkManager {
         );
 
         // Send data to all clients
-        for (String playerId : socketToPlayerId.values()) {
-            sendMonsterDataToPlayer(playerId, data);
+        for (BufferedWriter writer : clientWriters.values()) {
+            try {
+                writer.write(data + "\n");
+                writer.flush();
+            } catch (IOException e) {
+                System.err.println("Error sending monster data to client: " + e.getMessage());
+            }
         }
-    }
-
-    
-   
-    
-   
-    
-    //HANDLING MONSTERS 
-    
-   
-
-    // Converts the MonsterData object to a string or format appropriate for your network protocol
-    private String convertMonsterDataToString(MonsterData monsterData) {
-        return String.format("%s %d %d %s %d %d %d %d %d",
-            monsterData.getName(),               // Monster name
-            monsterData.getWorldX(),             // X position
-            monsterData.getWorldY(),             // Y position
-            monsterData.getDirection(),          // Direction the monster is facing
-            monsterData.getSpriteNum(),          // Sprite number (for animation state)
-            monsterData.getHealth(),             // Current health
-            monsterData.getMaxHealth(),          // Maximum health
-            monsterData.getSpeed(),              // Speed
-            monsterData.getAttack()              // Attack power
-        );
     }
 
     private void sendMonsterDataToPlayer(String playerId, String monsterData) {
@@ -567,6 +546,7 @@ public class NetworkManager {
             System.err.println("Player with ID " + playerId + " not found.");
         }
     }
+
 
 
 
