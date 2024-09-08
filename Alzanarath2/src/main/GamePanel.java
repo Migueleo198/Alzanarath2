@@ -671,6 +671,25 @@ public class GamePanel extends JPanel implements Runnable {
 	public int getServerState() {
 		return serverState;
 	}
+
+
+	public void removeOtherPlayer(String playerId) {
+	    // Remove the player from the otherPlayers map
+	    Player removedPlayer = otherPlayers.remove(playerId);
+	    
+	    if (removedPlayer != null) {
+	        // Optionally, update the UI to remove the player's sprite or representation
+	        
+	    	removedPlayer=null;
+	    	entityList.remove(removedPlayer);
+	        // If you track player sockets or resources, remove them too
+	        
+
+	        System.out.println("Player " + playerId + " has been removed.");
+	    } else {
+	        System.out.println("Player " + playerId + " not found.");
+	    }
+	}
 	
 	 
 }

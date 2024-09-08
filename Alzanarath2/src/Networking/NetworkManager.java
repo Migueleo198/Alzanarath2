@@ -85,6 +85,27 @@ public class NetworkManager {
             e.printStackTrace();
         }
     }
+    
+    
+ // Remove the player from the game
+    private synchronized void removePlayer(String playerId) {
+        otherPlayers.remove(playerId);  // Remove from player data
+        gamePanel.removeOtherPlayer(playerId);  // Remove from the game panel
+        playerToSocket.remove(playerId);  // Remove from socket mapping
+    }
+
+    // Notify all clients that a player has disconnected
+    private void broadcastPlayerDisconnection(String playerId) {
+        String message = String.format("PLAYER_DISCONNECTED %s", playerId);
+        for (BufferedWriter writer : clientWriters.values()) {
+            try {
+                writer.write(message + "\n");
+                writer.flush();
+            } catch (IOException e) {
+                System.err.println("Error broadcasting player disconnection: " + e.getMessage());
+            }
+        }
+    }
 
 
 
@@ -163,19 +184,14 @@ public class NetworkManager {
         try (BufferedReader clientIn = clientReaders.get(socket)) {
             String inputLine;
             while ((inputLine = clientIn.readLine()) != null) {
-                if (inputLine.equals("REQUEST_PLAYERS_DATA")) {
-                    // Send all players' data to the client
-                    sendAllPlayersToClient(clientWriters.get(socket));
-                } else {
-                    handleReceivedData(inputLine);
+                handleReceivedData(inputLine);
 
-                    // Broadcast data to all clients except the sender
-                    for (Map.Entry<Socket, BufferedWriter> entry : clientWriters.entrySet()) {
-                        if (entry.getKey() != socket) {
-                            BufferedWriter writer = entry.getValue();
-                            writer.write(inputLine + "\n");
-                            writer.flush();
-                        }
+                // Broadcast data to all clients except the sender
+                for (Map.Entry<Socket, BufferedWriter> entry : clientWriters.entrySet()) {
+                    if (entry.getKey() != socket) {
+                        BufferedWriter writer = entry.getValue();
+                        writer.write(inputLine + "\n");
+                        writer.flush();
                     }
                 }
             }
@@ -191,6 +207,7 @@ public class NetworkManager {
             }
         }
     }
+
     
     private String compressData(String data) {
         try {
@@ -529,6 +546,26 @@ public class NetworkManager {
 
                 } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
                     System.err.println("Error parsing monster data: " + e.getMessage());
+                    e.printStackTrace();
+                }
+                break;
+                
+            case "PLAYER_DISCONNECT":
+                if (tokens.length < 2) { // Ensure there are enough tokens for playerId
+                    System.err.println("Error: Data format is incorrect for player disconnection. Expected at least 2 parts, but got " + tokens.length);
+                    return;
+                }
+
+                try {
+                    // Extract the playerId
+                    String playerId = tokens[1];
+
+                    // Remove the player from the game
+                    gamePanel.removeOtherPlayer(playerId);
+
+                    System.out.println("Player " + playerId + " has disconnected.");
+                } catch (Exception e) {
+                    System.err.println("Error handling player disconnection: " + e.getMessage());
                     e.printStackTrace();
                 }
                 break;
