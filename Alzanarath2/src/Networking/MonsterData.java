@@ -1,6 +1,7 @@
 package Networking;
 
 public class MonsterData {
+	private String monsterId;
 	private String name;
 	private int speed;
 	private int Health;
@@ -10,7 +11,7 @@ public class MonsterData {
 	private int spriteNum;
 	private int worldX;
 	private int worldY;
-	public MonsterData(int worldX, int worldY, String name, int speed, int health, int maxHealth, int attack, String direction, int spriteNum) {
+	public MonsterData(String monsterId,int worldX, int worldY, String name, int speed, int health, int maxHealth, int attack, String direction, int spriteNum) {
 		super();
 		this.worldY=worldY;
 		this.worldX=worldX;
@@ -21,6 +22,13 @@ public class MonsterData {
 		this.attack = attack;
 		this.direction = direction;
 		this.spriteNum = spriteNum;
+	}
+	
+	public MonsterData(int health) {
+		super();
+		
+		this.Health = health;
+		
 	}
 	
 	public String getName() {
@@ -80,6 +88,14 @@ public class MonsterData {
 
 	public void setWorldX(int worldX) {
 		this.worldX = worldX;
+	}
+
+	public String getMonsterId() {
+		return monsterId;
+	}
+
+	public void setMonsterId(String monsterId) {
+		this.monsterId = monsterId;
 	}
 	
 	

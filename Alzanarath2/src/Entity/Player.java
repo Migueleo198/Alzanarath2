@@ -1,6 +1,7 @@
 package Entity;
 
 import java.io.IOException;
+import java.net.Socket;
 
 import javax.imageio.ImageIO;
 
@@ -24,7 +25,7 @@ public class Player extends Entity {
     private GamePanel gp;
     private KeyHandler keyH;
     private NetworkManager networkManager;
-    
+    private Socket socket;
     public final int screenX;
     public final int screenY;
     public boolean moved;
@@ -276,23 +277,33 @@ public class Player extends Entity {
     }
     
     public void damageMonster(int i) {
-    	if(i!=999) {
-    		
-    		if (gp.monster[i].isInvincible() == false){
-    			
-    			gp.monster[i].Health-=this.attack;
-    			gp.monster[i].setInvincible(true);
-    			gp.playSE(2);
-    			
-    		}
-    		
-    		if(gp.monster[i].Health<=0) {
-    			gp.monster[i]=null;
-    		}
-    	}
-    	else {
-    		
-    	}
+        if (i != 999) {
+            Entity monster = gp.monster[i];
+
+            if (monster != null && !monster.isInvincible()) {
+                monster.setInvincible(true); // Set monster to invincible to avoid multiple hits
+                gp.playSE(2); // Play sound effect for the hit
+
+                // Apply damage to the monster
+                monster.hitMonster(monster.getMonsterId(), this.attack, monster.getHealth());
+
+                // Check if monster is dead
+                if (monster.getHealth() <= 0) {
+                    // Notify server and other clients about the monster's death
+                    if (gp.getNetworkManager().isServer()) {
+                        gp.getNetworkManager().sendMonsterDeathToAllClients(monster.getMonsterId());
+                    }
+
+                    // Optionally set the monster to null in the local game panel
+                    if (gp.isStopUpdatingMonstersOnDeath()) {
+                        gp.monster[i] = null;
+                    }
+                }
+            }
+        } else {
+            // Handle case where index is 999 (if applicable)
+            System.out.println("Invalid monster index: " + i);
+        }
     }
 
     public void setLastReceivedData(PlayerData playerData) {
@@ -522,6 +533,20 @@ public class Player extends Entity {
 	public String getMonsterId() {
 		// TODO Auto-generated method stub
 		return "" + System.currentTimeMillis();
+	}
+
+	@Override
+	public void hitMonster(String monsterId2, int attack2, int health2) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public Socket getSocket() {
+		return socket;
+	}
+
+	public void setSocket(Socket socket) {
+		this.socket = socket;
 	}
 
 }

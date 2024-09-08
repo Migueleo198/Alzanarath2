@@ -33,7 +33,9 @@ public class MON_Slime extends Entity{
 		solidAreaDefaultY = solidArea.y;
 		direction="down";
 		getModel();
-		monsterId = ""+ System.currentTimeMillis();
+		if(gp.getNetworkManager().isServer()) {
+		monsterId = "" + System.currentTimeMillis();
+		}
 		spriteNum=1;
 		
 	}
@@ -202,6 +204,8 @@ public class MON_Slime extends Entity{
 		if(healthBarcounter>=180){
 			healthBarcounter=0;
 			gotHit=false;
+			
+			
 		}
 	}
 	
@@ -250,4 +254,65 @@ public class MON_Slime extends Entity{
 		
 					
 	}
+	
+	public void hitMonster(String monsterId2, int attack2, int health2) {
+	    // Iterate through the list of monsters in the game panel
+	    for (int i = 0; i < gp.monster.length; i++) {
+	        // Debug log to confirm the method is being called
+	        System.out.println("Checking monster at index " + i);
+	        
+	        // Check if the monster ID matches
+	        if (gp.monster[i].getMonsterId().equals(monsterId2)) {
+	            // Apply damage and update health
+	            int newHealth = gp.monster[i].getHealth() - attack2;
+	            gp.monster[i].setHealth(newHealth); // Ensure health does not go below zero
+	            
+	            // Log the updated health for debugging
+	            System.out.println("Monster " + monsterId2 + " health updated to " + gp.monster[i].getHealth());
+	            
+	            // Check if the monster is dead
+	            if (gp.monster[i].getHealth() <= 0) {
+	                // Handle monster death
+	            	gp.setStopUpdatingMonstersOnDeath(true);
+	            	gp.getNetworkManager().sendMonsterDeathToAllClients(monsterId2);
+	                return;
+	                
+	                
+	                
+	                // Optionally set the monster to null if you want to remove it from the game
+	                // gp.monster[i] = null; // Uncomment if you want to set the monster to null
+	            }
+	            
+	            // Send updated monster data to the server
+	            gp.getNetworkManager().sendMonsterDataToServer(gp.getPlayer().getUsername(), monsterId2, gp.monster[i]);
+	            
+	            // Optionally handle additional logic for reactions or effects
+	            // ...
+	            
+	            return; // Exit once the monster is found and updated
+	        }
+	    }
+	    
+	    // Optional: Log if the monster ID was not found
+	    System.out.println("Monster with ID " + monsterId2 + " not found.");
+	}
+	
+	
+	
+	public void takeDamage(String monsterId, int damage) {
+	   
+	        
+	            // Subtract the damage from the monster's health
+	            this.Health -= damage;
+
+	            // Check if the monster's health falls to or below zero
+	            if (this.Health <= 0) {
+	            	this.Health = 0; // Ensure no negative health
+	            	
+	            }
+	    
+	        
+	}
+
+	
 }

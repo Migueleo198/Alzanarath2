@@ -39,7 +39,9 @@ public class GamePanel extends JPanel implements Runnable {
     private final int worldWidth = tileSize * maxWorldCol;
     private final int worldHeight = tileSize * maxWorldRow;
 
-    
+    //HANDLE SERVER-CLIENT MONSTER DEATHS
+    private boolean stopUpdatingMonsters=false;
+    private boolean stopUpdatingMonstersOnDeath=false;
     
     // GAME THREAD
     Thread gameThread;
@@ -165,12 +167,25 @@ public class GamePanel extends JPanel implements Runnable {
         networkManager = new NetworkManager(isServer, config, this, this.keyH);
         
         this.player = new Player(this, keyH, networkManager);
-        // Register the player with the network manager
-        networkManager.registerPlayer(this.player);
-        
-        
-        
-        aSetter = new AssetSetter(this,networkManager);
+
+        if (!networkManager.isServer()) {
+            // Start the client connection
+            networkManager.startClient();
+
+            // Register the player with the server once the client is started
+            // Using a callback or a state check might be necessary to ensure the connection is established before registering
+            new Thread(() -> {
+                try {
+                    // Wait a bit to ensure connection is established
+                    Thread.sleep(1000);
+                    networkManager.registerPlayer(this.player);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }).start();
+        }
+
+        aSetter = new AssetSetter(this, networkManager);
         setupGame();
 
         System.out.println("Game initialized. Player: " + (player != null ? "Initialized" : "Not Initialized"));
@@ -365,7 +380,7 @@ public class GamePanel extends JPanel implements Runnable {
     public void updateMonster(String monsterId, MonsterData monsterData) {
         boolean monsterExists = false;
         int indexToUpdate = -1;
-
+        
         // Find the index of the existing monster
         for (int i = 0; i < monster.length; i++) {
             if (monster[i] != null && monster[i].getMonsterId().equals(monsterId)) {
@@ -373,6 +388,7 @@ public class GamePanel extends JPanel implements Runnable {
                 monsterExists = true;
                 break;
             }
+            
         }
 
         if (monsterExists) {
@@ -380,7 +396,6 @@ public class GamePanel extends JPanel implements Runnable {
             monster[indexToUpdate].setWorldX(monsterData.getWorldX());
             monster[indexToUpdate].setWorldY(monsterData.getWorldY());
             monster[indexToUpdate].setDirection(monsterData.getDirection());
-           
             monster[indexToUpdate].setSpeed(monsterData.getSpeed());
             monster[indexToUpdate].setHealth(monsterData.getHealth());
             monster[indexToUpdate].setMaxHealth(monsterData.getMaxHealth());
@@ -389,7 +404,7 @@ public class GamePanel extends JPanel implements Runnable {
             // Notify all clients of the updated monster
             networkManager.sendMonsterData(monsterId, monster[indexToUpdate], true);
 
-        } else {
+        } else 
             // Find an empty slot for a new monster
             for (int i = 0; i < monster.length; i++) {
                 if (monster[i] == null) {
@@ -407,10 +422,12 @@ public class GamePanel extends JPanel implements Runnable {
                     entityList.add(monster[i]);
                     // Notify all clients of the new monster
                     networkManager.sendMonsterData(monsterId, monster[i], false);
+                    
                     break;
                 }
             }
-        }
+        
+        
 
         repaint(); // Repaint after the update
     }
@@ -603,6 +620,16 @@ public class GamePanel extends JPanel implements Runnable {
 
 	public int getCharacterState() {
 		return characterState;
+	}
+
+
+	public boolean isStopUpdatingMonstersOnDeath() {
+		return stopUpdatingMonstersOnDeath;
+	}
+
+
+	public void setStopUpdatingMonstersOnDeath(boolean stopUpdatingMonstersOnDeath) {
+		this.stopUpdatingMonstersOnDeath = stopUpdatingMonstersOnDeath;
 	}
 	
 	 

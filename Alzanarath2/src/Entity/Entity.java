@@ -54,7 +54,7 @@ public abstract class Entity {
 	public int invincibleCounter = 0;
 	
 	
-	
+	private boolean alive=true;
 	
 	public boolean collisionOn =false;
 	
@@ -145,13 +145,12 @@ public abstract class Entity {
 						case "up":
 							worldY -= speed;
 							 hasChanged=true; // Sprite changed
-							 //gp.getNetworkManager().sendMonsterDataToAllClients();
+							
 							break;
 						case "down":
 							worldY += speed;
 							 hasChanged=true; // Sprite changed
 							
-							break;
 						case "left":
 							worldX -= speed;
 							 hasChanged=true; // Sprite changed
@@ -160,7 +159,7 @@ public abstract class Entity {
 						case "right":
 							worldX += speed;
 							 hasChanged=true; // Sprite changed
-							
+							 
 							break;
 						}
 					}
@@ -507,5 +506,23 @@ public abstract class Entity {
 	public void setInvincible(boolean invincible) {
 		this.invincible = invincible;
 	}
+	
+	
+
+	public void takeDamage(String monsterId, int damage) {
+		
+		System.out.println("hi");
+	}
+
+	public abstract void hitMonster(String monsterId2, int attack2, int health2);
+
+	public boolean isAlive() {
+		return alive;
+	}
+
+	public void setAlive(boolean alive) {
+		this.alive = alive;
+	}
+	
 	
 }

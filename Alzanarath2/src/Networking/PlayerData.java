@@ -1,5 +1,7 @@
 package Networking;
 
+import java.net.Socket;
+
 public class PlayerData {
     private String playerId;
     private String username;
@@ -11,7 +13,7 @@ public class PlayerData {
     private boolean isAttacking;
     private int spriteCounter; // Add spriteCounter field
     private int invincibleCounter; // Add invincibleCounter field
-
+    private Socket socket;
     // Constructor with spriteCounter and invincibleCounter
     public PlayerData(String playerId, String username, int x, int y, String direction, int spriteNum, long timestamp, int level, boolean isAttacking, int spriteCounter, int invincibleCounter) {
         this.playerId = playerId;
@@ -117,4 +119,16 @@ public class PlayerData {
     public void setInvincibleCounter(int invincibleCounter) {
         this.invincibleCounter = invincibleCounter;
     }
+
+
+
+	public Socket getSocket() {
+		return socket;
+	}
+
+
+
+	public void setSocket(Socket socket) {
+		this.socket = socket;
+	}
 }

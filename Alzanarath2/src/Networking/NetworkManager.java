@@ -28,9 +28,11 @@ public class NetworkManager {
     private Map<Socket, BufferedReader> clientReaders = new ConcurrentHashMap<>();
     
     private Map<Socket, String> socketToPlayerId = new ConcurrentHashMap<>();
-    
+    private final Map<String, Socket> playerToSocket = new ConcurrentHashMap<>();
+    private BufferedWriter serverWriter;
     private ExecutorService clientExecutor = Executors.newCachedThreadPool();
-    
+    //save damage dealt to monster for the next update cycle
+    int damage = 0;
     public NetworkManager(boolean isServer, Configuration config, GamePanel gamePanel, KeyHandler keyH) {
         this.keyH = keyH;
         this.isServer = isServer;
@@ -46,17 +48,12 @@ public class NetworkManager {
         }
     }
 
-    public void startServer() {
+    public synchronized void startServer() {
         try {
             String radminIP = getRadminIPAddress();
             serverSocket = new ServerSocket(config.getPort(), 50, InetAddress.getByName(radminIP));
             System.out.println("Server started on Radmin IP " + radminIP + " and port " + config.getPort() + "!");
             serverSocket.setPerformancePreferences(1, 0, 2);
-            
-            Player hostPlayer = gamePanel.getPlayer();
-            if (hostPlayer != null) {
-                registerPlayer(hostPlayer); // Register the host
-            }
 
             clientExecutor.submit(() -> {
                 while (true) {
@@ -67,10 +64,17 @@ public class NetworkManager {
                         BufferedWriter clientOut = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
                         BufferedReader clientIn = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 
-                        clientWriters.put(clientSocket, clientOut);
-                        clientReaders.put(clientSocket, clientIn);
-                        sendMonsterDataToAllClients();
+                        synchronized (this) {
+                            clientWriters.put(clientSocket, clientOut);
+                            clientReaders.put(clientSocket, clientIn);
+                        }
+
+                        // Register the client player (you may need to handle initial registration)
+                        // Add logic to register client players here
+
+                        sendMonsterDataToAllClients(); // Send updated monster data to all clients
                         sendAllPlayersToClient(clientOut);
+
                         clientExecutor.submit(() -> handleClient(clientSocket));
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -82,21 +86,38 @@ public class NetworkManager {
         }
     }
 
+
     public void startClient() {
         try {
-            String radminIP = "26.154.96.167";
+            String radminIP = "26.154.96.167"; // Replace with actual server IP
             clientSocket = new Socket(InetAddress.getByName(radminIP), config.getPort());
             System.out.println("Connected to server at Radmin IP " + radminIP + ":" + config.getPort());
             clientSocket.setPerformancePreferences(1, 0, 2);
             clientSocket.setTcpNoDelay(true);
+            
+            // Initialize BufferedWriter and BufferedReader
             out = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
             in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+            
+            // Store the BufferedWriter in clientWriters
+            synchronized (this) {
+                clientWriters.put(clientSocket, out);
+                clientReaders.put(clientSocket, in);
+            }
 
             clientExecutor.submit(this::readMessages);
+
+            // Register the client player after connecting
+            Player clientPlayer = gamePanel.getPlayer();
+            if (clientPlayer != null) {
+                registerPlayer(clientPlayer);
+            }
+
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
+
 
     private void sendAllPlayersToClient(BufferedWriter clientOut) throws IOException {
     	long timestampo = System.currentTimeMillis();
@@ -178,43 +199,47 @@ public class NetworkManager {
         return null;
     }
 
-    public void registerPlayer(Player player) {
+    public synchronized void registerPlayer(Player player) {
         if (player == null) return;
 
+        // Determine player ID and other details
         String playerId = isServer ? nameServer : nameClient;
         String username = player.getUsername();
         int level = player.getLevel();
         boolean isAttacking = player.isAttacking();
-        int spriteCounter = player.getSpriteCounter(); // Get the player's sprite counter
+        int spriteCounter = player.getSpriteCounter();
         int invincibleCounter = player.getInvincibleCounter();
+        
+        // Create the registration message
         String message = String.format("PLAYER_REGISTER %s %s %d %d %s %d %d %d %b %d %d", 
                 playerId, username, 
                 player.getWorldX(), player.getWorldY(), 
                 player.getDirection(), player.getSpriteNum(), 
                 System.currentTimeMillis(), level,
-                isAttacking,spriteCounter,invincibleCounter);
+                isAttacking, spriteCounter, invincibleCounter);
 
-        PlayerData playerData = new PlayerData(playerId, username, player.getWorldX(), player.getWorldY(), player.getDirection(), player.getSpriteNum(), System.currentTimeMillis(), level, isAttacking, spriteCounter,invincibleCounter);
+        PlayerData playerData = new PlayerData(playerId, username, player.getWorldX(), player.getWorldY(), player.getDirection(), player.getSpriteNum(), System.currentTimeMillis(), level, isAttacking, spriteCounter, invincibleCounter);
+
         otherPlayers.put(playerId, playerData);
         gamePanel.updateOtherPlayer(playerId, playerData);
 
-        // Update socket to player ID mapping
+        // Update player-to-socket mapping
+        if (isServer) {
+            playerToSocket.put(playerId, clientSocket);
+        } else {
+            playerToSocket.put(playerId, clientSocket);
+        }
+
+        // Send registration message to all clients or the server
         if (isServer) {
             for (Map.Entry<Socket, BufferedWriter> entry : clientWriters.entrySet()) {
                 Socket clientSocket = entry.getKey();
-                String clientId = socketToPlayerId.get(clientSocket); // Assuming client ID is updated somewhere
-                if (clientId != null) {
-                    // Update player info on the server
-                    if (clientId.equals(playerId)) {
-                        socketToPlayerId.put(clientSocket, playerId);
-                    }
-                }
                 BufferedWriter writer = entry.getValue();
                 try {
                     writer.write(message + "\n");
                     writer.flush();
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    System.err.println("Error sending player registration data: " + e.getMessage());
                 }
             }
         } else {
@@ -222,10 +247,11 @@ public class NetworkManager {
                 out.write(message + "\n");
                 out.flush();
             } catch (IOException e) {
-                e.printStackTrace();
+                System.err.println("Error sending player registration data to server: " + e.getMessage());
             }
         }
     }
+
 
 
     public void sendPlayerUpdate(Player player) {
@@ -336,8 +362,8 @@ public class NetworkManager {
     private void handleReceivedData(String data) {
         // Split the data by space
         String[] tokens = data.split(" ");
-        
-        // Ensure we have at least two tokens for command and username
+
+        // Ensure we have at least two tokens for command and sender username
         if (tokens.length < 2) {
             System.err.println("Insufficient data: " + data);
             return;
@@ -347,12 +373,7 @@ public class NetworkManager {
         String command = tokens[0];
         String senderUsername = tokens[1];
         String payload = String.join(" ", Arrays.copyOfRange(tokens, 2, tokens.length));
-        
-        // Debug: Print tokens for inspection
-        for (int i = 0; i < tokens.length; i++) {
-            System.out.println(tokens[i]);
-        }
-        
+
         switch (command) {
             case "PLAYER_UPDATE":
             case "PLAYER_REGISTER":
@@ -360,7 +381,7 @@ public class NetworkManager {
                     System.err.println("Error: Data format is incorrect for player. Expected at least 11 parts, but got " + tokens.length);
                     return;
                 }
-                
+
                 try {
                     String playerId = tokens[1];
                     String username = tokens[2];
@@ -376,6 +397,7 @@ public class NetworkManager {
 
                     // Updated PlayerData to include invincibleCounter
                     PlayerData playerData = new PlayerData(playerId, username, x, y, direction, spriteNum, timestamp, level, isAttacking, spriteCounter, invincibleCounter);
+
                     gamePanel.updateOtherPlayer(playerId, playerData);
 
                 } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
@@ -394,14 +416,9 @@ public class NetworkManager {
                     // Extract monsterId
                     String monsterId = tokens[1];
 
-                    // Log each token to verify the data is being read correctly
-                    for (int i = 0; i < tokens.length; i++) {
-                        System.out.println("Token " + i + ": " + tokens[i]);
-                    }
-
                     // Reconstruct name from the tokens (enclosed in quotes)
                     String name = tokens[2];
-                    // Extract other monster data and log each value to verify correctness
+                    // Extract other monster data
                     int x = Integer.parseInt(tokens[3]);
                     int y = Integer.parseInt(tokens[4]);
                     String direction = tokens[5];
@@ -412,11 +429,30 @@ public class NetworkManager {
                     int attack = Integer.parseInt(tokens[10]);
 
                     // Update or register the monster
-                    MonsterData monsterData = new MonsterData(x, y, name, speed, health, maxHealth, attack, direction, spriteNum);
+                    MonsterData monsterData = new MonsterData(monsterId, x, y, name, speed, health, maxHealth, attack, direction, spriteNum);
                     gamePanel.updateMonster(monsterId, monsterData);
-                    System.out.println("Monster " + monsterId + " updated successfully.");
+
                 } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
                     System.err.println("Error parsing monster data: " + e.getMessage());
+                    e.printStackTrace();
+                }
+                break;
+
+            case "MONSTER_DEATH":
+                if (tokens.length < 2) { // Ensure there are enough tokens
+                    System.err.println("Error: Data format is incorrect for monster death. Expected at least 2 parts, but got " + tokens.length);
+                    return;
+                }
+                try {
+                    // Extract monsterId
+                    String monsterId = tokens[1];
+                    
+                    // Find the monster and set it to null
+                    removeMonsterById(monsterId);
+                }
+                    
+                catch (Exception e) {
+                    System.err.println("Error handling monster death: " + e.getMessage());
                     e.printStackTrace();
                 }
                 break;
@@ -434,25 +470,44 @@ public class NetworkManager {
                 break;
         }
     }
+
+    public void sendMonsterHit(String monsterId, int damage, int health) {
+        for (int i = 0; i < gamePanel.monster.length; i++) {
+            if (gamePanel.monster[i].getMonsterId().equals(monsterId)) {
+                gamePanel.monster[i].hitMonster(monsterId, damage, health);
+
+                // If the monster is dead, set it to null
+                if (gamePanel.monster[i].isAlive()==false) {
+                    gamePanel.monster[i] = null; // Set dead monster to null
+                }
+
+                break;
+            }
+        }
+    }
     
+    private void removeMonsterById(String monsterId) {
+        for (int i = 0; i < gamePanel.monster.length; i++) {
+            Entity monster = gamePanel.monster[i];
+            if (monster != null && monster.getMonsterId().equals(monsterId)) {
+            	gamePanel.monster[i] = null;
+                break;
+            }
+        }
+    }
+        
+       
+    
+
+
+
     public void sendMonsterDataToAllClients() {
         long timestamp = System.currentTimeMillis(); // Add timestamp if necessary
 
         for (Entity monster : gamePanel.monster) {
             if (monster != null) {
                 // Format the monster data string with relevant fields
-                String data = String.format("MONSTER_UPDATE %s \"%s\" %d %d %s %d %d %d %d %d",
-                    monster.getMonsterId(),            // Unique monster ID
-                    monster.getName(),          // Monster name (enclosed in quotes)
-                    monster.getWorldX(),        // X position
-                    monster.getWorldY(),        // Y position
-                    monster.getDirection(),     // Current direction (e.g., "up", "down")
-                    monster.getSpeed(),         // Movement speed
-                    monster.getHealth(),        // Current health
-                    monster.getMaxHealth(),     // Maximum health
-                    monster.getAttack(),        // Attack power
-                    monster.getSpriteNum()
-                    );    // Sprite number (for animation)
+                String data = formatMonsterData(monster, timestamp);
 
                 // Send the data to all clients
                 for (BufferedWriter writer : clientWriters.values()) {
@@ -463,6 +518,24 @@ public class NetworkManager {
                         System.err.println("Error sending monster data to client: " + e.getMessage());
                     }
                 }
+            }
+        }
+    }
+    
+    //ON MONSTER DEATH
+    
+    public void sendMonsterDeathToAllClients(String monsterId) {
+        // Create a message to broadcast the monster death
+        String message = String.format("MONSTER_DEATH %s", monsterId);
+        
+        // Iterate over all client writers and send the message
+        for (Map.Entry<Socket, BufferedWriter> entry : clientWriters.entrySet()) {
+            try {
+                BufferedWriter writer = entry.getValue();
+                writer.write(message + "\n");
+                writer.flush();
+            } catch (IOException e) {
+                System.err.println("Error sending monster death data to client: " + e.getMessage());
             }
         }
     }
@@ -488,66 +561,59 @@ public class NetworkManager {
 
         return data;
     }
-    
+
     public void sendMonsterData(String monsterId, Entity monster, boolean isRegister) {
         if (!isServer) {
             return; // Exit if not on the server
         }
 
         String command = isRegister ? "MONSTER_REGISTER" : "MONSTER_UPDATE";
-        
+
         String data = String.format("%s %s \"%s\" %d %d %s %d %d %d %d %d",
             command,
             monsterId,                 // Unique monster ID
             monster.getName(),         // Name (enclosed in quotes)
             monster.getWorldX(),       // X position
             monster.getWorldY(),       // Y position
-            monster.getDirection(),    // Current direction
-            monster.getSpeed(),        // Speed
+            monster.getDirection(),    // Direction
+            monster.getSpriteNum(),    // Sprite number
             monster.getHealth(),       // Current health
             monster.getMaxHealth(),    // Maximum health
-            monster.getAttack(),       // Attack power
-            monster.getSpriteNum()     // Sprite number (for animation state)
+            monster.getSpeed(),        // Speed
+            monster.getAttack()        // Attack power
         );
 
-        // Send data to all clients
-        for (BufferedWriter writer : clientWriters.values()) {
-            try {
-                writer.write(data + "\n");
-                writer.flush();
-            } catch (IOException e) {
-                System.err.println("Error sending monster data to client: " + e.getMessage());
-            }
-        }
+        
     }
 
-    private void sendMonsterDataToPlayer(String playerId, String monsterData) {
-        // Find the corresponding socket for the playerId
-        Socket playerSocket = socketToPlayerId.entrySet().stream()
-            .filter(entry -> playerId.equals(entry.getValue()))
-            .map(Map.Entry::getKey)
-            .findFirst()
-            .orElse(null);
+    public void sendMonsterDataToServer(String playerId, String monsterId, Entity monster) {
+        System.out.println("Player ID: " + playerId);
+        System.out.println("Other Players: " + otherPlayers.keySet());
 
-        if (playerSocket != null) {
-            BufferedWriter writer = clientWriters.get(playerSocket);
+        if (otherPlayers != null && otherPlayers.containsKey(playerId)) {
+            Socket playerSocket = playerToSocket.get(playerId);
 
-            if (writer != null) {
-                try {
-                    writer.write(monsterData + "\n");
-                    writer.flush();
-                } catch (IOException e) {
-                    e.printStackTrace();
+            if (playerSocket != null) {
+                BufferedWriter writer = clientWriters.get(playerSocket);
+                if (writer != null) {
+                    String data = formatMonsterData(monster, System.currentTimeMillis());
+                    try {
+                        writer.write(data + "\n");
+                        writer.flush();
+                        System.out.println("Monster data sent to player with ID " + playerId);
+                    } catch (IOException e) {
+                        System.err.println("Error sending monster data to player with ID " + playerId + ": " + e.getMessage());
+                    }
+                } else {
+                    System.err.println("BufferedWriter for player with ID " + playerId + " not found.");
                 }
             } else {
-                System.err.println("BufferedWriter for player with ID " + playerId + " not found.");
+                System.err.println("Socket for player with ID " + playerId + " not found.");
             }
         } else {
             System.err.println("Player with ID " + playerId + " not found.");
         }
     }
-
-
 
 
     public void close() {
@@ -576,4 +642,9 @@ public class NetworkManager {
     public boolean isServer() {
         return isServer;
     }
+
+	public Socket getClientSocket() {
+		// TODO Auto-generated method stub
+		return clientSocket;
+	}
 }

@@ -145,6 +145,14 @@ public class NpcOldMan extends Entity{
 		// TODO Auto-generated method stub
 		return null;
 	}
+
+
+
+	@Override
+	public void hitMonster(String monsterId2, int attack2, int health2) {
+		// TODO Auto-generated method stub
+		
+	}
 		
 	
 	
