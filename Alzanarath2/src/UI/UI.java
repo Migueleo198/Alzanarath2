@@ -35,7 +35,7 @@ public class UI {
 
     public void drawUI(Graphics2D g2) {
     	 this.g2 = g2;
-        if (gp.getGameState() == gp.getTitleState()) {
+        if (gp.getGameState() == gp.getTitleState() && !gp.isServer==true) {
             drawTitleScreen(g2);
         }
 
@@ -65,6 +65,10 @@ public class UI {
         
         if(gp.getGameState()==gp.getCharacterState()) {
         	drawStatusScreen();
+        }
+        
+        if(gp.getNetworkManager()!=null && gp.getNetworkManager().isServer()==true) {
+        	drawServerScreen(g2);
         }
        
     }
@@ -311,6 +315,18 @@ public class UI {
         if (commandNum == 1) {
             g2.drawString(">", middleX - 90, middleY);
         }
+    }
+    
+    private void drawServerScreen(Graphics2D g2) {
+        int middleX = gp.getScreenWidth() / 2;
+        int middleY = gp.getScreenHeight() / 2;
+
+        g2.setFont(new Font("Comic Sans", Font.BOLD, 30));
+
+        g2.setColor(Color.white);
+
+        g2.drawString("Hosting Server", middleX - 70, middleY - 50);
+        
     }
 
     public void drawHealthBar(Graphics2D g2) {

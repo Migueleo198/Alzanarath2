@@ -99,6 +99,7 @@ public class GamePanel extends JPanel implements Runnable {
     private final int titleState = 1;
     private final int playState = 2;
     private final int characterState = 3;
+    private final int serverState=4;
     
     // Initialize the UI management class
     public UI ui;
@@ -155,6 +156,23 @@ public class GamePanel extends JPanel implements Runnable {
         gameThread.start();
     }
     
+   public void initializeServer() {
+	   if (keyH == null) {
+           System.err.println("KeyHandler is null! Initialization might be missing.");
+           return;
+       }
+      
+       networkManager = new NetworkManager(isServer, config, this, this.keyH);
+       
+       this.player = new Player(this, keyH, networkManager);
+       
+       aSetter = new AssetSetter(this, networkManager);
+       setupGame();
+       
+
+       System.out.println("Game initialized. Player: " + (player != null ? "Initialized" : "Not Initialized"));
+       
+   }
    
     
 
@@ -241,10 +259,13 @@ public class GamePanel extends JPanel implements Runnable {
 
 
     public void update() {
+    	
         if (keyH == null) {
             System.err.println("KeyHandler is not initialized.");
             return;
         }
+        
+        
 
         // Update NPCs
         for (int i = 0; i < npc.length; i++) {
@@ -293,12 +314,14 @@ public class GamePanel extends JPanel implements Runnable {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
 
-        if (this.player != null) {
+        if (this.player != null ) {
             g2.setColor(getBackground());
 
             // Add all entities to the entityList
+            if(!networkManager.isServer()) {
             entityList.add(player);
             getTileM().draw(g2);
+            }
 
             for (int i = 0; i < npc.length; i++) {
                 if (npc[i] != null) {
@@ -325,8 +348,9 @@ public class GamePanel extends JPanel implements Runnable {
 
             // Draw entities
             for (int i=0; i<entityList.size();i++) {
-            	
+            	if(!networkManager.isServer()) {
                 entityList.get(i).draw(g2);
+            	}
             }
             
             
@@ -337,7 +361,7 @@ public class GamePanel extends JPanel implements Runnable {
 
         // Draw other players
         for (Player otherPlayer : otherPlayers.values()) {
-            if (otherPlayer != null) {
+            if (otherPlayer != null && !networkManager.isServer()) {
                 otherPlayer.draw(g2);
                 
             }
@@ -638,6 +662,11 @@ public class GamePanel extends JPanel implements Runnable {
 
 	public void setStopUpdatingMonstersOnDeath(boolean stopUpdatingMonstersOnDeath) {
 		this.stopUpdatingMonstersOnDeath = stopUpdatingMonstersOnDeath;
+	}
+
+
+	public int getServerState() {
+		return serverState;
 	}
 	
 	 

@@ -40,7 +40,7 @@ public class NetworkManager {
         this.gamePanel = gamePanel;
 
         if (isServer) {
-            this.nameServer = promptInputName("Server");
+        	
             startServer();
         } else {
             this.nameClient = promptInputName("Client");
@@ -48,12 +48,14 @@ public class NetworkManager {
         }
     }
 
-    public synchronized void startServer() {
+    public void startServer() {
         try {
             String radminIP = getRadminIPAddress();
             serverSocket = new ServerSocket(config.getPort(), 50, InetAddress.getByName(radminIP));
             System.out.println("Server started on Radmin IP " + radminIP + " and port " + config.getPort() + "!");
             serverSocket.setPerformancePreferences(1, 0, 2);
+            
+            
 
             clientExecutor.submit(() -> {
                 while (true) {
@@ -64,17 +66,13 @@ public class NetworkManager {
                         BufferedWriter clientOut = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
                         BufferedReader clientIn = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 
-                        synchronized (this) {
-                            clientWriters.put(clientSocket, clientOut);
-                            clientReaders.put(clientSocket, clientIn);
-                        }
+                        clientWriters.put(clientSocket, clientOut);
+                        clientReaders.put(clientSocket, clientIn);
 
-                        // Register the client player (you may need to handle initial registration)
-                        // Add logic to register client players here
-
-                        
+                        // Send all existing clients to the newly connected client
                         sendAllPlayersToClient(clientOut);
 
+                        // Register the new client
                         clientExecutor.submit(() -> handleClient(clientSocket));
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -85,6 +83,7 @@ public class NetworkManager {
             e.printStackTrace();
         }
     }
+
 
 
     public void startClient() {
@@ -105,6 +104,7 @@ public class NetworkManager {
                 clientReaders.put(clientSocket, in);
             }
 
+            // Start a thread to read messages from the server
             clientExecutor.submit(this::readMessages);
 
             // Register the client player after connecting
@@ -120,8 +120,11 @@ public class NetworkManager {
 
 
     private void sendAllPlayersToClient(BufferedWriter clientOut) throws IOException {
-    	long timestampo = System.currentTimeMillis();
+        long timestamp = System.currentTimeMillis(); // Current timestamp
+
+        // Iterate through all registered players
         for (PlayerData playerData : otherPlayers.values()) {
+            // Format the player data message
             String message = String.format("PLAYER_REGISTER %s %s %d %d %s %d %d %b %d %d", 
                                             playerData.getPlayerId(),  
                                             playerData.getUsername(), 
@@ -133,7 +136,8 @@ public class NetworkManager {
                                             playerData.isAttacking(),
                                             playerData.getSpriteCounter(),
                                             playerData.getInvincibleCounter());
-            								
+
+            // Send the message to the client
             clientOut.write(message + "\n");
             clientOut.flush();
         }
@@ -166,6 +170,8 @@ public class NetworkManager {
             }
         }
     }
+
+   
 
     private void readMessages() {
         try {
@@ -268,6 +274,7 @@ public class NetworkManager {
                 try {
                     writer.write(message + "\n");
                     writer.flush();
+                    System.out.println("Sent registration data to client: " + message);
                 } catch (IOException e) {
                     System.err.println("Error sending player registration data: " + e.getMessage());
                 }
@@ -276,6 +283,7 @@ public class NetworkManager {
             try {
                 out.write(message + "\n");
                 out.flush();
+                System.out.println("Sent registration data to server: " + message);
             } catch (IOException e) {
                 System.err.println("Error sending player registration data to server: " + e.getMessage());
             }
@@ -287,7 +295,7 @@ public class NetworkManager {
     public void sendPlayerUpdate(Player player) {
         if (player == null) return;
 
-        String playerId = isServer ? nameServer : nameClient;
+        String playerId = nameClient;
         String username = player.getUsername();
         boolean isAttacking = player.isAttacking();
         int level = player.getLevel();
@@ -555,35 +563,7 @@ public class NetworkManager {
         }
     }
     
-    public void damageMonsterFromServer(String monsterId, int attackDamage) {
-        // Loop through the monster array to find the monster by its ID
-        for (int i = 0; i < gamePanel.monster.length; i++) {
-             
-            
-            if (gamePanel.monster[i] != null && monsterId.equals(gamePanel.monster[i].getMonsterId())) {
-                // Apply damage to the monster
-                int newHealth = gamePanel.monster[i].getHealth() - attackDamage;
-                gamePanel.monster[i].setHealth(newHealth);
-                
-                
-                // Check if the monster is dead
-                if (newHealth <= 0) {
-                    // Remove the monster from the array
-                    gamePanel.monster[i] = null;
-
-                    // Notify clients that the monster is dead
-                    sendMonsterDeathToAllClients(monsterId);
-                } else {
-                    // Notify clients of the updated monster state
-                    sendMonsterDataToAllClients(monsterId, gamePanel.monster[i]);
-                }
-                return; // Exit after processing the monster with the given ID
-            }
-        }
-
-        // If no monster was found with the given ID
-        System.out.println("Monster with ID " + monsterId + " not found.");
-    }
+    
 
     
     //ON MONSTER DEATH
