@@ -161,19 +161,14 @@ public class NetworkManager {
         try (BufferedReader clientIn = clientReaders.get(socket)) {
             String inputLine;
             while ((inputLine = clientIn.readLine()) != null) {
-                if (inputLine.equals("REQUEST_PLAYERS_DATA")) {
-                    // Send all players' data to the client
-                    sendAllPlayersToClient(clientWriters.get(socket));
-                } else {
-                    handleReceivedData(inputLine);
+                handleReceivedData(inputLine);
 
-                    // Broadcast data to all clients except the sender
-                    for (Map.Entry<Socket, BufferedWriter> entry : clientWriters.entrySet()) {
-                        if (entry.getKey() != socket) {
-                            BufferedWriter writer = entry.getValue();
-                            writer.write(inputLine + "\n");
-                            writer.flush();
-                        }
+                // Broadcast data to all clients except the sender
+                for (Map.Entry<Socket, BufferedWriter> entry : clientWriters.entrySet()) {
+                    if (entry.getKey() != socket) {
+                        BufferedWriter writer = entry.getValue();
+                        writer.write(inputLine + "\n");
+                        writer.flush();
                     }
                 }
             }
@@ -189,6 +184,7 @@ public class NetworkManager {
             }
         }
     }
+
 
  
 
