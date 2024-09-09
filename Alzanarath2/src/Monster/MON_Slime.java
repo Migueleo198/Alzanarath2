@@ -25,6 +25,7 @@ public class MON_Slime extends Entity{
 		Health = maxHealth;
 		attack=5;
 		type=2;
+		exp = 100;
 		solidArea.x=3;
 		solidArea.y=18;
 		solidArea.width=42;
@@ -262,7 +263,7 @@ public class MON_Slime extends Entity{
 	        System.out.println("Checking monster at index " + i);
 	        
 	        // Check if the monster ID matches
-	        if (gp.monster[i].getMonsterId().equals(monsterId2)) {
+	        if (gp.monster[i]!=null && gp.monster[i].getMonsterId().equals(monsterId2)) {
 	            // Apply damage and update health
 	            int newHealth = gp.monster[i].getHealth() - attack2;
 	            gp.monster[i].setHealth(newHealth); // Ensure health does not go below zero
@@ -273,8 +274,10 @@ public class MON_Slime extends Entity{
 	            // Check if the monster is dead
 	            if (gp.monster[i].getHealth() <= 0) {
 	                // Handle monster death
+	            	gp.getPlayer().setExp(gp.getPlayer().getExp()+this.exp);
 	            	gp.setStopUpdatingMonstersOnDeath(true);
-	            	gp.getNetworkManager().sendMonsterDeathToAllClients(monsterId2);
+	            	gp.getNetworkManager().sendMonsterDeathToAllClients(gp.monster[i].getMonsterId());
+	            	
 	                return;
 	                
 	                

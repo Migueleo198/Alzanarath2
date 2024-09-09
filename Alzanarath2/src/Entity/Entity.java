@@ -29,12 +29,12 @@ public abstract class Entity {
 	protected int solidAreaDefaultX;
 	protected int solidAreaDefaultY;
 	protected int level = 1;
-	private int strength=0;
-	private int dexterity=0;
+	protected int strength=0;
+	protected int dexterity=0;
 	protected int attack=0;
 	protected int defense=0;
-	private int exp=0;
-	private int nextLevelExp;
+	protected int exp=0;
+	protected int nextLevelExp;
 	private int gold;
 	public Entity currentWeapon;
 	public Entity currentShield;

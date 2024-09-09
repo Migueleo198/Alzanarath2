@@ -618,7 +618,7 @@ public class NetworkManager {
         }
     }
     
-    private void removeMonsterById(String monsterId) {
+    public void removeMonsterById(String monsterId) {
         for (int i = 0; i < gamePanel.monster.length; i++) {
             Entity monster = gamePanel.monster[i];
             

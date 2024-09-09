@@ -16,7 +16,8 @@ public class UI {
     Graphics2D g2;
     private boolean chatVisible = false;
     private boolean globalChatVisible = false; // Flag to control global chat visibility
-
+    private ArrayList<String> message = new ArrayList<>();
+    ArrayList<Integer> messageCounter = new ArrayList<>();
     private List<String> globalChatMessages = new ArrayList<>(); // To store all chat messages
 
     public int getCommandNum() {
@@ -60,7 +61,7 @@ public class UI {
                 drawChat(g2);
             }
             
-            
+            drawBattleNotification();
         }
         
         if(gp.getGameState()==gp.getCharacterState()) {
@@ -73,7 +74,32 @@ public class UI {
        
     }
     
-    public void drawStatusScreen() {
+    private void drawBattleNotification() {
+    	
+    	g2.setFont(new Font("Comic Sans", Font.BOLD, 20));
+    	
+		int messageX = gp.getTileSize();
+		int messageY = gp.getTileSize()*4;
+		
+		for(int i=0; i<message.size();i++) {
+			if(message.get(i)!=null) {
+				g2.setColor(Color.white);
+				g2.drawString(message.get(i), messageX+2, messageY+2);
+				
+				int counter = messageCounter.get(i) +1;
+				messageCounter.set(i, counter);
+				messageY+=50;
+			}
+			
+			if(messageCounter.get(i)>30) {
+				message.remove(i);
+				messageCounter.remove(i);
+			}
+		}
+		
+	}
+
+	public void drawStatusScreen() {
    	 
    	 final int frameX = gp.getTileSize();
    	 final int frameY = gp.getTileSize()-20;
@@ -335,18 +361,30 @@ public class UI {
 
     public void drawHealthBar(Graphics2D g2) {
         String Health = " HP: ";
+        
+        
+        int barWidth = 100; 
+	    int barHeight = 12; // Height of the health bar
+        int currentHealth = gp.getPlayer().Health; // Monster's current health
+	    int maxHealth = gp.getPlayer().getMaxHealth();  // Monster's maximum health
+	    int healthBarWidth = (int) ((double) currentHealth / maxHealth * barWidth);
+
+	    // Draw the background of the health bar (dark gray)
+	    
+	    
+	    
         g2.setFont(g2.getFont().deriveFont(Font.PLAIN, 20));
         g2.drawString(Health, 50, 82);
         g2.setColor(Color.DARK_GRAY);
-        g2.fillRect(95, 65, gp.getPlayer().getMaxHealth(), 20);
+        g2.fillRect(95, 65, barWidth, 20);
 
         g2.setColor(Color.white);
         g2.setStroke(new BasicStroke(1));
 
-        g2.fillRect(93, 63, gp.getPlayer().getHealth() + 4, 20 + 4);
+        g2.fillRect(93, 63, healthBarWidth + 4, 20 + 4);
 
         g2.setColor(Color.red);
-        g2.fillRect(95, 65, gp.getPlayer().getHealth(), 20);
+        g2.fillRect(95, 65, healthBarWidth, 20);
     }
 
     public void setCurrentMessage(String message) {
@@ -355,6 +393,12 @@ public class UI {
 
     public String getCurrentMessage() {
         return currentMessage;
+    }
+    
+    public void addBattleNotification(String text) {
+    	message.add(text);
+    	
+    	messageCounter.add(0);
     }
     
     public void setChatVisible(boolean chatVisible) {

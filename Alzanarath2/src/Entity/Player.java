@@ -103,6 +103,8 @@ public class Player extends Entity {
             return;
         }
         
+        //Check if level up happened and reset exp needed to level up
+        checkLevelUp();
         
         countAttackDelayTime++;
       //DELAY BETWEEN EACH PLAYER ATTCK SO YOU CANT KEEP THE KEY PRESSED AND ATTACK INFINITELY
@@ -284,27 +286,58 @@ public class Player extends Entity {
                 synchronized (monster) {
                     monster.setInvincible(true); // Set monster to invincible to avoid multiple hits
                     gp.playSE(2); // Play sound effect for the hit
-                   
-                    // Apply damage to the monster
-                    monster.hitMonster(monster.getMonsterId(), this.attack, monster.getHealth());
                     
-                    // Check if monster is dead
-                    if (monster.getHealth() <= 0) {
-                        // Notify server and other clients about the monster's death
-                        if (gp.getNetworkManager().isServer()) {
-                        	gp.monster[i]=null;
+                    if ( gp.monster[i].getHealth() <= 0 ) {
+                            // Notify server and other clients about the monster's death
+                    		exp+=gp.monster[i].exp;
+                    	    gp.ui.addBattleNotification("You killed a " + gp.monster[i].getName() + " !");
+                        	
                         	
                         }
 
                         // Optionally set the monster to null in the local game panel
                         
                     }
+                   
+                    // Apply damage to the monster
+                    monster.hitMonster(monster.getMonsterId(), this.attack, monster.getHealth());
+                    gp.ui.addBattleNotification("You dealt " + attack + "damage!");
+                    // Check if monster is dead
+                   
                 }
-            }
+            
         } else {
             // Handle case where index is 999 (if applicable)
             System.out.println("Invalid monster index: " + i);
         }
+    }
+    
+    public void checkLevelUp(){
+    	int exp2= exp-nextLevelExp;
+    	if(exp>=nextLevelExp) {
+    		level++;
+    		
+    		nextLevelExp = (int) ((double) +  1.5*(((Math.pow(level,2)*2)*20)) + Math.pow(level, 3));
+    	    
+    		    		
+    		
+    			
+    		exp=exp2;
+    		maxHealth +=10;
+    		strength++;
+    		dexterity++;
+    		attack=getAttack();
+    		defense= getDefense();
+    		Health=maxHealth;
+    		
+    		//DIALOGUES AFTER LEVELING UP(NOT YET IMPLEMENTED)!
+    		
+    		//gp.playSE(6);
+    		//gp.setGameState(gp.dialogueState);
+    		
+    		//startDialogue(this,0);
+    		//setDialogue();
+    	}
     }
 
     public void setLastReceivedData(PlayerData playerData) {
