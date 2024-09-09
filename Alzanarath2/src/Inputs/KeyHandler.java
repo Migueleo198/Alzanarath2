@@ -20,26 +20,44 @@ public class KeyHandler implements KeyListener {
         this.gp = gp;
     }
 
-    @Override
-    public void keyPressed(KeyEvent e) {
-        synchronized (gp.keyH) {
-            int code = e.getKeyCode();
+    
+	@Override
+	public void keyPressed(KeyEvent e) {
+		synchronized (gp.keyH) {
+			int code = e.getKeyCode();
 
-            if (gp.getGameState() == gp.getTitleState()) {
-                titleState(code);
-            }
+			if (gp.getGameState() == gp.getScreenState()) {
+				screenState(code);
+			} else if (gp.getGameState() == gp.getLoginState()) {
+		        handleLoginAccount(code);
 
-            if (gp.getGameState() == gp.getPlayState()) {
-                playState(code, e);
-            } else if (gp.getGameState() == gp.getCharacterState()) {
-                characterState(code);
-            }
-        }
-    }
+		        if (gp.ui.getEmailFocused() || gp.ui.getPasswordFocused()) {
+		            InputAuth(e);
+		        }
+			} else if(gp.getGameState() == gp.getRegisterState()) {
+		        handleRegisterAccount(code);
 
-    public void titleState(int code) {
-        handleMenuNavigation(code);
-    }
+		        if (gp.ui.getEmailFocused() || gp.ui.getPasswordFocused() || gp.ui.getUsernameFocused()) {
+		            InputAuthReg(e);
+		        }
+			} else if (gp.getGameState() == gp.getTitleState()) {
+				titleState(code);
+			} else if (gp.getGameState() == gp.getPlayState()) {
+				playState(code, e);
+
+			} else if (gp.getGameState() == gp.getCharacterState()) {
+				characterState(code);
+			}
+		}
+	}
+
+	public void titleState(int code) {
+		handleMenuNavigation(code);
+	}
+
+	public void screenState(int code) {
+		handleMenuAccount(code);
+	}
 
     public void playState(int code, KeyEvent e) {
         // Handle chat input if chat is visible
