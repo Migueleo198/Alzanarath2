@@ -7,6 +7,7 @@ import Networking.NetworkManager;
 public class main {
 	public static JFrame window;
     public static void main(String[] args) {
+    	
         window = new JFrame("Game");
         GamePanel gamePanel = new GamePanel();
         window.setUndecorated(true);

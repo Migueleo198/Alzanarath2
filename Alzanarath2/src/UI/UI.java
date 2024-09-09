@@ -3,24 +3,27 @@ package UI;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.GradientPaint;
 import java.awt.Graphics2D;
 import java.util.ArrayList;
 import java.util.List;
 
 import main.GamePanel;
+import main.main;
 
 public class UI {
     private int commandNum = 0;
     private List<String> chatMessages = new ArrayList<>();
     private String currentMessage = "";
-    Graphics2D g2;
+    private Graphics2D g2;
     private boolean chatVisible = false;
     private boolean globalChatVisible = false; // Flag to control global chat visibility
     private ArrayList<String> message = new ArrayList<>();
     ArrayList<Integer> messageCounter = new ArrayList<>();
     private List<String> globalChatMessages = new ArrayList<>(); // To store all chat messages
-
+    private String truncatedText;
+    
     public int getCommandNum() {
         return commandNum;
     }
@@ -33,10 +36,11 @@ public class UI {
 
     public UI(GamePanel gp) {
         this.gp = gp;
+        
     }
 
     public void drawUI(Graphics2D g2) {
-    	 this.g2 = g2;
+    	 this.g2=g2;
         if (gp.getGameState() == gp.getTitleState() && !gp.isServer==true) {
             drawTitleScreen(g2);
         }
@@ -77,15 +81,15 @@ public class UI {
     
     private void drawBattleNotification() {
     	
-    	g2.setFont(new Font("Comic Sans", Font.BOLD, 20));
+    	getG2().setFont(new Font("Comic Sans", Font.BOLD, 20));
     	
 		int messageX = gp.getTileSize();
 		int messageY = gp.getTileSize()*4;
 		
 		for(int i=0; i<message.size();i++) {
 			if(message.get(i)!=null) {
-				g2.setColor(Color.white);
-				g2.drawString(message.get(i), messageX+2, messageY+2);
+				getG2().setColor(Color.white);
+				getG2().drawString(message.get(i), messageX+2, messageY+2);
 				
 				int counter = messageCounter.get(i) +1;
 				messageCounter.set(i, counter);
@@ -116,36 +120,36 @@ public class UI {
    	 
    	 
    	 //Names
-   	 g2.setFont(new Font("Comic Sans", Font.BOLD, 30));
+   	 getG2().setFont(new Font("Comic Sans", Font.BOLD, 30));
    	 String valueName;
    	 valueName =String.valueOf(gp.getPlayer().getUsernamePlayer());
-   	 g2.drawString(gp.getPlayer().getUsernamePlayer(), textX, textY);
+   	 getG2().drawString(gp.getPlayer().getUsernamePlayer(), textX, textY);
    	 textY+=lineHeight+10;
    	 
-   	 g2.setColor(Color.white);
-   	 g2.setFont(g2.getFont().deriveFont(23F));
+   	 getG2().setColor(Color.white);
+   	 getG2().setFont(getG2().getFont().deriveFont(23F));
    	 
-   	 g2.drawString("Level", textX, textY);
+   	 getG2().drawString("Level", textX, textY);
    	 textY+=lineHeight;
-   	 g2.drawString("Health", textX, textY);
+   	 getG2().drawString("Health", textX, textY);
    	 textY+=lineHeight;
-   	 g2.drawString("Strength", textX, textY);
+   	 getG2().drawString("Strength", textX, textY);
    	 textY+=lineHeight;
-   	 g2.drawString("Dexterity", textX, textY);
+   	 getG2().drawString("Dexterity", textX, textY);
    	 textY+=lineHeight;
-   	 g2.drawString("Attack", textX, textY);
+   	 getG2().drawString("Attack", textX, textY);
    	 textY+=lineHeight;
-   	 g2.drawString("Defense", textX, textY);
+   	 getG2().drawString("Defense", textX, textY);
    	 textY+=lineHeight;
-   	 g2.drawString("Exp", textX, textY);
+   	 getG2().drawString("Exp", textX, textY);
    	 textY+=lineHeight;
-   	 g2.drawString("Next Level", textX, textY);
+   	 getG2().drawString("Next Level", textX, textY);
    	 textY+=lineHeight;
-   	 g2.drawString("Gold", textX, textY);
+   	 getG2().drawString("Gold", textX, textY);
    	 textY+=lineHeight;
-   	 g2.drawString("Weapon", textX, textY);
+   	 getG2().drawString("Weapon", textX, textY);
    	 textY+=lineHeight;
-   	 g2.drawString("Shield", textX, textY);
+   	 getG2().drawString("Shield", textX, textY);
    	 textY+=lineHeight;
    	 
    	 //STAT VALUES
@@ -160,48 +164,48 @@ public class UI {
    	 
    	 value =String.valueOf(gp.getPlayer().getLevel());
    	 textX = getXforAlignToRightText(value, tailX);
-   	 g2.drawString(value, tailX-75, textY+45);
+   	 getG2().drawString(value, tailX-75, textY+45);
    	 textY+=lineHeight;
    	 
    	 value =String.valueOf(gp.getPlayer().getHealth() + "/" + gp.getPlayer().getMaxHealth());
    	 textX = getXforAlignToRightText(value, tailX);
-   	 g2.drawString(value, tailX-75, textY+45);
+   	 getG2().drawString(value, tailX-75, textY+45);
    	 textY+=lineHeight;
    	 
    	 value =String.valueOf(gp.getPlayer().getStrength());
    	 textX = getXforAlignToRightText(value, tailX);
-   	 g2.drawString(value, tailX-75, textY+45);
+   	 getG2().drawString(value, tailX-75, textY+45);
    	 textY+=lineHeight;
    	 
    	 
    	 value =String.valueOf(gp.getPlayer().getDexterity());
    	 textX = getXforAlignToRightText(value, tailX);
-   	 g2.drawString(value, tailX-75, textY+45);
+   	 getG2().drawString(value, tailX-75, textY+45);
    	 textY+=lineHeight;
    	 
    	 value =String.valueOf(gp.getPlayer().getAttack());
    	 textX = getXforAlignToRightText(value, tailX);
-   	 g2.drawString(value, tailX-75, textY+45);
+   	 getG2().drawString(value, tailX-75, textY+45);
    	 textY+=lineHeight;
    	 
    	 value =String.valueOf(gp.getPlayer().getDefense());
    	 textX = getXforAlignToRightText(value, tailX);
-   	 g2.drawString(value, tailX-75, textY+45);
+   	 getG2().drawString(value, tailX-75, textY+45);
    	 textY+=lineHeight;
    	 
    	 value =String.valueOf(gp.getPlayer().getExp());
    	 textX = getXforAlignToRightText(value, tailX);
-   	 g2.drawString(value, tailX-75, textY+45);
+   	 getG2().drawString(value, tailX-75, textY+45);
    	 textY+=lineHeight;
    	 
    	 value =String.valueOf(gp.getPlayer().getNextLevelExp());
    	 textX = getXforAlignToRightText(value, tailX);
-   	 g2.drawString(value, tailX-75, textY+45);
+   	 getG2().drawString(value, tailX-75, textY+45);
    	 textY+=lineHeight;
    	 
    	 value =String.valueOf(gp.getPlayer().getGold());
    	 textX = getXforAlignToRightText(value, tailX);
-   	 g2.drawString(value, tailX-75, textY+45);
+   	 getG2().drawString(value, tailX-75, textY+45);
    	 textY+=lineHeight +5;
    	 
    	 //values
@@ -209,10 +213,10 @@ public class UI {
    	 
    	 
    	 
-   	 g2.drawImage(gp.getPlayer().currentWeapon.getDown1(), tailX-gp.getTileSize()-20,textY,null);
+   	 getG2().drawImage(gp.getPlayer().currentWeapon.getDown1(), tailX-gp.getTileSize()-20,textY,null);
    	 textY += gp.getTileSize();
    	 
-   	 g2.drawImage(gp.getPlayer().currentShield.getDown1(), tailX-gp.getTileSize()-20,textY,null);
+   	 getG2().drawImage(gp.getPlayer().currentShield.getDown1(), tailX-gp.getTileSize()-20,textY,null);
    	 textY += gp.getTileSize();
    	 
     }
@@ -220,27 +224,27 @@ public class UI {
     public void drawSubWindow(int x, int y, int width, int height) {
    	 //Color one, color two, color three, opacity(transparency)
    	 Color color = new Color(0,0,0,220);
-   	 g2.setColor(color);
-   	 g2.fillRect(x, y, width, height);
+   	 getG2().setColor(color);
+   	 getG2().fillRect(x, y, width, height);
    	 
    	 color = new Color(255,255,255);
-   	 g2.setColor(color);
-   	 g2.setStroke(new BasicStroke(5));
-   	 g2.drawRect(x+5, y+5, width-10, height-10);
+   	 getG2().setColor(color);
+   	 getG2().setStroke(new BasicStroke(5));
+   	 getG2().drawRect(x+5, y+5, width-10, height-10);
    	 
    	 
    	 
     }
     
     public int getXforCenteredText(String text) {
-    	int length = (int)g2.getFontMetrics().getStringBounds(text,g2).getWidth();
+    	int length = (int)getG2().getFontMetrics().getStringBounds(text,getG2()).getWidth();
     	int x = gp.getScreenWidth()/2 - length/2;
     	
     	return x;
     }
     
     public int getXforAlignToRightText(String text,int tailX) {
-    	int length = (int)g2.getFontMetrics().getStringBounds(text,g2).getWidth();
+    	int length = (int)getG2().getFontMetrics().getStringBounds(text,getG2()).getWidth();
     	int x = tailX - length;
     	
     	return x;
@@ -289,8 +293,25 @@ public class UI {
 
         // Display the current message being typed
         g2.setColor(Color.WHITE);
-        g2.drawString(currentMessage, chatX +120, chatY + chatHeight - 20);
+        
+        FontMetrics fm = g2.getFontMetrics();
+        int textWidth = fm.stringWidth(currentMessage);
+        
+        // Truncate text if it exceeds the width of the input field
+        
+            truncatedText = currentMessage;
+            while (textWidth > chatWidth-100 && truncatedText.length() > 0) {
+                truncatedText = truncatedText.substring(1);
+                textWidth = fm.stringWidth(truncatedText);
+            }
+            g2.drawString(truncatedText, chatX +120, chatY + chatHeight - 20);
+        
+        	
+        
     }
+       
+        
+    
 
     private void drawGlobalChat(Graphics2D g2) {
         int chatX = 50;
@@ -299,26 +320,42 @@ public class UI {
         int chatHeight = globalChatVisible ? 180 : 100;
 
         // Dark background for the chat area
-        g2.setColor(new Color(25, 25, 25,240));
+        g2.setColor(new Color(25, 25, 25, 240));
         g2.fillRect(chatX, chatY, chatWidth, chatHeight);
 
         // White border around the chat window
-        g2.setColor(new Color(50,50,50,220));
+        g2.setColor(new Color(50, 50, 50, 220));
         g2.setStroke(new BasicStroke(4));
         g2.drawRect(chatX, chatY, chatWidth, chatHeight);
 
-        // Display last 5 chat messages
+        // Set font and color for chat messages
         g2.setFont(new Font("Roboto", Font.PLAIN, 16));
         g2.setColor(new Color(220, 220, 220));
+
+        // Get the last few chat messages based on the space available in the chat box
         List<String> lastMessages = getGlobalChatMessages().size() > 4
                 ? getGlobalChatMessages().subList(getGlobalChatMessages().size() - 4, getGlobalChatMessages().size())
                 : getGlobalChatMessages();
 
+        // Adjust the y-position of each message and cut them if they exceed the visible height
         int y = chatY + 40;
+        int lineHeight = g2.getFontMetrics().getHeight();
         for (String message : lastMessages) {
+            if (message.length()>35) {
+            	
+               message=message.substring(0, 36);
+            }
+            if(gp.keyH.isWarningColor()==true) {
+            g2.setColor(Color.RED);
+            
+            }
+            else {
+            	
+            }
+           
             g2.drawString(message, chatX + 20, y);
+            
             y += 25;
-            if (y > chatY + chatHeight - 20) break;
         }
     }
 
@@ -448,6 +485,14 @@ public class UI {
 
 	public void setGlobalChatMessages(List<String> globalChatMessages) {
 		this.globalChatMessages = globalChatMessages;
+	}
+
+	public Graphics2D getG2() {
+		return g2;
+	}
+
+	public void setG2(Graphics2D g2) {
+		this.g2 = g2;
 	}
 }
 

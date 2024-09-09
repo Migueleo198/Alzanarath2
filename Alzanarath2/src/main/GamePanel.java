@@ -13,6 +13,7 @@ import java.awt.image.BufferedImage;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
+import Database.DBConnection;
 import Networking.Configuration;
 import Networking.MonsterData;
 import Networking.NetworkManager;
@@ -128,6 +129,9 @@ public class GamePanel extends JPanel implements Runnable {
     private BufferStrategy bufferStrategy;
    private Graphics2D g2;
    private BufferedImage tempScreen;
+   
+   //CONNECTION TO DATABASE
+   DBConnection connection = new DBConnection();
 
    // Constructor
    public GamePanel() {
@@ -144,6 +148,8 @@ public class GamePanel extends JPanel implements Runnable {
        
        
    }
+   
+   
 
    
     
@@ -233,6 +239,8 @@ public class GamePanel extends JPanel implements Runnable {
 	    }).start();
 
 	    aSetter = new AssetSetter(this, networkManager);
+	    
+	    connection.initializeConnection();
 	    
 
 	    System.out.println("Game initialized. Player: " + (player != null ? "Initialized" : "Not Initialized"));

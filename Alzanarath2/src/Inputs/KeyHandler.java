@@ -1,5 +1,6 @@
 package Inputs;
 
+import java.awt.Color;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import main.GamePanel;
@@ -14,7 +15,7 @@ public class KeyHandler implements KeyListener {
 
     private long lastMessageTime = 0; // Timestamp of the last sent message
     private static final long MESSAGE_DELAY = 5000; // 5 seconds in milliseconds
-
+    private boolean warningColor;
     public KeyHandler(GamePanel gp) {
         this.gp = gp;
     }
@@ -51,8 +52,12 @@ public class KeyHandler implements KeyListener {
                     gp.ui.appendGlobalChatMessage("You: " + message); // Add message to local chat
                     gp.ui.setCurrentMessage(""); // Clear the input
                     lastMessageTime = System.currentTimeMillis(); // Update last message time
+                    setWarningColor(false);
+                    gp.ui.getG2().setColor(Color.WHITE);
                 } else {
-                    gp.ui.appendGlobalChatMessage("Please wait before sending another message"); // Optional feedback
+                	
+                    gp.ui.appendGlobalChatMessage("You are on cooldown"); // Optional feedback
+                    setWarningColor(true);
                 }
             } else if (code == KeyEvent.VK_ESCAPE) {
                 // Hide chat
@@ -199,4 +204,12 @@ public class KeyHandler implements KeyListener {
     public void setePressed(boolean ePressed) {
         this.ePressed = ePressed;
     }
+
+	public boolean isWarningColor() {
+		return warningColor;
+	}
+
+	public void setWarningColor(boolean warningColor) {
+		this.warningColor = warningColor;
+	}
 }
