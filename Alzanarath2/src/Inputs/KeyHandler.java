@@ -172,6 +172,199 @@ public class KeyHandler implements KeyListener {
             gp.getNetworkManager().sendChatMessage(message);
         }
     }
+    
+    private void handleMenuNavigation(int code) {
+		if (code == KeyEvent.VK_UP) {
+			if (gp.ui.getCommandNum() > 0) {
+				gp.ui.setCommandNum(gp.ui.getCommandNum() - 1);
+			}
+		} else if (code == KeyEvent.VK_DOWN) {
+			if (gp.ui.getCommandNum() < 1) {
+				gp.ui.setCommandNum(gp.ui.getCommandNum() + 1);
+			}
+		} else if (code == KeyEvent.VK_ENTER) {
+			if (gp.ui.getCommandNum() == 0) {
+
+				gp.isServer = true;
+				gp.initializeServer();
+				gp.stopMusic();
+
+			} else if (gp.ui.getCommandNum() == 1) {
+				gp.setGameState(gp.getPlayState());
+				gp.initializeGame();
+				gp.isServer = false;
+			}
+		}
+	}
+
+	private void handleMenuAccount(int code) {
+		if (code == KeyEvent.VK_UP) {
+			if (gp.ui.getCommandNum() > 0) {
+				gp.ui.setCommandNum(gp.ui.getCommandNum() - 1);
+			}
+		} else if (code == KeyEvent.VK_DOWN) {
+			if (gp.ui.getCommandNum() < 1) {
+				gp.ui.setCommandNum(gp.ui.getCommandNum() + 1);
+			}
+		} else if (code == KeyEvent.VK_ENTER) {
+			if (gp.ui.getCommandNum() == 0) {
+				System.out.println("Register Screen");
+				gp.setGameState(gp.getRegisterState());
+			} else if (gp.ui.getCommandNum() == 1) {
+				System.out.println("You got clickbaited");
+				System.exit(0);
+			}
+		}
+	}
+
+	private void handleLoginAccount(int code) {
+		if (code == KeyEvent.VK_UP) {
+			if (gp.ui.getCommandNum() > 0) {
+				gp.ui.setCommandNum(gp.ui.getCommandNum() - 1);
+			}
+		} else if (code == KeyEvent.VK_DOWN) {
+			if (gp.ui.getCommandNum() < 3) {
+				gp.ui.setCommandNum(gp.ui.getCommandNum() + 1);
+			}
+		} else if (code == KeyEvent.VK_ENTER) {
+			if (gp.ui.getCommandNum() == 0) {
+				gp.ui.setEmailFocused(true);
+				gp.ui.setPasswordFocused(false);
+			} else if (gp.ui.getCommandNum() == 1) {
+				gp.ui.setEmailFocused(false);
+				gp.ui.setPasswordFocused(true);
+			} else if (gp.ui.getCommandNum() == 2) {
+
+			} else if (gp.ui.getCommandNum() == 3) {
+
+			}
+		} else if (code == KeyEvent.VK_ESCAPE) {
+			if (gp.ui.getCommandNum() == 0) {
+				gp.ui.setEmailFocused(false);
+				gp.ui.setPasswordFocused(false);
+			} else if (gp.ui.getCommandNum() == 1) {
+				gp.ui.setEmailFocused(false);
+				gp.ui.setPasswordFocused(false);
+			}
+		}
+	}
+
+	private void InputAuth(KeyEvent e) {
+		char keyChar = e.getKeyChar();
+
+		if (gp.ui.getEmailFocused()) {
+			if (Character.isLetterOrDigit(keyChar) || isSpecialCharacter(keyChar) || keyChar == KeyEvent.VK_BACK_SPACE) {
+				String currentEmail = gp.ui.getEmailInput();
+
+				if (keyChar == KeyEvent.VK_BACK_SPACE && currentEmail.length() > 0) {
+					gp.ui.setEmailInput(currentEmail.substring(0, currentEmail.length() - 1));
+				} else if (Character.isLetterOrDigit(keyChar) || isSpecialCharacter(keyChar)) {
+					gp.ui.setEmailInput(currentEmail + keyChar);
+				}
+				System.out.println(gp.ui.getEmailInput());
+			}
+		} else if (gp.ui.getPasswordFocused()) {
+			if (Character.isLetterOrDigit(keyChar) || isSpecialCharacter(keyChar) || keyChar == KeyEvent.VK_BACK_SPACE) {
+				String currentPassword = gp.ui.getPasswordInput();
+
+				if (keyChar == KeyEvent.VK_BACK_SPACE && currentPassword.length() > 0) {
+					gp.ui.setPasswordInput(currentPassword.substring(0, currentPassword.length() - 1));
+				} else if (Character.isLetterOrDigit(keyChar) || isSpecialCharacter(keyChar)) {
+					gp.ui.setPasswordInput(currentPassword + keyChar);
+				}
+	            System.out.println(gp.ui.getPasswordInput());
+			}
+		}
+	}
+	
+	private void handleRegisterAccount(int code) {
+		if (code == KeyEvent.VK_UP) {
+			if (gp.ui.getCommandNum() > 0) {
+				gp.ui.setCommandNum(gp.ui.getCommandNum() - 1);
+			}
+		} else if (code == KeyEvent.VK_DOWN) {
+			if (gp.ui.getCommandNum() < 4) {
+				gp.ui.setCommandNum(gp.ui.getCommandNum() + 1);
+			}
+		} else if (code == KeyEvent.VK_ENTER) {
+			if (gp.ui.getCommandNum() == 0) {
+				gp.ui.setUsernameFocused(true);
+				gp.ui.setEmailFocused(false);
+				gp.ui.setPasswordFocused(false);
+			} else if (gp.ui.getCommandNum() == 1) {
+				gp.ui.setUsernameFocused(false);
+				gp.ui.setEmailFocused(true);
+				gp.ui.setPasswordFocused(false);
+			} else if (gp.ui.getCommandNum() == 4) {
+				gp.ui.setUsernameFocused(false);
+				gp.ui.setEmailFocused(false);
+				gp.ui.setPasswordFocused(true);
+			} else if (gp.ui.getCommandNum() == 3) {
+
+			} else if (gp.ui.getCommandNum() == 4) {
+
+			}
+		} else if (code == KeyEvent.VK_ESCAPE) {
+			if (gp.ui.getCommandNum() == 0) {
+				gp.ui.setUsernameFocused(false);
+				gp.ui.setEmailFocused(false);
+				gp.ui.setPasswordFocused(false);
+			} else if (gp.ui.getCommandNum() == 1) {
+				gp.ui.setUsernameFocused(false);
+				gp.ui.setEmailFocused(false);
+				gp.ui.setPasswordFocused(false);
+			} else if (gp.ui.getCommandNum() == 2) {
+				gp.ui.setUsernameFocused(false);
+				gp.ui.setEmailFocused(false);
+				gp.ui.setPasswordFocused(false);
+			}
+		}
+	}
+	
+	private void InputAuthReg(KeyEvent e) {
+		char keyChar = e.getKeyChar();
+		
+		if (gp.ui.getUsernameFocused()) {
+			if (Character.isLetterOrDigit(keyChar) || isSpecialCharacter(keyChar) || keyChar == KeyEvent.VK_BACK_SPACE) {
+				String currentUsername = gp.ui.getUsernameInput();
+
+				if (keyChar == KeyEvent.VK_BACK_SPACE && currentUsername.length() > 0) {
+					gp.ui.setUsernameInput(currentUsername.substring(0, currentUsername.length() - 1));
+				} else if (Character.isLetterOrDigit(keyChar) || isSpecialCharacter(keyChar)) {
+					gp.ui.setUsernameInput(currentUsername + keyChar);
+				}
+				System.out.println( "Username: " + gp.ui.getUsernameInput());
+			}
+		} else if (gp.ui.getEmailFocused()) {
+			if (Character.isLetterOrDigit(keyChar) || isSpecialCharacter(keyChar) || keyChar == KeyEvent.VK_BACK_SPACE) {
+				String currentEmail = gp.ui.getEmailInput();
+
+				if (keyChar == KeyEvent.VK_BACK_SPACE && currentEmail.length() > 0) {
+					gp.ui.setEmailInput(currentEmail.substring(0, currentEmail.length() - 1));
+				} else if (Character.isLetterOrDigit(keyChar) || isSpecialCharacter(keyChar)) {
+					gp.ui.setEmailInput(currentEmail + keyChar);
+				}
+				System.out.println("Email: " + gp.ui.getEmailInput());
+			}
+		} else if (gp.ui.getPasswordFocused()) {
+			if (Character.isLetterOrDigit(keyChar) || isSpecialCharacter(keyChar) || keyChar == KeyEvent.VK_BACK_SPACE) {
+				String currentPassword = gp.ui.getPasswordInput();
+
+				if (keyChar == KeyEvent.VK_BACK_SPACE && currentPassword.length() > 0) {
+					gp.ui.setPasswordInput(currentPassword.substring(0, currentPassword.length() - 1));
+				} else if (Character.isLetterOrDigit(keyChar) || isSpecialCharacter(keyChar)) {
+					gp.ui.setPasswordInput(currentPassword + keyChar);
+				}
+	            System.out.println( "Password: " + gp.ui.getPasswordInput());
+			}
+		}
+	}
+	
+	private boolean isSpecialCharacter(char c) {
+	    // List of special characters to be included
+	    return "@.".indexOf(c) >= 0;
+	}
+
 
     public boolean isUpPressed() {
         return upPressed;
