@@ -50,9 +50,17 @@ public class UI {
 
     public void drawUI(Graphics2D g2) {
     	 this.g2=g2;
-        if (gp.getGameState() == gp.getTitleState() && !gp.isServer==true) {
-            drawTitleScreen(g2);
-        }
+    	 
+    	 
+    	 if(gp.getGameState() == gp.getScreenState()) {
+    		 drawJoinWorld(g2);
+    	 } else if(gp.getGameState() == gp.getRegisterState()) {
+    		 drawRegisterAccount(g2);
+    	 } else if(gp.getGameState() == gp.getLoginState()){
+    		 drawLoginAccount(g2);
+    	 }
+        
+        
 
         if (gp.getGameState() == gp.getPlayState() && gp.getPlayer()!=null) {
             g2.setFont(new Font("Comic Sans", Font.BOLD, 30));
