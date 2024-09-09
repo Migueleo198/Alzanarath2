@@ -3,6 +3,7 @@ package UI;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.GradientPaint;
 import java.awt.Graphics2D;
 import java.util.ArrayList;
 import java.util.List;
@@ -251,49 +252,77 @@ public class UI {
         int chatWidth = 400;
         int chatHeight = 50;
 
-        g2.setFont(new Font("Comic Sans", Font.PLAIN, 20));
-        g2.setColor(new Color(0, 0, 0));
-       
-        g2.fillRect(chatX, chatY, chatWidth, chatHeight);
-        g2.setColor(Color.white);
+        // Dark semi-transparent background for input area
+        g2.setColor(new Color(30, 30, 30));
+        g2.fillRoundRect(chatX, chatY - 150, chatWidth - 200, chatHeight - 10, 20, 20);
 
+        // White border around the input area
+        g2.setColor(new Color(50,50,50,220));
+        g2.setStroke(new BasicStroke(4));
+        g2.drawRoundRect(chatX, chatY - 150, chatWidth - 200, chatHeight - 10, 20, 20);
+
+        // Global Chat header in white
+        g2.setColor(Color.WHITE);
+        g2.setFont(new Font("Roboto", Font.BOLD, 18));
+        g2.drawString("Global Chat", chatX + 30, chatY - 125);
+
+        // Dark background for message area
+        g2.setColor(new Color(20, 20, 20, 200));
+        g2.fillRect(chatX, chatY, chatWidth, chatHeight-300);
+
+        // White border around the message area
+        g2.setColor(new Color(50,50,50,220));
+        g2.setStroke(new BasicStroke(4));
+        g2.drawRect(chatX, chatY, chatWidth, chatHeight);
+        
+        // Draw each message with off-white text
+        g2.setFont(new Font("Roboto", Font.PLAIN, 16));
+        g2.setColor(new Color(100, 100, 100));
+        
+        g2.drawString("Type message: ", chatX+10, chatY+30);
+        g2.setColor(new Color(220, 220, 220));
         int y = chatY + 20;
         for (String message : chatMessages) {
-            g2.drawString(message, chatX + 10, y);
-            y += 20; // Move down for each new line
+            g2.drawString(message, chatX + 30, y);
+            y += 20;
         }
 
-        g2.drawString(currentMessage, chatX + 10, chatY + 40); // Draw the current message being typed
+        // Display the current message being typed
+        g2.setColor(Color.WHITE);
+        g2.drawString(currentMessage, chatX +120, chatY + chatHeight - 20);
     }
 
     private void drawGlobalChat(Graphics2D g2) {
         int chatX = 50;
-        int chatY = gp.getScreenHeight() - (globalChatVisible ? 200 : 20); // Position depends on visibility
+        int chatY = gp.getScreenHeight() - (globalChatVisible ? 200 : 20);
         int chatWidth = 400;
-        int chatHeight = globalChatVisible ? 180 : 100; // Adjust height based on visibility
+        int chatHeight = globalChatVisible ? 180 : 100;
 
-        g2.setColor(new Color(0, 0, 0, 150));
+        // Dark background for the chat area
+        g2.setColor(new Color(25, 25, 25,240));
         g2.fillRect(chatX, chatY, chatWidth, chatHeight);
-        g2.setColor(Color.black);
-        g2.setStroke(new BasicStroke(5));
-        g2.drawRect(chatX, chatY, chatWidth + 2, chatHeight + 2);
-        g2.setFont(new Font("Comic Sans", Font.PLAIN, 20));
-        g2.setColor(Color.white);
 
-        int y = chatY + 20;
-        // Display only the last 5 messages
-        List<String> lastMessages = getGlobalChatMessages().size() > 5 
-                                    ? getGlobalChatMessages().subList(getGlobalChatMessages().size() - 5, getGlobalChatMessages().size()) 
-                                    : getGlobalChatMessages();
+        // White border around the chat window
+        g2.setColor(new Color(50,50,50,220));
+        g2.setStroke(new BasicStroke(4));
+        g2.drawRect(chatX, chatY, chatWidth, chatHeight);
 
+        // Display last 5 chat messages
+        g2.setFont(new Font("Roboto", Font.PLAIN, 16));
+        g2.setColor(new Color(220, 220, 220));
+        List<String> lastMessages = getGlobalChatMessages().size() > 4
+                ? getGlobalChatMessages().subList(getGlobalChatMessages().size() - 4, getGlobalChatMessages().size())
+                : getGlobalChatMessages();
+
+        int y = chatY + 40;
         for (String message : lastMessages) {
-            g2.drawString(message, chatX + 10, y);
-            y += 20; // Move down for each new line
-            if (y > chatY + chatHeight - 20) { // Prevent drawing outside the visible area
-                break;
-            }
+            g2.drawString(message, chatX + 20, y);
+            y += 25;
+            if (y > chatY + chatHeight - 20) break;
         }
     }
+
+
 
     public void showChat() {
         if (gp.getGameState() == gp.getPlayState()) {
