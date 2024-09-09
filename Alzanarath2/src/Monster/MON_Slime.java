@@ -274,7 +274,9 @@ public class MON_Slime extends Entity{
 	            // Check if the monster is dead
 	            if (gp.monster[i].getHealth() <= 0) {
 	                // Handle monster death
+	            	gp.ui.addBattleNotification("You killed a " + gp.monster[i].getName() + " !");
 	            	gp.getPlayer().setExp(gp.getPlayer().getExp()+this.exp);
+	            	gp.ui.addBattleNotification("+ " + this.exp + " exp");
 	            	gp.setStopUpdatingMonstersOnDeath(true);
 	            	gp.getNetworkManager().sendMonsterDeathToAllClients(gp.monster[i].getMonsterId());
 	            	

@@ -683,7 +683,7 @@ public class NetworkManager {
         String monsterId = monster.getMonsterId(); // Ensure this method exists in your Entity class
 
         // Format the monster data into a string
-        String data = String.format("MONSTER_UPDATE %s \"%s\" %d %d %s %d %d %d %d %d %d",
+        String data = String.format("MONSTER_UPDATE %s %s %d %d %s %d %d %d %d %d %d",
             monsterId,         // Unique monster ID
             monster.getName(), // Name (enclosed in quotes)
             monster.getWorldX(), // X position

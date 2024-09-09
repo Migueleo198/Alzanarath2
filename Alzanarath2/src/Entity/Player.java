@@ -290,7 +290,7 @@ public class Player extends Entity {
                     if ( gp.monster[i].getHealth() <= 0 ) {
                             // Notify server and other clients about the monster's death
                     		exp+=gp.monster[i].exp;
-                    	    gp.ui.addBattleNotification("You killed a " + gp.monster[i].getName() + " !");
+                    	   
                         	
                         	
                         }

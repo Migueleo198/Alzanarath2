@@ -26,9 +26,10 @@ import java.util.Map;
 
 public class GamePanel extends JPanel implements Runnable {
 
-    
+    private final int originalTileSize=16;
+    private final int scale=3;
     private final int tileSize = 48;
-    private final int maxScreenCol = 16;
+    private final int maxScreenCol = 21;
     private final int maxScreenRow = 12;
     private final int screenWidth = tileSize * maxScreenCol; // 768 pixels
     private final int screenHeight = tileSize * maxScreenRow; // 576 pixels
@@ -62,7 +63,7 @@ public class GamePanel extends JPanel implements Runnable {
     //Monster entities instantiation
     public Entity[] monster = new Entity[20];
     
-
+    
 
 	private int currentMonsterNum;
     

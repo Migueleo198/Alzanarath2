@@ -46,7 +46,7 @@ public class UI {
 
             g2.setColor(new Color(0, 0, 0, 120));
             g2.fillRoundRect(56, 26, 180, 75, 5, 5);
-            g2.setColor(new Color(0, 0, 0, 225));
+            g2.setColor(new Color(0, 0, 0, 255));
             g2.fillRoundRect(50, 20, 180, 75, 5, 5);
 
             g2.setColor(new Color(255, 255, 255, 200));
@@ -91,7 +91,7 @@ public class UI {
 				messageY+=50;
 			}
 			
-			if(messageCounter.get(i)>30) {
+			if(messageCounter.get(i)>90) {
 				message.remove(i);
 				messageCounter.remove(i);
 			}
