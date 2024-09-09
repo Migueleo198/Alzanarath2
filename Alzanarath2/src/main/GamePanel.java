@@ -242,58 +242,60 @@ public class GamePanel extends JPanel implements Runnable {
     double updateInterval = 1000000000 / 60.00; // Update every 100 ms // Update every 180 frames (assuming FPS = 60)
 
     
+    
+    
     @Override
     public void run() {
-		double drawTime=1000000000/FPS;
-		double NextDrawTime = System.nanoTime()+ drawTime;
-		
-		while(gameThread!=null) {
-			
-			
-			update();
-			//this updates information such as character positions
-			
-			//repaint();
-			//draws the screen with the updated information
-			
-			drawToTempScreen(); //DRAWS EVERYTHING TO THE BUFFERED IMAGE
-			drawToScreen(); //DRAWS THE BUFFERED IMAGE ON THE SCREEN
-			
-			main.window.revalidate();
-			
-                 // Check if this instance is the server and networkManager is initialized
-                 if (isServer && networkManager != null) {
-                     // Loop through the monsters and send data for each active one
-                     for (int i = 0; i < monster.length; i++) {
-                         Entity currentMonster = monster[i]; // Correctly reference each monster
+        final double drawInterval = 1000000000 / FPS; // Interval for rendering
+        final double monsterUpdateInterval = 1000000000 / 60; // Interval for monster updates
+        double delta = 0;
+        long lastTime = System.nanoTime();
+        long currentTime;
 
-                         if (currentMonster != null) {
-                             // Send monster data to all clients
-                         	 networkManager.sendMonsterDataToAllClients(currentMonster.getMonsterId(), currentMonster);
-                         }
-                     }
-             }
-			
-			try {
-				double remainingTime = NextDrawTime-System.nanoTime();
-				remainingTime = remainingTime/1000000;
-				if (remainingTime <0) {
-					remainingTime=0;
-				}
-				
-				Thread.sleep((long) remainingTime);
-				
-				NextDrawTime+= drawTime;
-				
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			
-		}
-		
-		
-	}
+        long lastMonsterUpdateTime = 0;
+
+        while (gameThread != null) {
+            currentTime = System.nanoTime();
+            delta += (currentTime - lastTime) / drawInterval;
+            lastTime = currentTime;
+
+            if (delta >= 1) {
+                update(); // Update game logic
+                drawToTempScreen(); // Draw everything to the buffered image
+                drawToScreen(); // Draw the buffered image to the screen
+                
+                delta--; // Reduce delta by 1 after processing the frame
+
+                // Handle monster updates separately
+                long currentUpdateTime = System.nanoTime();
+                if (currentUpdateTime - lastMonsterUpdateTime >= monsterUpdateInterval) {
+                    if (isServer && networkManager != null) {
+                        // Send monster data to all clients
+                        for (int i = 0; i < monster.length; i++) {
+                            Entity currentMonster = monster[i]; // Reference each monster
+                            if (currentMonster != null) {
+                                networkManager.sendMonsterDataToAllClients(currentMonster.getMonsterId(), currentMonster);
+                            }
+                        }
+                    }
+                    lastMonsterUpdateTime = currentUpdateTime;
+                }
+            }
+
+            // Calculate the time left to wait to maintain a consistent FPS
+            long elapsedTime = System.nanoTime() - lastTime;
+            long sleepTime = (long) ((drawInterval - elapsedTime) / 1000000); // Convert nanoseconds to milliseconds
+
+            if (sleepTime > 0) {
+                try {
+                    Thread.sleep(sleepTime); // Sleep to maintain FPS
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        System.out.println("ERROR: PROGRAM STOPPED RUNNING");
+    }
 			
 			
 			
