@@ -10,7 +10,10 @@ public class KeyHandler implements KeyListener {
     private boolean enterKeyPressed = false;
     private boolean escKeyPressed = false;
     private boolean cPressed;
-    public int attackDelay=0;
+    public int attackDelay = 0;
+
+    private long lastMessageTime = 0; // Timestamp of the last sent message
+    private static final long MESSAGE_DELAY = 5000; // 5 seconds in milliseconds
 
     public KeyHandler(GamePanel gp) {
         this.gp = gp;
@@ -18,43 +21,39 @@ public class KeyHandler implements KeyListener {
 
     @Override
     public void keyPressed(KeyEvent e) {
-    	 synchronized (gp.keyH) {
-    	 int code = e.getKeyCode();
+        synchronized (gp.keyH) {
+            int code = e.getKeyCode();
 
-           
             if (gp.getGameState() == gp.getTitleState()) {
-               titleState(code);
-            } 
-            
-           if (gp.getGameState() == gp.getPlayState()) {
-            	playState(code,e);
-            
+                titleState(code);
             }
-            
-        
-    	
-           else if (gp.getGameState() == gp.getCharacterState()) {
-    		characterState(code);
-    	}
-           
-           
+
+            if (gp.getGameState() == gp.getPlayState()) {
+                playState(code, e);
+            } else if (gp.getGameState() == gp.getCharacterState()) {
+                characterState(code);
+            }
+        }
     }
-    }
-    
+
     public void titleState(int code) {
-    	 handleMenuNavigation(code);
+        handleMenuNavigation(code);
     }
-    
-    public void playState(int code,KeyEvent e) {
-    	 // Handle chat input if chat is visible
+
+    public void playState(int code, KeyEvent e) {
+        // Handle chat input if chat is visible
         if (gp.ui.isChatVisible()) {
             if (code == KeyEvent.VK_ENTER) {
                 // Send the message and clear the input
                 String message = gp.ui.getCurrentMessage();
-                sendMessage(message);
-                gp.ui.appendGlobalChatMessage("You: " + message); // Add message to local chat
-                gp.ui.setCurrentMessage(""); // Clear the input
-               
+                if (System.currentTimeMillis() - lastMessageTime >= MESSAGE_DELAY) {
+                    sendMessage(message);
+                    gp.ui.appendGlobalChatMessage("You: " + message); // Add message to local chat
+                    gp.ui.setCurrentMessage(""); // Clear the input
+                    lastMessageTime = System.currentTimeMillis(); // Update last message time
+                } else {
+                    gp.ui.appendGlobalChatMessage("Please wait before sending another message"); // Optional feedback
+                }
             } else if (code == KeyEvent.VK_ESCAPE) {
                 // Hide chat
                 gp.ui.hideChat();
@@ -73,7 +72,6 @@ public class KeyHandler implements KeyListener {
 
         // Handle chat visibility toggle
         if (code == KeyEvent.VK_ENTER && gp.getGameState() != gp.getTitleState()) {
-           
             if (gp.ui.isChatVisible()) {
                 // Start typing mode and reset the current message
                 gp.ui.setCurrentMessage("");
@@ -81,33 +79,21 @@ public class KeyHandler implements KeyListener {
         } else if (code == KeyEvent.VK_ESCAPE) {
             gp.ui.toggleChatVisibility(); // Show or hide chat
             return; // Skip other actions if chat is being toggled
+        } else {
+            handlePlayerMovement(code, true);
         }
-    	
-    	
-        else {
-    	
-    	
-    	
-    	 handlePlayerMovement(code, true);
-        }
-        
-      //Open inventory 
-        if(code == KeyEvent.VK_C) {
-        	
-        	gp.setGameState(gp.getCharacterState());
-        	
+
+        // Open inventory
+        if (code == KeyEvent.VK_C) {
+            gp.setGameState(gp.getCharacterState());
         }
     }
-    
+
     public void characterState(int code) {
-    	
-    	
-        
-        //Close Inventory
-        
-         if(gp.getGameState()==gp.getCharacterState()) {
-       	 if(code == KeyEvent.VK_C) {
-            	gp.setGameState(gp.getPlayState());
+        // Close Inventory
+        if (gp.getGameState() == gp.getCharacterState()) {
+            if (code == KeyEvent.VK_C) {
+                gp.setGameState(gp.getPlayState());
             }
         }
     }
@@ -129,11 +115,9 @@ public class KeyHandler implements KeyListener {
         } else if (code == KeyEvent.VK_D) {
             rightPressed = false;
         }
-       
-        
-        if(code == KeyEvent.VK_E) {
-        	setePressed(false);
-        	
+
+        if (code == KeyEvent.VK_E) {
+            setePressed(false);
         }
     }
 
@@ -148,11 +132,9 @@ public class KeyHandler implements KeyListener {
             }
         } else if (code == KeyEvent.VK_ENTER) {
             if (gp.ui.getCommandNum() == 0) {
-            	
                 gp.isServer = true;
                 gp.initializeServer();
                 gp.stopMusic();
-                
             } else if (gp.ui.getCommandNum() == 1) {
                 gp.setGameState(gp.getPlayState());
                 gp.initializeGame();
@@ -171,17 +153,13 @@ public class KeyHandler implements KeyListener {
         } else if (code == KeyEvent.VK_D) {
             rightPressed = pressed;
         }
-       
-        if(code == KeyEvent.VK_E && attackDelay==1) {
-        	ePressed=true;
-        	gp.playSE(3);
-        	attackDelay=0;
-        	
+
+        if (code == KeyEvent.VK_E && attackDelay == 1) {
+            ePressed = true;
+            gp.playSE(3);
+            attackDelay = 0;
         }
-        
     }
-    
-    
 
     private void sendMessage(String message) {
         // Ensure message is sent to the server or the chat system
@@ -214,12 +192,11 @@ public class KeyHandler implements KeyListener {
         this.enterKeyPressed = enterKeyPressed;
     }
 
-	public boolean isePressed() {
-		return ePressed;
-	}
+    public boolean isePressed() {
+        return ePressed;
+    }
 
-	public void setePressed(boolean ePressed) {
-		this.ePressed = ePressed;
-	}
+    public void setePressed(boolean ePressed) {
+        this.ePressed = ePressed;
+    }
 }
-
