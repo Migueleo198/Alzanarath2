@@ -148,15 +148,13 @@ public class GamePanel extends JPanel implements Runnable {
    
     
     private void setFullScreenDimensions() {
-    	GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-    	GraphicsDevice gd = ge.getDefaultScreenDevice();
-    	gd.setFullScreenWindow(main.window);
-		screenWidth2 = main.window.getWidth();
-		screenHeight2 = main.window.getHeight();
-		 main.window.revalidate();
-         main.window.repaint();
-		this.setPreferredSize(new Dimension(screenWidth2, screenHeight2));
-		this.revalidate(); 
+    	Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+		double width = screenSize.getWidth();
+		double height = screenSize.getHeight();
+		main.window.setExtendedState(JFrame.MAXIMIZED_BOTH);
+		screenWidth2 = (int) width;
+		screenHeight2 = (int) height;
+		
 		
 		
        
@@ -243,6 +241,7 @@ public class GamePanel extends JPanel implements Runnable {
     long lastMonsterUpdateTime = 0;
     double updateInterval = 1000000000 / 60.00; // Update every 100 ms // Update every 180 frames (assuming FPS = 60)
 
+    
     @Override
     public void run() {
 		double drawTime=1000000000/FPS;
@@ -257,30 +256,23 @@ public class GamePanel extends JPanel implements Runnable {
 			//repaint();
 			//draws the screen with the updated information
 			
+			drawToTempScreen(); //DRAWS EVERYTHING TO THE BUFFERED IMAGE
+			drawToScreen(); //DRAWS THE BUFFERED IMAGE ON THE SCREEN
 			
+			main.window.revalidate();
 			
-			
-			 // Perform monster updates at the specified interval
-		    long currentUpdateTime = System.nanoTime();
-		    if (currentUpdateTime - lastMonsterUpdateTime >= updateInterval) {
-		    	drawToTempScreen(); //DRAWS EVERYTHING TO THE BUFFERED IMAGE
-				drawToScreen(); //DRAWS THE BUFFERED IMAGE ON THE SCREEN
-		        // Check if this instance is the server and networkManager is initialized
-		        if (isServer && networkManager != null) {
-		            // Loop through the monsters and send data for each active one
-		            for (int i = 0; i < monster.length; i++) {
-		                Entity currentMonster = monster[i]; // Correctly reference each monster
+                 // Check if this instance is the server and networkManager is initialized
+                 if (isServer && networkManager != null) {
+                     // Loop through the monsters and send data for each active one
+                     for (int i = 0; i < monster.length; i++) {
+                         Entity currentMonster = monster[i]; // Correctly reference each monster
 
-		                if (currentMonster != null) {
-		                    // Send monster data to all clients
-		                	
-		                	 networkManager.sendMonsterDataToAllClients(currentMonster.getMonsterId(), currentMonster);
-		                }
-		            }
-		        }
-		        // Update the last monster update time
-		        lastMonsterUpdateTime = currentUpdateTime;
-		}
+                         if (currentMonster != null) {
+                             // Send monster data to all clients
+                         	 networkManager.sendMonsterDataToAllClients(currentMonster.getMonsterId(), currentMonster);
+                         }
+                     }
+             }
 			
 			try {
 				double remainingTime = NextDrawTime-System.nanoTime();
@@ -302,6 +294,13 @@ public class GamePanel extends JPanel implements Runnable {
 		
 		
 	}
+			
+			
+			
+		
+		
+		
+	
 
    
     public void update() {

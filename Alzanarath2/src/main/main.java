@@ -9,7 +9,7 @@ public class main {
     public static void main(String[] args) {
         window = new JFrame("Game");
         GamePanel gamePanel = new GamePanel();
-
+        window.setUndecorated(true);
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         window.setResizable(false);
         window.add(gamePanel);
