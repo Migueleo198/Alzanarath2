@@ -106,12 +106,15 @@ public class GamePanel extends JPanel implements Runnable {
     // Asset setter
     AssetSetter aSetter;
 
-    // GAME STATES
-    private int gameState;
-    private final int titleState = 1;
-    private final int playState = 2;
-    private final int characterState = 3;
-    private final int serverState=4;
+ // GAME STATES
+ 	private int gameState;
+ 	private final int titleState = 1;
+ 	private final int playState = 2;
+ 	private final int characterState = 3;
+ 	private final int serverState = 4;
+ 	private final int loginState = 5;
+ 	private final int registerState = 6;
+ 	private final int screenState = 7;
     
     // Initialize the UI management class
     public UI ui;
@@ -758,6 +761,21 @@ public class GamePanel extends JPanel implements Runnable {
 	    } else {
 	        System.out.println("Player " + playerId + " not found.");
 	    }
+	}
+
+
+	public int getLoginState() {
+		return loginState;
+	}
+
+
+	public int getRegisterState() {
+		return registerState;
+	}
+
+
+	public int getScreenState() {
+		return screenState;
 	}
 	
 	 

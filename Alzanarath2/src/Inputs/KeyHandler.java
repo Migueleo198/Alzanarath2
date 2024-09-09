@@ -126,27 +126,7 @@ public class KeyHandler implements KeyListener {
         }
     }
 
-    private void handleMenuNavigation(int code) {
-        if (code == KeyEvent.VK_UP) {
-            if (gp.ui.getCommandNum() > 0) {
-                gp.ui.setCommandNum(gp.ui.getCommandNum() - 1);
-            }
-        } else if (code == KeyEvent.VK_DOWN) {
-            if (gp.ui.getCommandNum() < 1) {
-                gp.ui.setCommandNum(gp.ui.getCommandNum() + 1);
-            }
-        } else if (code == KeyEvent.VK_ENTER) {
-            if (gp.ui.getCommandNum() == 0) {
-                gp.isServer = true;
-                gp.initializeServer();
-                gp.stopMusic();
-            } else if (gp.ui.getCommandNum() == 1) {
-                gp.setGameState(gp.getPlayState());
-                gp.initializeGame();
-                gp.isServer = false;
-            }
-        }
-    }
+    
 
     private void handlePlayerMovement(int code, boolean pressed) {
         if (code == KeyEvent.VK_W) {
