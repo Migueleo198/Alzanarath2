@@ -452,6 +452,150 @@ public class UI {
         g2.setColor(Color.red);
         g2.fillRect(95, 65, healthBarWidth, 20);
     }
+    
+    private void drawJoinWorld(Graphics2D g2) {
+        int middleX = gp.getScreenWidth() / 2;
+        int middleY = gp.getScreenHeight() / 2;
+        
+        g2.setFont(new Font("Comic Sans", Font.BOLD, 48));    
+        g2.setColor(Color.white);
+        
+        g2.drawString("Alzanarath 2", middleX - 135, middleY - 50);
+        
+        g2.setFont(new Font("Comic Sans", Font.BOLD, 30));
+
+        if (commandNum == 0) {
+            g2.setColor(Color.yellow);
+            g2.drawString(">", middleX - 100, middleY + 75);
+        } else {
+            g2.setColor(Color.white);
+        }
+        g2.drawString("Join World", middleX - 70, middleY + 75);
+
+        if (commandNum == 1) {
+            g2.setColor(Color.yellow);
+            g2.drawString(">", middleX - 145, middleY + 120);
+        } else {
+            g2.setColor(Color.white);
+        }
+        g2.drawString("Delete system32", middleX - 115, middleY + 120);
+    }
+    
+    private void drawLoginAccount(Graphics2D g2) {
+        int middleX = gp.getScreenWidth() / 2;
+        int middleY = gp.getScreenHeight() / 2;
+        
+        g2.setFont(new Font("Comic Sans", Font.BOLD, 48));    
+        g2.setColor(Color.white);
+        
+        g2.drawString("Login to your account", middleX - 240, middleY - 150);
+        
+        g2.setFont(new Font("Comic Sans", Font.BOLD, 30));
+
+        // Draw "Email" label
+        g2.setColor(commandNum == 0 ? Color.yellow : Color.white);
+        g2.drawString("Email", middleX - 245, middleY - 25);
+        g2.drawRect(middleX - 280, middleY - 55, 200, 40);
+
+        // Draw rectangle for email input field
+        g2.setColor(gp.ui.getEmailFocused() ? Color.yellow : Color.white);
+        g2.drawRect(middleX - 70, middleY - 55, 325, 40);  // Draw next to "Email" label
+        drawTextWithOverflow(g2, emailInput, middleX - 60, middleY - 25, 310, 40);
+
+        // Draw "Password" label
+        g2.setColor(commandNum == 1 ? Color.yellow : Color.white);
+        g2.drawString("Password", middleX - 245, middleY + 25);
+        g2.drawRect(middleX - 280, middleY - 5, 200, 40);
+
+        // Draw rectangle for password input field
+        g2.setColor(gp.ui.getPasswordFocused() ? Color.yellow : Color.white);
+        g2.drawRect(middleX - 70, middleY - 5, 325, 40);  // Draw next to "Password" label
+        drawTextWithOverflow(g2, passwordInput, middleX - 60, middleY + 25, 310, 40);
+
+        // Draw "Login" button
+        g2.setColor(commandNum == 2 ? Color.yellow : Color.white);
+        g2.drawString("Login", middleX - 115, middleY + 95);
+
+        // Draw "Register" button
+        g2.setColor(commandNum == 3 ? Color.yellow : Color.white);
+        g2.drawString("Register", middleX - 5, middleY + 95);
+
+        // Draw additional instruction text
+        g2.setFont(new Font("Comic Sans", Font.BOLD, 15));
+        g2.setColor(Color.white);  // Ensure this text is always white
+        g2.drawString("No account? Register a new account!", middleX + 95, middleY + 275);
+    }
+    
+    private void drawRegisterAccount(Graphics2D g2) {
+        int middleX = gp.getScreenWidth() / 2;
+        int middleY = gp.getScreenHeight() / 2;
+        
+        g2.setFont(new Font("Comic Sans", Font.BOLD, 48));    
+        g2.setColor(Color.white);
+        
+        g2.drawString("Register to your account", middleX - 300, middleY - 150);
+        
+        g2.setFont(new Font("Comic Sans", Font.BOLD, 30));
+
+        // Draw "Username" label
+        g2.setColor(commandNum == 0 ? Color.yellow : Color.white);
+        g2.drawString("Username", middleX - 245, middleY - 25);
+        g2.drawRect(middleX - 280, middleY - 55, 200, 40);
+
+        // Draw rectangle for email input field
+        g2.setColor(gp.ui.getUsernameFocused() ? Color.yellow : Color.white);
+        g2.drawRect(middleX - 70, middleY - 55, 325, 40);  // Draw next to "Email" label
+        drawTextWithOverflow(g2, usernameInput, middleX - 60, middleY - 25, 310, 40);
+        
+        // Draw "Email" label
+        g2.setColor(commandNum == 1 ? Color.yellow : Color.white);
+        g2.drawString("Email", middleX - 245, middleY + 25);
+        g2.drawRect(middleX - 280, middleY - 5, 200, 40);
+
+        // Draw rectangle for email input field
+        g2.setColor(gp.ui.getEmailFocused() ? Color.yellow : Color.white);
+        g2.drawRect(middleX - 70, middleY - 5, 325, 40);  // Draw next to "Email" label
+        drawTextWithOverflow(g2, emailInput, middleX - 60, middleY + 25, 310, 40);
+
+        g2.setColor(commandNum == 2 ? Color.yellow : Color.white);
+        g2.drawString("Password", middleX - 245, middleY + 75);
+        g2.drawRect(middleX - 280, middleY + 45, 200, 40);
+
+        // Draw rectangle for password input field
+        g2.setColor(gp.ui.getPasswordFocused() ? Color.yellow : Color.white);
+        g2.drawRect(middleX - 70, middleY + 45, 325, 40);  // Draw next to "Password" label
+        drawTextWithOverflow(g2, passwordInput, middleX - 60, middleY + 75, 310, 40);
+
+        // Draw "Login" button
+        g2.setColor(commandNum == 3 ? Color.yellow : Color.white);
+        g2.drawString("Login", middleX - 115, middleY +125);
+
+        // Draw "Register" button
+        g2.setColor(commandNum == 4 ? Color.yellow : Color.white);
+        g2.drawString("Register", middleX - 5, middleY + 125);
+
+        // Draw additional instruction text
+        g2.setFont(new Font("Comic Sans", Font.BOLD, 15));
+        g2.setColor(Color.white);  // Ensure this text is always white
+        g2.drawString("You already have account? Login now!", middleX + 75, middleY + 275);
+    }
+
+    private void drawTextWithOverflow(Graphics2D g2, String text, int x, int y, int width, int height) {
+        FontMetrics fm = g2.getFontMetrics();
+        int textWidth = fm.stringWidth(text);
+        
+        // Truncate text if it exceeds the width of the input field
+        if (textWidth > width) {
+            String truncatedText = text;
+            while (textWidth > width && truncatedText.length() > 0) {
+                truncatedText = truncatedText.substring(1);
+                textWidth = fm.stringWidth(truncatedText);
+            }
+            g2.drawString(truncatedText, x, y);
+        } else {
+            g2.drawString(text, x, y);
+        }
+    }
 
     public void setCurrentMessage(String message) {
         currentMessage = message;
