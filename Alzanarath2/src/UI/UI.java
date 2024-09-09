@@ -24,6 +24,15 @@ public class UI {
     private List<String> globalChatMessages = new ArrayList<>(); // To store all chat messages
     private String truncatedText;
     
+    private boolean emailFieldFocused = false;
+    private boolean passwordFieldFocused = false;
+    private boolean usernameFieldFocused = false;
+    private String usernameInput = "";
+    private String emailInput = "";
+    private String passwordInput = "";
+    
+    
+    
     public int getCommandNum() {
         return commandNum;
     }
