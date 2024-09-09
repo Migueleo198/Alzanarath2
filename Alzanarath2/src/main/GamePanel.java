@@ -174,7 +174,7 @@ public class GamePanel extends JPanel implements Runnable {
         this.setBackground(Color.black);
         
         gameState = titleState;
-        playMusic(0);
+        
         setFullScreenDimensions();
        
         aSetter.setObject();
@@ -221,7 +221,7 @@ public class GamePanel extends JPanel implements Runnable {
 
 	    // Start the client connection
 	    networkManager.startClient();
-	    
+	    playMusic(0);
 	    // Register the player with the server once the client is started
 	    new Thread(() -> {
 	        try {
