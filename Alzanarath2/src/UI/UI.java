@@ -596,6 +596,54 @@ public class UI {
             g2.drawString(text, x, y);
         }
     }
+    
+    public boolean getUsernameFocused() {
+        return usernameFieldFocused;
+    }
+
+    public void setUsernameFocused(boolean usernameFieldFocused) {
+        this.usernameFieldFocused = usernameFieldFocused;
+    }
+    
+    public boolean getEmailFocused() {
+        return emailFieldFocused;
+    }
+
+    public void setEmailFocused(boolean emailFieldFocused) {
+        this.emailFieldFocused = emailFieldFocused;
+    }
+    
+    public boolean getPasswordFocused() {
+        return passwordFieldFocused;
+    }
+
+    public void setPasswordFocused(boolean passwordFieldFocused) {
+        this.passwordFieldFocused = passwordFieldFocused;
+    }
+    
+    public void setUsernameInput(String usernameInput) {
+        this.usernameInput = usernameInput;
+    }
+
+    public String getUsernameInput() {
+        return usernameInput;
+    }
+    
+    public void setEmailInput(String emailInput) {
+        this.emailInput = emailInput;
+    }
+
+    public String getEmailInput() {
+        return emailInput;
+    }
+    
+    public void setPasswordInput(String passwordInput) {
+        this.passwordInput = passwordInput;
+    }
+
+    public String getPasswordInput() {
+        return passwordInput;
+    }
 
     public void setCurrentMessage(String message) {
         currentMessage = message;
