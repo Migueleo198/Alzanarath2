@@ -36,6 +36,8 @@ public class KeyHandler implements KeyListener {
            else if (gp.getGameState() == gp.getCharacterState()) {
     		characterState(code);
     	}
+           
+           
     }
     }
     

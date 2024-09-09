@@ -4,6 +4,13 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
+import java.awt.Toolkit;
+import java.awt.image.BufferStrategy;
+import java.awt.image.BufferedImage;
+
+import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 import Networking.Configuration;
@@ -27,12 +34,15 @@ import java.util.Map;
 public class GamePanel extends JPanel implements Runnable {
 
     private final int originalTileSize=16;
-    private final int scale=3;
-    private final int tileSize = 48;
+    private int scale=3;
+    private int tileSize = 48;
     private final int maxScreenCol = 21;
     private final int maxScreenRow = 12;
-    private final int screenWidth = tileSize * maxScreenCol; // 768 pixels
-    private final int screenHeight = tileSize * maxScreenRow; // 576 pixels
+    private int screenWidth = tileSize * maxScreenCol; // 768 pixels
+    private int screenHeight = tileSize * maxScreenRow; // 576 pixels
+    
+    private int screenWidth2=screenWidth;  // 768 pixels
+    private int screenHeight2=screenHeight; // 576 pixels
 
     // WORLD SETTINGS
     private final int maxWorldCol = 36;
@@ -113,40 +123,62 @@ public class GamePanel extends JPanel implements Runnable {
     
     // Store other players' data
     private Map<String, Player> otherPlayers = new HashMap<>();
+    
+    //SCREEN SETTINGS
+    private BufferStrategy bufferStrategy;
+   private Graphics2D g2;
+   private BufferedImage tempScreen;
 
-    public GamePanel() {
-        System.out.println("Initializing GamePanel...");
-        this.setPreferredSize(new Dimension(screenWidth, screenHeight));
-        this.setDoubleBuffered(true);
-        this.setFocusable(true);
+   // Constructor
+   public GamePanel() {
+       System.out.println("Initializing GamePanel...");
+       this.setPreferredSize(new Dimension(screenWidth, screenHeight));
+       this.setDoubleBuffered(false);  // Set to false for manual double buffering
+       this.setFocusable(true);
 
-        // Initialize components
-        keyH = new KeyHandler(this);  // Initialize KeyHandler
-        this.addKeyListener(keyH);    // Add KeyHandler as KeyListener
-        System.out.println("KeyHandler initialized: " + (keyH != null)); // Debugging line
-        setTileM(new TileManager(this));
+      
+       
+       keyH = new KeyHandler(this);
+       this.addKeyListener(keyH);
+       System.out.println("KeyHandler initialized: " + (keyH != null));
+       
+       
+   }
+
+   
+    
+    private void setFullScreenDimensions() {
+    	GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+    	GraphicsDevice gd = ge.getDefaultScreenDevice();
+    	gd.setFullScreenWindow(main.window);
+		screenWidth2 = main.window.getWidth();
+		screenHeight2 = main.window.getHeight();
+		 main.window.revalidate();
+         main.window.repaint();
+		this.setPreferredSize(new Dimension(screenWidth2, screenHeight2));
+		this.revalidate(); 
+		
+		
+       
+    }
+    
+
+    public void setupGame() {
+    	 tempScreen = new BufferedImage(screenWidth, screenHeight, BufferedImage.TYPE_INT_ARGB);
+         g2 = (Graphics2D)tempScreen.getGraphics();
+    	setTileM(new TileManager(this));
         sound = new Sound();
-        
         ui = new UI(this);
         cChecker = new ColissionChecker(this);
         
-      //SETUP THE MONSTER ENTITIES ETC ENTITIES
-        
-        
+        aSetter = new AssetSetter(this, networkManager);
        
-        
-       
-
         this.setBackground(Color.black);
         
-
         gameState = titleState;
-        
         playMusic(0);
-    }
-
-
-    public void setupGame() {
+        setFullScreenDimensions();
+       
         aSetter.setObject();
         aSetter.setNpc();
         aSetter.setMonster();
@@ -169,6 +201,8 @@ public class GamePanel extends JPanel implements Runnable {
        
        aSetter = new AssetSetter(this, networkManager);
        setupGame();
+       
+       
        
 
        System.out.println("Game initialized. Player: " + (player != null ? "Initialized" : "Not Initialized"));
@@ -201,7 +235,7 @@ public class GamePanel extends JPanel implements Runnable {
 	    }).start();
 
 	    aSetter = new AssetSetter(this, networkManager);
-	    setupGame();
+	    
 
 	    System.out.println("Game initialized. Player: " + (player != null ? "Initialized" : "Not Initialized"));
 	}
@@ -211,50 +245,65 @@ public class GamePanel extends JPanel implements Runnable {
 
     @Override
     public void run() {
-        double drawInterval = 1000000000 / FPS;
-        double delta = 0;
-        long lastTime = System.nanoTime();
-        long currentTime;
+		double drawTime=1000000000/FPS;
+		double NextDrawTime = System.nanoTime()+ drawTime;
+		
+		while(gameThread!=null) {
+			
+			
+			update();
+			//this updates information such as character positions
+			
+			//repaint();
+			//draws the screen with the updated information
+			
+			
+			
+			
+			 // Perform monster updates at the specified interval
+		    long currentUpdateTime = System.nanoTime();
+		    if (currentUpdateTime - lastMonsterUpdateTime >= updateInterval) {
+		    	drawToTempScreen(); //DRAWS EVERYTHING TO THE BUFFERED IMAGE
+				drawToScreen(); //DRAWS THE BUFFERED IMAGE ON THE SCREEN
+		        // Check if this instance is the server and networkManager is initialized
+		        if (isServer && networkManager != null) {
+		            // Loop through the monsters and send data for each active one
+		            for (int i = 0; i < monster.length; i++) {
+		                Entity currentMonster = monster[i]; // Correctly reference each monster
 
-       
+		                if (currentMonster != null) {
+		                    // Send monster data to all clients
+		                	
+		                	 networkManager.sendMonsterDataToAllClients(currentMonster.getMonsterId(), currentMonster);
+		                }
+		            }
+		        }
+		        // Update the last monster update time
+		        lastMonsterUpdateTime = currentUpdateTime;
+		}
+			
+			try {
+				double remainingTime = NextDrawTime-System.nanoTime();
+				remainingTime = remainingTime/1000000;
+				if (remainingTime <0) {
+					remainingTime=0;
+				}
+				
+				Thread.sleep((long) remainingTime);
+				
+				NextDrawTime+= drawTime;
+				
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+		}
+		
+		
+	}
 
-        while (gameThread != null) {
-            currentTime = System.nanoTime();
-            delta += (currentTime - lastTime) / drawInterval;
-            lastTime = currentTime;
-            
-           
-            
-
-            if (delta >= 1) {
-                update();  // Game update logic
-                repaint(); // Repaint after all updates
-                delta--;
-                // Perform monster updates at the specified interval
-                long currentUpdateTime = System.nanoTime();
-                if (currentUpdateTime - lastMonsterUpdateTime >= updateInterval) {
-                    // Check if this instance is the server and networkManager is initialized
-                    if (isServer && networkManager != null) {
-                        // Loop through the monsters and send data for each active one
-                        for (int i = 0; i < monster.length; i++) {
-                            Entity currentMonster = monster[i]; // Correctly reference each monster
-
-                            if (currentMonster != null) {
-                                // Send monster data to all clients
-                            	 networkManager.sendMonsterDataToAllClients(currentMonster.getMonsterId(), currentMonster);
-                            }
-                        }
-                    }
-                    // Update the last monster update time
-                    lastMonsterUpdateTime = currentUpdateTime;
-            }
-            }
-               
-        }
-        System.out.println("ERROR: PROGRAM STOPPED RUNNING");
-    }
-
-
+   
     public void update() {
     	
         if (keyH == null) {
@@ -305,11 +354,21 @@ public class GamePanel extends JPanel implements Runnable {
             }
         }
     }
+    
+    public void drawToScreen() {
+		Graphics g = getGraphics();
+		g.drawImage(tempScreen, 0, 0, screenWidth2,screenHeight2,null);
+		g.dispose();
+	}
+    
+    protected void drawToTempScreen() {
+    	
+    	
+		g2 = (Graphics2D)tempScreen.getGraphics();
+    	 Graphics2D  graphics = tempScreen.createGraphics();
 
-    @Override
-    protected void paintComponent(Graphics g) {
-        super.paintComponent(g);
-        Graphics2D g2 = (Graphics2D) g;
+ 		graphics.setPaint ( new Color ( 0, 0, 0 ) );
+ 		graphics.fillRect ( 0, 0, tempScreen.getWidth(), tempScreen.getHeight());
 
         if (this.player != null ) {
             g2.setColor(getBackground());
@@ -366,8 +425,8 @@ public class GamePanel extends JPanel implements Runnable {
 
         // Draw the UI
         ui.drawUI(g2);
-
-        g2.dispose();
+       
+       
     }
     
     
@@ -408,7 +467,7 @@ public class GamePanel extends JPanel implements Runnable {
             }
         }
 
-        repaint();
+      
     }
 
     public void updateMonster(String monsterId, MonsterData monsterData) {
@@ -465,7 +524,7 @@ public class GamePanel extends JPanel implements Runnable {
             }
         }
 
-        repaint(); // Repaint after the update
+      
     }
     private void handleAttackMovement(Player player, PlayerData playerData) {
         int tileSize = this.getTileSize(); // Assuming tileSize is 48 as mentioned
@@ -496,7 +555,7 @@ public class GamePanel extends JPanel implements Runnable {
 
 	// Ensure repaint happens when player updates
     public void refreshPlayers() {
-        repaint(); // Trigger redraw
+      
     }
 
 

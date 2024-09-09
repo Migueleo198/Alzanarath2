@@ -8,6 +8,7 @@ import java.io.InputStreamReader;
 
 import javax.imageio.ImageIO;
 
+import Entity.Player;
 import main.GamePanel;
 import main.Utility;
 
@@ -79,36 +80,37 @@ public class TileManager {
 	    int maxWorldCol = gp.getMaxWorldCol();
 	    int maxWorldRow = gp.getMaxWorldRow();
 	    
-	    // Get player's current position and screen position
-	    int playerWorldX = gp.getPlayer().getWorldX();
-	    int playerWorldY = gp.getPlayer().getWorldY();
-	    int playerScreenX = gp.getPlayer().getScreenX();
-	    int playerScreenY = gp.getPlayer().getScreenY();
+	    Player player = gp.getPlayer();
 	    
-	    for (int worldRow = 0; worldRow < maxWorldRow; worldRow++) {
-	        for (int worldCol = 0; worldCol < maxWorldCol; worldCol++) {
-	            
-	            // Calculate the world position of the current tile
+	    // Get player's current position and screen position
+	    int playerWorldX = player.getWorldX();
+	    int playerWorldY = player.getWorldY();
+	    int playerScreenX = player.getScreenX();
+	    int playerScreenY = player.getScreenY();
+	    
+	    int screenWidth = gp.getWidth();
+	    int screenHeight = gp.getHeight();
+	    
+	    // Calculate visible tile bounds
+	    int worldColStart = Math.max(0, (playerWorldX - playerScreenX) / tileSize);
+	    int worldColEnd = Math.min(maxWorldCol, (playerWorldX - playerScreenX + screenWidth) / tileSize + 1);
+	    int worldRowStart = Math.max(0, (playerWorldY - playerScreenY) / tileSize);
+	    int worldRowEnd = Math.min(maxWorldRow, (playerWorldY - playerScreenY + screenHeight) / tileSize + 1);
+
+	    for (int worldRow = worldRowStart; worldRow < worldRowEnd; worldRow++) {
+	        for (int worldCol = worldColStart; worldCol < worldColEnd; worldCol++) {
+	            int tileNum = mapTileNum[worldCol][worldRow];
 	            int tileWorldX = worldCol * tileSize;
 	            int tileWorldY = worldRow * tileSize;
-	            
-	            // Calculate the screen position of the tile based on the player's position
 	            int screenX = tileWorldX - playerWorldX + playerScreenX;
 	            int screenY = tileWorldY - playerWorldY + playerScreenY;
-	            
-	            // Check if the tile is within the visible screen bounds
-	            if (tileWorldX + tileSize > playerWorldX - playerScreenX &&
-	                tileWorldX - tileSize < playerWorldX + playerScreenX &&
-	                tileWorldY + tileSize > playerWorldY - playerScreenY &&
-	                tileWorldY - tileSize < playerWorldY + playerScreenY) {
-	                
-	                // Draw the tile if it's within the visible screen bounds
-	                int tileNum = getMapTileNum()[worldCol][worldRow];
-	                g2.drawImage(tile[tileNum].getImage(), screenX, screenY, null);
-	            }
+
+	            // Draw the tile if it's within the visible screen bounds
+	            g2.drawImage(tile[tileNum].getImage(), screenX, screenY, tileSize, tileSize, null);
 	        }
 	    }
 	}
+
 
 	
 	public void setup(int index, String imageName, boolean collision) {
