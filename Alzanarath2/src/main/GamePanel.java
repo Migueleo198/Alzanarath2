@@ -185,7 +185,7 @@ public class GamePanel extends JPanel implements Runnable {
        
         this.setBackground(Color.black);
         
-        playMusic(0);
+        
         
         setFullScreenDimensions();
        

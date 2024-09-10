@@ -110,7 +110,7 @@ public class UI {
 		
 		messageCounter.add(0);
 		
-		
+		drawMessage();
 		
 	}
     
