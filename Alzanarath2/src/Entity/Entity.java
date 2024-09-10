@@ -60,6 +60,9 @@ public abstract class Entity {
 	
 	protected GamePanel gp;
 	
+	//monster death time counter
+	protected long deathTime;
+
 	protected int maxHealth;
 	public int Health;
 	
@@ -68,6 +71,8 @@ public abstract class Entity {
 	protected int defenseValue;
 	
 	protected String monsterId;
+	
+	protected long removalTime=0;
 	
 	public int getAttack() {
 		return attack;
@@ -522,6 +527,22 @@ public abstract class Entity {
 
 	public void setAlive(boolean alive) {
 		this.alive = alive;
+	}
+	public long getDeathTime() {
+        return deathTime;
+    }
+
+    public void setDeathTime(long deathTime) {
+        this.deathTime = deathTime;
+    }
+
+	public long getRemovalTime() {
+		// TODO Auto-generated method stub
+		return removalTime;
+	}
+
+	public void setRemovalTime(long removalTime) {
+		this.removalTime = removalTime;
 	}
 	
 	

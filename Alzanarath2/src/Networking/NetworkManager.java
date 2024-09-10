@@ -38,6 +38,9 @@ public class NetworkManager {
     int damage = 0;
     
     String name;
+    
+    //Dead monsters
+    private String deadMonsterIndex="";
     public NetworkManager(boolean isServer, Configuration config, GamePanel gamePanel, KeyHandler keyH) {
         this.keyH = keyH;
         this.isServer = isServer;
@@ -628,7 +631,14 @@ public class NetworkManager {
             if (monster != null) {
                 if (monster.getMonsterId() != null && monster.getMonsterId().equals(monsterId)) {
                     // Remove the monster if the ID matches
+                	if(gamePanel.getRemovedMonsters()!=null) {
+                    gamePanel.getRemovedMonsters().add(monster);
+                	}
+                    gamePanel.monster[i].setRemovalTime(System.currentTimeMillis());
                     gamePanel.monster[i] = null;
+                    gamePanel.respawn=true;
+                   
+                    
                     break;
                 } else if (monster.getMonsterId() == null) {
                     // Assign the monster ID if it doesn't already have one
@@ -789,5 +799,15 @@ public class NetworkManager {
 	public Socket getClientSocket() {
 		// TODO Auto-generated method stub
 		return clientSocket;
+	}
+
+
+	public String getDeadMonsterIndex() {
+		return deadMonsterIndex;
+	}
+
+
+	public void setDeadMonsterIndex(String string) {
+		this.deadMonsterIndex = string;
 	}
 }

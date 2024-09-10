@@ -371,7 +371,7 @@ public class Player extends Entity {
                 ResultSet rs = checkStmt.executeQuery();
 
                 if (rs.next()) {
-                    // Player data exists, perform an update
+                	// Player data exists, perform an update
                     level = rs.getInt("level");
                     dexterity = rs.getInt("dexterity");
                     strength = rs.getInt("strength");
@@ -386,6 +386,8 @@ public class Player extends Entity {
 
                         updateStmt.executeUpdate();
                         System.out.println("Player data updated successfully.");
+                        
+                        
                     }
                 } else {
                     // No player data exists, insert new data
@@ -399,6 +401,10 @@ public class Player extends Entity {
                         System.out.println("Player data inserted successfully.");
                     }
                 }
+                
+               
+                
+                
             }
         } catch (SQLException e) {
             e.printStackTrace();

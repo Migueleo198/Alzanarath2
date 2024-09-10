@@ -12,7 +12,7 @@ import javax.imageio.ImageIO;
 import main.GamePanel;
 
 public class NpcOldMan extends Entity{
-	String name= "OLD MAN";
+	String name= "OLD MAN(Lvl24)";
 	public NpcOldMan(GamePanel gp) {
 		super(gp);
 		this.gp=gp;

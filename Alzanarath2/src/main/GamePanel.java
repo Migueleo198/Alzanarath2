@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class GamePanel extends JPanel implements Runnable {
@@ -74,13 +75,18 @@ public class GamePanel extends JPanel implements Runnable {
     //Monster entities instantiation
     public Entity[] monster = new Entity[20];
     
-    
+    //MONSTER RESPAWN
+    private static final long RESPAWN_DELAY_MS = 20000; // 20 seconds in milliseconds
+    private List<Entity> removedMonsters =  new ArrayList<Entity>(); // Tracks removed monsters and their removal times
+    public boolean respawn = false;
 
 	private int currentMonsterNum;
     
     //ArrayListFor storing every non player entity array
     private ArrayList<Entity> entityList = new ArrayList<>();
     
+   
+
     
     
     public ArrayList<Entity> getEntityList() {
@@ -135,7 +141,7 @@ public class GamePanel extends JPanel implements Runnable {
    
    //CONNECTION TO DATABASE
    public DBConnection connection = new DBConnection();
-
+   public int monsterCounter;
    // Constructor
    public GamePanel() {
        System.out.println("Initializing GamePanel...");
@@ -154,6 +160,8 @@ public class GamePanel extends JPanel implements Runnable {
        
        
    }
+   
+  
    
    
 
@@ -324,13 +332,10 @@ public class GamePanel extends JPanel implements Runnable {
 
    
     public void update() {
-    	
         if (keyH == null) {
             System.err.println("KeyHandler is not initialized.");
             return;
         }
-        
-        
 
         // Update NPCs
         for (int i = 0; i < npc.length; i++) {
@@ -338,27 +343,34 @@ public class GamePanel extends JPanel implements Runnable {
                 npc[i].update();
             }
         }
-        
-        // Update Monsters
+
+        // Update Monsters and Check for Respawn
+        long currentTime = System.currentTimeMillis();
         for (int i = 0; i < monster.length; i++) {
-            if (monster[i] != null && networkManager!=null && networkManager.isServer()) {
-                monster[i].update();
-                
+            if (monster[i] != null) {
+                // Update existing monsters
+                if (networkManager != null && networkManager.isServer()) {
+                    monster[i].update();
+                } else if (networkManager != null) {
+                    monster[i].updateSprite();
+                }
             }
-            else if(monster[i] != null && networkManager!=null){
-            	monster[i].updateSprite();
-               
+
+            // Check if the monster should respawn
+            if (removedMonsters!=null && respawn==true) {
+            	
+            		aSetter.respawnCounter++;
+                    aSetter.respawnMonsters();
+                    
             }
-           
-        }
-
-                // Send monster data only when necessary
-             // Check if monster state has changed
-               
-        
-    
+                   
+                }
+            
         
 
+        // Send monster data only when necessary
+        // Check if monster state has changed
+        // Implement logic here to send monster data if needed
 
         // Update player and other players
         synchronized (keyH) {
@@ -373,6 +385,9 @@ public class GamePanel extends JPanel implements Runnable {
             }
         }
     }
+
+    
+  
     
     public void drawToScreen() {
 		Graphics g = getGraphics();
@@ -793,6 +808,25 @@ public class GamePanel extends JPanel implements Runnable {
 
 	public void setConnection(DBConnection connection) {
 		this.connection = connection;
+	}
+
+
+	
+
+
+	public Object getaSetter() {
+		// TODO Auto-generated method stub
+		return aSetter;
+	}
+
+
+	public List<Entity> getRemovedMonsters() {
+		return removedMonsters;
+	}
+
+
+	public void setRemovedMonsters(List<Entity> removedMonsters) {
+		this.removedMonsters = removedMonsters;
 	}
 	
 	 

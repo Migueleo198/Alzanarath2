@@ -254,6 +254,7 @@ public class KeyHandler implements KeyListener {
 				
 			} else if (gp.ui.getCommandNum() == 3) {
 				gp.ui.setCommandNum(0);
+				gp.setGameState(gp.getRegisterState());
 				handleRegisterAccount(code);
 			}
 		} else if (code == KeyEvent.VK_ESCAPE) {

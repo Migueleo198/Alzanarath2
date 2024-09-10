@@ -24,6 +24,7 @@ public class UI {
     private String usernameInput = "";
     private String emailInput = "";
     private String passwordInput = "";
+    protected boolean isDead;
 
     private List<String> globalChatMessages = new ArrayList<>(); // To store all chat messages
 
@@ -555,8 +556,9 @@ public class UI {
         String Health = " HP: ";
         g2.setFont(g2.getFont().deriveFont(Font.PLAIN, 20));
         g2.drawString(Health, 50, 82);
+        
         g2.setColor(Color.DARK_GRAY);
-        g2.fillRect(95, 65, healthBarWidth, 20);
+        g2.fillRect(95, 65, 110, 20);
 
         g2.setColor(Color.white);
         g2.setStroke(new BasicStroke(1));

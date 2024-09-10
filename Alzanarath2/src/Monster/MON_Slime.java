@@ -19,7 +19,7 @@ public class MON_Slime extends Entity{
 	private boolean gotHit=false;
 	public MON_Slime(GamePanel gp){
 		super(gp);
-		name = "Blue_Slime";
+		name = "Blue_Slime(Lvl1)";
 		speed=1;
 		maxHealth = 60;
 		Health = maxHealth;
@@ -274,6 +274,7 @@ public class MON_Slime extends Entity{
 	            // Check if the monster is dead
 	            if (gp.monster[i].getHealth() <= 0) {
 	                // Handle monster death
+	            	
 	            	gp.ui.addBattleNotification("You killed a " + gp.monster[i].getName() + " !");
 	            	gp.getPlayer().setExp(gp.getPlayer().getExp()+this.exp);
 	            	gp.ui.addBattleNotification("+ " + this.exp + " exp");
@@ -317,6 +318,10 @@ public class MON_Slime extends Entity{
 	            }
 	    
 	        
+	}
+	
+	public long getRemovalTime() {
+		return removalTime;
 	}
 
 	
