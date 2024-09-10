@@ -21,6 +21,8 @@ public class KeyHandler implements KeyListener {
     private boolean escKeyPressed = false;
     private boolean cPressed;
     public int attackDelay = 0;
+    
+    public String username="";
 
     private long lastMessageTime = 0; // Timestamp of the last sent message
     private static final long MESSAGE_DELAY = 5000; // 5 seconds in milliseconds
@@ -291,6 +293,7 @@ public class KeyHandler implements KeyListener {
 
 	        // Debug print statements
 	        System.out.println("Executing query: " + query);
+	        this.username=username;
 	        System.out.println("With username: " + username);
 	        System.out.println("With password: " + password);
 
@@ -389,6 +392,7 @@ public class KeyHandler implements KeyListener {
 				    
 				     
 				        if (registerUser(username, password, email)) {
+				        	this.username=username;
 				        	gp.setGameState(gp.getPlayState());
 				        }
 				        }
