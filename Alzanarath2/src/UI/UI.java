@@ -26,7 +26,7 @@ public class UI {
     private String emailInput = "";
     private String passwordInput = "";
     protected boolean isDead;
-
+    protected boolean test;
     private List<String> globalChatMessages = new ArrayList<>(); // To store all chat messages
 
     GamePanel gp;
