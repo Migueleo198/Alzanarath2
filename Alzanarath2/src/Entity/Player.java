@@ -43,6 +43,10 @@ public class Player extends Entity {
     private int drawY;
     private int countAttackDelayTime=0;
     private boolean hasData=false;
+    
+    private int skillPoints;
+    private boolean atkUp1Unlocked;
+    private boolean defUp1Unlocked;
     public Player(GamePanel gp, KeyHandler keyH, NetworkManager networkManager) {
         super(gp);
         this.gp = gp;
@@ -576,6 +580,43 @@ public class Player extends Entity {
 			right2 = setup("/Player/SpritesJava(right2).png",gp.getTileSize(),gp.getTileSize());
 		
 	}
+	
+	//SKILL TREE
+	
+	 // Method to unlock a skill
+    public void unlockSkill(String skillName) {
+        if (skillPoints > 0) {
+            switch (skillName) {
+                case "Skill 1":
+                    if (!atkUp1Unlocked) {
+                    	atkUp1Unlocked = true;
+                        skillPoints--;
+                    }
+                    break;
+                case "Skill 2":
+                    if (!defUp1Unlocked) {
+                    	defUp1Unlocked = true;
+                        skillPoints--;
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+    
+    // Method to check if a skill is unlocked
+    public boolean isSkillUnlocked(String skillName) {
+        switch (skillName) {
+            case "Skill 1":
+                return atkUp1Unlocked;
+            case "Skill 2":
+                return defUp1Unlocked;
+            default:
+                return false;
+        }
+    }
+
 	
 	public int getAttack() {
 		return attack = getStrength() * currentWeapon.attackValue;

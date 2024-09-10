@@ -121,6 +121,7 @@ public class GamePanel extends JPanel implements Runnable {
  	private final int loginState = 5;
  	private final int registerState = 6;
  	private final int screenState = 7;
+ 	private final int skillTreeState = 8;
     
     // Initialize the UI management class
     public UI ui;
@@ -827,6 +828,11 @@ public class GamePanel extends JPanel implements Runnable {
 
 	public void setRemovedMonsters(List<Entity> removedMonsters) {
 		this.removedMonsters = removedMonsters;
+	}
+
+
+	public int getSkillTreeState() {
+		return skillTreeState;
 	}
 	
 	 

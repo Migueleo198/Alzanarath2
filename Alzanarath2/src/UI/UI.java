@@ -4,6 +4,7 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.FontMetrics;
+import java.awt.GradientPaint;
 import java.awt.Graphics2D;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +31,10 @@ public class UI {
 
     GamePanel gp;
     
+    	// In your UI class
+    private int selectedSkillIndex = 0; // Index of the currently selected skill
+    private boolean[] unlockedSkills = {false, false}; // Track whether skills are unlocked
+    
     private ArrayList<String> message = new ArrayList<>();
     private ArrayList<Integer> messageCounter = new ArrayList<>();
 	public String playerUsername;
@@ -46,6 +51,10 @@ public class UI {
     	 if(gp.getGameState() == gp.getTitleState()) {
     		 drawTitleScreen(g2);
     	 }
+    	 
+    	 if (gp.getGameState() == gp.getSkillTreeState()) {
+    		    drawSkillTree(g2);
+    		}
     	 
     	 
     	 else if(gp.getGameState() == gp.getRegisterState()) {
@@ -567,6 +576,66 @@ public class UI {
 
         g2.setColor(Color.red);
         g2.fillRect(95, 65, healthBarWidth, 20);
+    }
+    
+    //DRAWS THE SKILL TREE
+    
+    public void drawSkillTree(Graphics2D g2) {
+        // Create a gradient background
+        GradientPaint gradient = new GradientPaint(100, 100, Color.DARK_GRAY, 700, 500, Color.BLACK);
+        g2.setPaint(gradient);
+        g2.fillRect(100, 100, 600, 400);
+
+        // Draw border around the skill tree
+        g2.setColor(Color.WHITE);
+        g2.drawRect(100, 100, 600, 400);
+        
+        // Define positions of skill nodes
+        int[][] skillPositions = {
+            {150, 150}, // Skill 1 position
+            {250, 250}  // Skill 2 position
+        };
+        
+        for (int i = 0; i < skillPositions.length; i++) {
+            int x = skillPositions[i][0];
+            int y = skillPositions[i][1];
+
+            // Change color for unlocked or selected skill
+            if (unlockedSkills[i]) {
+                g2.setColor(Color.GREEN);  // Green for unlocked skills
+            } else if (i == selectedSkillIndex) {
+                g2.setColor(Color.YELLOW);  // Yellow for the selected skill
+            } else {
+                g2.setColor(Color.WHITE);   // Default color for other skills
+            }
+
+            // Draw the skill node
+            g2.fillOval(x, y, 25, 25);
+        }
+
+        // Draw skill labels
+        g2.setColor(Color.WHITE);
+        g2.drawString("Atk up +", 160, 140);
+        g2.drawString("Def up +", 260, 240);
+    }
+    
+    public void unlockSelectedSkill() {
+        if (!unlockedSkills[selectedSkillIndex]) {
+            unlockedSkills[selectedSkillIndex] = true;  // Unlock the selected skill
+            System.out.println("Skill unlocked: " + selectedSkillIndex);
+        }
+    }
+    
+    public int getSelectedSkillIndex() {
+        return selectedSkillIndex;
+    }
+
+    public void setSelectedSkillIndex(int selectedSkillIndex) {
+        this.selectedSkillIndex = selectedSkillIndex;
+    }
+
+    public int getSkillCount() {
+        return 2;  // Number of skill nodes
     }
     
     public int getCommandNum() {

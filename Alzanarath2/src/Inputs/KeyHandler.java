@@ -16,7 +16,7 @@ import main.GamePanel;
 
 public class KeyHandler implements KeyListener {
     private GamePanel gp;
-    private boolean upPressed, downPressed, leftPressed, rightPressed, ePressed;
+    private boolean upPressed, downPressed, leftPressed, rightPressed, ePressed, tPressed;
     private boolean enterKeyPressed = false;
     private boolean escKeyPressed = false;
     private boolean cPressed;
@@ -58,6 +58,21 @@ public class KeyHandler implements KeyListener {
 
 			} else if (gp.getGameState() == gp.getCharacterState()) {
 				characterState(code);
+			}
+			
+			else if(gp.getGameState() == gp.getSkillTreeState()) {
+				skillTreeState(code);
+				
+				
+				if (code == KeyEvent.VK_UP) {
+	        	    gp.ui.setSelectedSkillIndex(Math.max(gp.ui.getSelectedSkillIndex() - 1, 0));  // Move up, prevent going negative
+	        	}
+	        	if (code == KeyEvent.VK_DOWN) {
+	        	    gp.ui.setSelectedSkillIndex(Math.min(gp.ui.getSelectedSkillIndex() + 1, gp.ui.getSkillCount() - 1));  // Move down, prevent out-of-bound
+	        	}
+	        	if (code == KeyEvent.VK_ENTER) {
+	        	    gp.ui.unlockSelectedSkill();  // Unlock the selected skill
+	        	}    
 			}
 		}
 	}
@@ -117,7 +132,24 @@ public class KeyHandler implements KeyListener {
 	        if (code == KeyEvent.VK_C) {
 	            gp.setGameState(gp.getCharacterState());
 	        }
-	    }
+	        
+	        if (code == KeyEvent.VK_T) {
+	            // Check if the current state is the skill tree state
+	        	gp.setGameState(gp.getSkillTreeState());
+	                // If the skill tree is already open, close it and revert to the previous state
+	        	// In KeyHandler.java, within the keyPressed method
+	        	
+	                
+	        }
+	 }
+	 
+	 public void skillTreeState(int code) {
+		 if (gp.getGameState() == gp.getSkillTreeState()) {
+	            if (code == KeyEvent.VK_T) {
+	                gp.setGameState(gp.getPlayState());
+	            }
+	        }
+	 }
 
     public void characterState(int code) {
         // Close Inventory
@@ -144,6 +176,11 @@ public class KeyHandler implements KeyListener {
             leftPressed = false;
         } else if (code == KeyEvent.VK_D) {
             rightPressed = false;
+        }
+        
+        if (code == KeyEvent.VK_T) {
+            // Check if the current state is the skill tree state
+            tPressed=false;
         }
 
         if (code == KeyEvent.VK_E) {
@@ -536,5 +573,15 @@ public class KeyHandler implements KeyListener {
 
 	public void setWarningColor(boolean warningColor) {
 		this.warningColor = warningColor;
+	}
+
+
+	public boolean istPressed() {
+		return tPressed;
+	}
+
+
+	public void settPressed(boolean tPressed) {
+		this.tPressed = tPressed;
 	}
 }
