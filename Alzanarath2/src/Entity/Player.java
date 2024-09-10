@@ -116,11 +116,11 @@ public class Player extends Entity {
     
     public void setSkillStats() {
     	 if( defUp1Unlocked) {
-         	defense+=1;
+         	dexterity+=1;
          }
          
          if(atkUp1Unlocked) {
-         	attack+=1;
+         	strength+=1;
          }
     }
 
