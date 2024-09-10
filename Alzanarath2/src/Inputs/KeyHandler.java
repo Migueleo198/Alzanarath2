@@ -68,58 +68,54 @@ public class KeyHandler implements KeyListener {
 		handleMenuAccount(code);
 	}
 
-    public void playState(int code, KeyEvent e) {
-        // Handle chat input if chat is visible
-        if (gp.ui.isChatVisible()) {
-            if (code == KeyEvent.VK_ENTER) {
-                // Send the message and clear the input
-                String message = gp.ui.getCurrentMessage();
-                if (System.currentTimeMillis() - lastMessageTime >= MESSAGE_DELAY) {
-                    sendMessage(message);
-                    gp.ui.appendGlobalChatMessage("You: " + message); // Add message to local chat
-                    gp.ui.setCurrentMessage(""); // Clear the input
-                    lastMessageTime = System.currentTimeMillis(); // Update last message time
-                    setWarningColor(false);
-                    
-                } else {
-                	
-                    gp.ui.appendGlobalChatMessage("You are on cooldown"); // Optional feedback
-                    setWarningColor(true);
-                }
-            } else if (code == KeyEvent.VK_ESCAPE) {
-                // Hide chat
-                gp.ui.hideChat();
-            } else if (code == KeyEvent.VK_BACK_SPACE) {
-                // Handle backspace to remove characters
-                String currentMessage = gp.ui.getCurrentMessage();
-                if (currentMessage.length() > 0) {
-                    gp.ui.setCurrentMessage(currentMessage.substring(0, currentMessage.length() - 1));
-                }
-            } else {
-                // Update current message while typing
-                gp.ui.setCurrentMessage(gp.ui.getCurrentMessage() + e.getKeyChar());
-            }
-            return; // Skip player movement when chat is visible
-        }
+	 public void playState(int code, KeyEvent e) {
+	        // Handle chat input if chat is visible
+	        if (gp.ui.isChatVisible()) {
+	            if (code == KeyEvent.VK_ENTER) {
+	                // Send the message and clear the input
+	                String message = gp.ui.getCurrentMessage();
+	                if (System.currentTimeMillis() - lastMessageTime >= MESSAGE_DELAY) {
+	                    sendMessage(message);
+	                    gp.ui.appendGlobalChatMessage("You: " + message); // Add message to local chat
+	                    gp.ui.setCurrentMessage(""); // Clear the input
+	                    lastMessageTime = System.currentTimeMillis(); // Update last message time
+	                } else {
+	                    gp.ui.appendGlobalChatMessage("Please wait before sending another message"); // Optional feedback
+	                }
+	            } else if (code == KeyEvent.VK_ESCAPE) {
+	                // Hide chat
+	                gp.ui.hideChat();
+	            } else if (code == KeyEvent.VK_BACK_SPACE) {
+	                // Handle backspace to remove characters
+	                String currentMessage = gp.ui.getCurrentMessage();
+	                if (currentMessage.length() > 0) {
+	                    gp.ui.setCurrentMessage(currentMessage.substring(0, currentMessage.length() - 1));
+	                }
+	            } else {
+	                // Update current message while typing
+	                gp.ui.setCurrentMessage(gp.ui.getCurrentMessage() + e.getKeyChar());
+	            }
+	            return; // Skip player movement when chat is visible
+	        }
 
-        // Handle chat visibility toggle
-        if (code == KeyEvent.VK_ENTER && gp.getGameState() != gp.getTitleState()) {
-            if (gp.ui.isChatVisible()) {
-                // Start typing mode and reset the current message
-                gp.ui.setCurrentMessage("");
-            }
-        } else if (code == KeyEvent.VK_ESCAPE) {
-            gp.ui.toggleChatVisibility(); // Show or hide chat
-            return; // Skip other actions if chat is being toggled
-        } else {
-            handlePlayerMovement(code, true);
-        }
+	        // Handle chat visibility toggle
+	        if (code == KeyEvent.VK_ENTER && gp.getGameState() != gp.getTitleState()) {
+	            if (gp.ui.isChatVisible()) {
+	                // Start typing mode and reset the current message
+	                gp.ui.setCurrentMessage("");
+	            }
+	        } else if (code == KeyEvent.VK_ESCAPE) {
+	            gp.ui.toggleChatVisibility(); // Show or hide chat
+	            return; // Skip other actions if chat is being toggled
+	        } else {
+	            handlePlayerMovement(code, true);
+	        }
 
-        // Open inventory
-        if (code == KeyEvent.VK_C) {
-            gp.setGameState(gp.getCharacterState());
-        }
-    }
+	        // Open inventory
+	        if (code == KeyEvent.VK_C) {
+	            gp.setGameState(gp.getCharacterState());
+	        }
+	    }
 
     public void characterState(int code) {
         // Close Inventory
@@ -225,6 +221,7 @@ public class KeyHandler implements KeyListener {
 	}
 
 	private void handleLoginAccount(int code) {
+		
 		if (code == KeyEvent.VK_UP) {
 			if (gp.ui.getCommandNum() > 0) {
 				gp.ui.setCommandNum(gp.ui.getCommandNum() - 1);
@@ -234,24 +231,27 @@ public class KeyHandler implements KeyListener {
 				gp.ui.setCommandNum(gp.ui.getCommandNum() + 1);
 			}
 		} else if (code == KeyEvent.VK_ENTER) {
-			if (gp.ui.getCommandNum() == 0) {
+			if (gp.ui.getCommandNum() == -1) {
 				gp.ui.setUsernameFocused(true);
 				gp.ui.setEmailFocused(false);
 				gp.ui.setPasswordFocused(false);
-			} else if (gp.ui.getCommandNum() == 1) {
+			} else if (gp.ui.getCommandNum() == 0) {
 				gp.ui.setUsernameFocused(false);
 				gp.ui.setEmailFocused(true);
 				gp.ui.setPasswordFocused(false);
-			} else if (gp.ui.getCommandNum() == 2) {
+			} else if (gp.ui.getCommandNum() == 1) {
 				gp.ui.setUsernameFocused(false);
 				gp.ui.setEmailFocused(false);
 				gp.ui.setPasswordFocused(true);
-			} else if (gp.ui.getCommandNum() == 3) {
+			} else if (gp.ui.getCommandNum() == 2) {
+				gp.ui.setCommandNum(0);
 				handleLogin();
 				gp.setGameState(gp.getTitleState());
 				
-			} else if (gp.ui.getCommandNum() == 4) {
-
+				
+			} else if (gp.ui.getCommandNum() == 3) {
+				gp.ui.setCommandNum(0);
+				handleRegisterAccount(code);
 			}
 		} else if (code == KeyEvent.VK_ESCAPE) {
 			if (gp.ui.getCommandNum() == 0) {
@@ -367,19 +367,17 @@ public class KeyHandler implements KeyListener {
 				gp.ui.setEmailFocused(false);
 				gp.ui.setPasswordFocused(true);
 			} else if (gp.ui.getCommandNum() == 3) {
-				
-				if (gp.ui.getCommandNum() == 3) {
-				    
-				        gp.setGameState(gp.getLoginState()); // Proceed to the Login
-				    
-			} else if (gp.ui.getCommandNum() == 4) {
+				gp.ui.setCommandNum(0);
+				 gp.setGameState(gp.getLoginState()); 
+		}// Proceed to the Login
+				 else if (gp.ui.getCommandNum() == 4) {
 				
 				    String username = gp.ui.getUsernameInput();
 				    String email = gp.ui.getEmailInput();
 				    String password = gp.ui.getPasswordInput();
-
+				    gp.ui.setCommandNum(0);
 				    // Validate the inputs
-				    gp.setGameState(gp.getPlayState()); // Redirect to login after successful registration
+				    
 				       
 				        if (registerUser(username, password, email)) {
 				        	gp.setGameState(gp.getPlayState());
@@ -403,7 +401,7 @@ public class KeyHandler implements KeyListener {
 			}
 		}
 		}
-	}
+	
 	
 	private boolean registerUser(String username, String password, String email) {
 	    try {

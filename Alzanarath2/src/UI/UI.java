@@ -425,7 +425,7 @@ public class UI {
         g2.drawString("Login to your account", middleX - 240, middleY - 150);
         
         g2.setFont(new Font("Comic Sans", Font.BOLD, 30));
-
+        
         // Draw "Email" label
         g2.setColor(commandNum == 0 ? Color.yellow : Color.white);
         g2.drawString("Email", middleX - 245, middleY - 25);
