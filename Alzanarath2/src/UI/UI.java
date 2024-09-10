@@ -539,19 +539,32 @@ public class UI {
     }
 
     public void drawHealthBar(Graphics2D g2) {
+    	
+    	int barWidth=100;
+    	
+    	 int currentHealth = gp.getPlayer().getHealth();
+         int maxHealth = gp.getPlayer().getMaxHealth();
+
+         // Calculate the percentage of health remaining
+         float healthPercentage = (float) currentHealth / maxHealth;
+
+         // Calculate the width of the health bar based on the percentage
+         int healthBarWidth = (int) (barWidth * healthPercentage);
+         
+         
         String Health = " HP: ";
         g2.setFont(g2.getFont().deriveFont(Font.PLAIN, 20));
         g2.drawString(Health, 50, 82);
         g2.setColor(Color.DARK_GRAY);
-        g2.fillRect(95, 65, gp.getPlayer().getMaxHealth(), 20);
+        g2.fillRect(95, 65, healthBarWidth, 20);
 
         g2.setColor(Color.white);
         g2.setStroke(new BasicStroke(1));
 
-        g2.fillRect(93, 63, gp.getPlayer().getHealth() + 4, 20 + 4);
+        g2.fillRect(93, 63, healthBarWidth + 4, 20 + 4);
 
         g2.setColor(Color.red);
-        g2.fillRect(95, 65, gp.getPlayer().getHealth(), 20);
+        g2.fillRect(95, 65, healthBarWidth, 20);
     }
     
     public int getCommandNum() {

@@ -36,6 +36,8 @@ public class NetworkManager {
     private ExecutorService clientExecutor = Executors.newCachedThreadPool();
     //save damage dealt to monster for the next update cycle
     int damage = 0;
+    
+    String name;
     public NetworkManager(boolean isServer, Configuration config, GamePanel gamePanel, KeyHandler keyH) {
         this.keyH = keyH;
         this.isServer = isServer;
@@ -452,7 +454,7 @@ public class NetworkManager {
     }
 
     public String promptInputName(String role) {
-        String name;
+        
         while (true) {
             name = gamePanel.keyH.username;
             if (name == null || name.trim().isEmpty() || name.length() > 8) {

@@ -42,7 +42,7 @@ public class Player extends Entity {
     private int drawX;
     private int drawY;
     private int countAttackDelayTime=0;
-
+    private boolean hasData=false;
     public Player(GamePanel gp, KeyHandler keyH, NetworkManager networkManager) {
         super(gp);
         this.gp = gp;
@@ -66,12 +66,12 @@ public class Player extends Entity {
         attackArea.width = 36;
         attackArea.height = 36;
         
-        
+        updateOrInsertPlayerData();
         setDefaultParams();
         getPlayerModel();
         getPlayerAttackImage();
         
-        updateOrInsertPlayerData();
+        
     }
     
     
@@ -83,17 +83,21 @@ public class Player extends Entity {
 		speed = 4;
 
 		direction = "down";
-		maxHealth=100;
+		
 		setHealth(maxHealth);
 		invincibleCounter=0;
 		
+		if(hasData=false) {
 		//DEFAULT STATS
+		maxHealth=100;
 		level =1;
 		setStrength(1); //The more strength the more damage he gives even with worse weapons
 		setDexterity(1); // same as attack but for defense
+		}
 		setExp(0);
-		setNextLevelExp(200);
+		
 		setGold(0);
+		
 		currentWeapon = new OBJ_BloodSword(gp);
 		attack=5;
 		currentShield = new OBJ_WoodenShield(gp);
@@ -101,6 +105,8 @@ public class Player extends Entity {
 		attack = getAttack(); // the total ATK value is decided by strength and the weapon ATK value
 		
 		setDefense(getDefense()); // The total DEF value is decided by dexterity and shield and armor DEF values
+		
+		
 	}
 
     @Override
@@ -350,48 +356,48 @@ public class Player extends Entity {
     }
     
     public void updateOrInsertPlayerData() {
-        String username = getUsername(); // Replace with your method to get the current player's username
+        String username = gp.keyH.username; // Get the current player's username
         Connection conn = gp.connection.connection; // Assuming you have a Connection object
 
-        // Check if the player's data exists
+        // Prepare the SQL statements
         String checkQuery = "SELECT * FROM PlayerData WHERE username = ?";
-        
-        try (PreparedStatement checkStmt = conn.prepareStatement(checkQuery)) {
-            checkStmt.setString(1, username);
-            ResultSet rs = checkStmt.executeQuery();
+        String updateQuery = "UPDATE PlayerData SET level = ?, dexterity = ?, strength = ?, maxHealth = ? WHERE username = ?";
+        String insertQuery = "INSERT INTO PlayerData (username, level, dexterity, strength, maxHealth) VALUES (?, ?, ?, ?, ?)";
 
-            if (rs.next()) {
-                // Player data exists, perform an update
-                String updateQuery = "UPDATE PlayerData SET level = ?, dexterity = ?, strength = ? WHERE username = ?";
-                try (PreparedStatement updateStmt = conn.prepareStatement(updateQuery)) {
-                    updateStmt.setInt(1, level);          // Current level
-                    updateStmt.setInt(2, dexterity);      // Current dexterity
-                    updateStmt.setInt(3, strength);       // Current strength
-                    updateStmt.setString(4, username);    // Player's username
+        try {
+            // Check if the player's data exists
+            try (PreparedStatement checkStmt = conn.prepareStatement(checkQuery)) {
+                checkStmt.setString(1, username);
+                ResultSet rs = checkStmt.executeQuery();
 
-                    updateStmt.executeUpdate();
-                    System.out.println("Player data updated successfully.");
-                    
-                    
-                    this.level=rs.getInt(2);
-                    this.dexterity=rs.getInt(2);
-                    this.strength=rs.getInt(3);
-                }
-            } else {
-                // No player data exists, insert new data
-                String insertQuery = "INSERT INTO PlayerData (username, level, dexterity, strength) VALUES (?, ?, ?, ?)";
-                try (PreparedStatement insertStmt = conn.prepareStatement(insertQuery)) {
-                    insertStmt.setString(1, username);    // Player's username
-                    insertStmt.setInt(2, level);          // Current level
-                    insertStmt.setInt(3, dexterity);      // Current dexterity
-                    insertStmt.setInt(4, strength);       // Current strength
+                if (rs.next()) {
+                    // Player data exists, perform an update
+                    level = rs.getInt("level");
+                    dexterity = rs.getInt("dexterity");
+                    strength = rs.getInt("strength");
+                    maxHealth = rs.getInt("maxHealth");
 
-                    insertStmt.executeUpdate();
-                    System.out.println("Player data inserted successfully.");
-                    
-                    this.level=rs.getInt(2);
-                    this.dexterity=rs.getInt(2);
-                    this.strength=rs.getInt(3);
+                    try (PreparedStatement updateStmt = conn.prepareStatement(updateQuery)) {
+                        updateStmt.setInt(1, level);          // Set player's level
+                        updateStmt.setInt(2, dexterity);      // Set player's dexterity
+                        updateStmt.setInt(3, strength);       // Set player's strength
+                        updateStmt.setInt(4, maxHealth);      // Set player's max health
+                        updateStmt.setString(5, username);    // Set player's username for WHERE clause
+
+                        updateStmt.executeUpdate();
+                        System.out.println("Player data updated successfully.");
+                    }
+                } else {
+                    // No player data exists, insert new data
+                    try (PreparedStatement insertStmt = conn.prepareStatement(insertQuery)) {
+                        insertStmt.setString(1, username);    // Set player's username
+                        insertStmt.setInt(2, level);          // Set player's level
+                        insertStmt.setInt(3, dexterity);      // Set player's dexterity
+                        insertStmt.setInt(4, strength);       // Set player's strength
+                        insertStmt.setInt(5, maxHealth);      // Set player's max health
+                        insertStmt.executeUpdate();
+                        System.out.println("Player data inserted successfully.");
+                    }
                 }
             }
         } catch (SQLException e) {
@@ -399,6 +405,7 @@ public class Player extends Entity {
             System.out.println("An error occurred while updating or inserting player data.");
         }
     }
+
 
     public void setLastReceivedData(PlayerData playerData) {
         this.lastReceivedData = playerData;
