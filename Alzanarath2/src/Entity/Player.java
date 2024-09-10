@@ -77,8 +77,8 @@ public class Player extends Entity {
     
     
     public void setDefaultParams() {
-		worldX = 270;
-		worldY = 270;
+		worldX = 600;
+		worldY = 600;
 		setUsernamePlayer(networkManager != null ? (networkManager.isServer() ? networkManager.getNameServer() : networkManager.getNameClient()) : "SinglePlayer");
 		speed = 4;
 
@@ -531,6 +531,19 @@ public class Player extends Entity {
 	
 	public void getPlayerAttackImage() {
 		
+		if(currentWeapon.name.equals("Blood Sword")) {
+
+	    	attackUp1= setup("/Attacks/BloodSwordAtkUp.png",gp.getTileSize()+2,gp.getTileSize()*2+10);
+	    	attackUp2= setup("/Attacks/BloodSwordAtkUp.png",gp.getTileSize()+2,gp.getTileSize()*2+10);
+	    	attackDown1= setup("/Attacks/BloodSwordAtk_Down.png",gp.getTileSize()+5,gp.getTileSize()*2+10);
+	    	attackDown2= setup("/Attacks/BloodSwordAtk_Down.png",gp.getTileSize()+5,gp.getTileSize()*2+10);
+	    	attackLeft1= setup("/Attacks/BloodSwordAtkLeft.png",gp.getTileSize()*3-9,gp.getTileSize());//Should be on the first one
+	    	attackLeft2= setup("/Attacks/BloodSwordAtkLeft.png",gp.getTileSize()*3-9,gp.getTileSize());//Should be on the first one
+	    	attackRight1= setup("/Attacks/BloodSwordAtkRight.png",gp.getTileSize()*3-13,gp.getTileSize());//Should be on the first one
+	    	attackRight2= setup("/Attacks/BloodSwordAtkRight.png",gp.getTileSize()*3-13,gp.getTileSize());//Should be on the first one
+		}
+		else {
+		
 		
 	    	attackUp1= setup("/Attacks/sword_sprite_up.png",gp.getTileSize()+2,gp.getTileSize()*2);
 	    	attackUp2= setup("/Attacks/sword_sprite_up.png",gp.getTileSize()+2,gp.getTileSize()*2);
@@ -541,7 +554,7 @@ public class Player extends Entity {
 	    	attackRight1= setup("/Attacks/sword_sprite_right.png",gp.getTileSize()*3-13,gp.getTileSize());//Should be on the first one
 	    	attackRight2= setup("/Attacks/sword_sprite_right.png",gp.getTileSize()*3-13,gp.getTileSize());//Should be on the first one
 	    	
-		
+		}
 	}
 
 
