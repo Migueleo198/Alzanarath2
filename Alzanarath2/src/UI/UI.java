@@ -585,8 +585,6 @@ public class UI {
         GradientPaint gradient = new GradientPaint(100, 100, Color.DARK_GRAY, 700, 500, Color.BLACK);
         g2.setPaint(gradient);
         g2.fillRect(100, 100, 600, 400);
-        
-       
 
         // Draw border around the skill tree
         g2.setColor(Color.WHITE);
@@ -596,7 +594,7 @@ public class UI {
         int[][] skillPositions = {
             {150, 150}, // Skill 1 position
             {250, 250}, // Skill 2 position
-            {350, 350}  // Example skill 3 position
+            {350, 350}  // Skill 3 position
         };
 
         // Draw lines connecting skills
@@ -637,10 +635,11 @@ public class UI {
 
         // Draw skill labels
         g2.setColor(Color.WHITE);
-        g2.drawString("Atk up +", 160, 140); // Skill 1 label
-        g2.drawString("Def up +", 260, 240); // Skill 2 label
+        g2.drawString("Str up +", 160, 140); // Skill 1 label
+        g2.drawString("Dex up +", 260, 240); // Skill 2 label
         g2.drawString("Speed up +", 360, 340); // Skill 3 label
         
+        // Draw the current skill points of the player, updated dynamically
         g2.drawString("Skillpoints: " + gp.getPlayer().getSkillPoints(), 250, 120); // SKILLPOINTS
     }
 
@@ -649,6 +648,7 @@ public class UI {
         if (!unlockedSkills[selectedSkillIndex]) {
             unlockedSkills[selectedSkillIndex] = true;  // Unlock the selected skill
             System.out.println("Skill unlocked: " + selectedSkillIndex);
+            
         }
     }
     
