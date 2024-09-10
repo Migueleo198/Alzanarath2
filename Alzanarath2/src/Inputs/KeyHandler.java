@@ -32,50 +32,74 @@ public class KeyHandler implements KeyListener {
     }
 
     
-	@Override
-	public void keyPressed(KeyEvent e) {
-		synchronized (gp.keyH) {
-			int code = e.getKeyCode();
+    public void keyPressed(KeyEvent e) {
+        synchronized (gp.keyH) {
+            int code = e.getKeyCode();
 
-			if (gp.getGameState() == gp.getScreenState()) {
-				screenState(code);
-			} else if (gp.getGameState() == gp.getLoginState()) {
-		        handleLoginAccount(code);
+            if (gp.getGameState() == gp.getScreenState()) {
+                screenState(code);
+            } else if (gp.getGameState() == gp.getLoginState()) {
+                handleLoginAccount(code);
 
-		        if (gp.ui.getEmailFocused() || gp.ui.getPasswordFocused()) {
-		            InputAuth(e);
-		        }
-			} else if(gp.getGameState() == gp.getRegisterState()) {
-		        handleRegisterAccount(code);
+                if (gp.ui.getEmailFocused() || gp.ui.getPasswordFocused()) {
+                    InputAuth(e);
+                }
+            } else if (gp.getGameState() == gp.getRegisterState()) {
+                handleRegisterAccount(code);
 
-		        if (gp.ui.getEmailFocused() || gp.ui.getPasswordFocused() || gp.ui.getUsernameFocused()) {
-		            InputAuthReg(e);
-		        }
-			} else if (gp.getGameState() == gp.getTitleState()) {
-				titleState(code);
-			} else if (gp.getGameState() == gp.getPlayState()) {
-				playState(code, e);
+                if (gp.ui.getEmailFocused() || gp.ui.getPasswordFocused() || gp.ui.getUsernameFocused()) {
+                    InputAuthReg(e);
+                }
+            } else if (gp.getGameState() == gp.getTitleState()) {
+                titleState(code);
+            } else if (gp.getGameState() == gp.getPlayState()) {
+                playState(code, e);
 
-			} else if (gp.getGameState() == gp.getCharacterState()) {
-				characterState(code);
-			}
-			
-			else if(gp.getGameState() == gp.getSkillTreeState()) {
-				skillTreeState(code);
-				
-				
-				if (code == KeyEvent.VK_UP) {
-	        	    gp.ui.setSelectedSkillIndex(Math.max(gp.ui.getSelectedSkillIndex() - 1, 0));  // Move up, prevent going negative
-	        	}
-	        	if (code == KeyEvent.VK_DOWN) {
-	        	    gp.ui.setSelectedSkillIndex(Math.min(gp.ui.getSelectedSkillIndex() + 1, gp.ui.getSkillCount() - 1));  // Move down, prevent out-of-bound
-	        	}
-	        	if (code == KeyEvent.VK_ENTER) {
-	        	    gp.ui.unlockSelectedSkill();  // Unlock the selected skill
-	        	}    
-			}
-		}
-	}
+            } else if (gp.getGameState() == gp.getCharacterState()) {
+                characterState(code);
+            } else if (gp.getGameState() == gp.getSkillTreeState()) {
+                skillTreeState(code);
+
+                // Handle UP navigation through the skill tree
+                if (code == KeyEvent.VK_UP) {
+                    if (gp.ui.getSelectedSkillIndex() > 0) {
+                        gp.ui.setSelectedSkillIndex(gp.ui.getSelectedSkillIndex() - 1);  // Move up
+                    }
+                }
+
+                // Handle DOWN navigation through the skill tree
+                if (code == KeyEvent.VK_DOWN) {
+                    if (gp.ui.getSelectedSkillIndex() < gp.ui.getSkillCount() - 1) {
+                        gp.ui.setSelectedSkillIndex(gp.ui.getSelectedSkillIndex() + 1);  // Move down
+                    }
+                }
+
+                // Handle LEFT navigation through the skill tree
+                if (code == KeyEvent.VK_LEFT) {
+                    // Adjust for a horizontal move (optional if you have horizontal skills)
+                    if (gp.ui.getSelectedSkillIndex() % 3 != 0) { // Assuming 3 skills per row, prevent going left off-row
+                        gp.ui.setSelectedSkillIndex(gp.ui.getSelectedSkillIndex() - 1);
+                    }
+                }
+
+                // Handle RIGHT navigation through the skill tree
+                if (code == KeyEvent.VK_RIGHT) {
+                    // Adjust for a horizontal move (optional if you have horizontal skills)
+                    if ((gp.ui.getSelectedSkillIndex() + 1) % 3 != 0 && gp.ui.getSelectedSkillIndex() < gp.ui.getSkillCount() - 1) { 
+                        gp.ui.setSelectedSkillIndex(gp.ui.getSelectedSkillIndex() + 1);
+                    }
+                }
+
+                // Unlock the selected skill
+                if (code == KeyEvent.VK_ENTER) {
+                    gp.ui.unlockSelectedSkill();  // Unlock the currently selected skill
+                   gp.getPlayer().setSkillStats();
+                   	 
+                }
+            }
+        }
+    }
+
 
 	public void titleState(int code) {
 		handleMenuNavigation(code);

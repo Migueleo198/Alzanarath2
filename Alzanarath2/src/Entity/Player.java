@@ -53,6 +53,7 @@ public class Player extends Entity {
         this.keyH = keyH;
         this.networkManager = networkManager;
         
+       
 
         screenX = (gp.getScreenWidth() / 2) - gp.getTileSize() / 2;
         screenY = (gp.getScreenHeight() / 2) - gp.getTileSize() / 2;
@@ -112,6 +113,16 @@ public class Player extends Entity {
 		
 		
 	}
+    
+    public void setSkillStats() {
+    	 if( defUp1Unlocked) {
+         	defense+=1;
+         }
+         
+         if(atkUp1Unlocked) {
+         	attack+=1;
+         }
+    }
 
     @Override
     public void update() {

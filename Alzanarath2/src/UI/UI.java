@@ -33,7 +33,7 @@ public class UI {
     
     	// In your UI class
     private int selectedSkillIndex = 0; // Index of the currently selected skill
-    private boolean[] unlockedSkills = {false, false}; // Track whether skills are unlocked
+    private boolean[] unlockedSkills = {false, false, false}; // Track whether skills are unlocked
     
     private ArrayList<String> message = new ArrayList<>();
     private ArrayList<Integer> messageCounter = new ArrayList<>();
@@ -581,7 +581,7 @@ public class UI {
     //DRAWS THE SKILL TREE
     
     public void drawSkillTree(Graphics2D g2) {
-        // Create a gradient background
+        // Create a gradient background for the skill tree
         GradientPaint gradient = new GradientPaint(100, 100, Color.DARK_GRAY, 700, 500, Color.BLACK);
         g2.setPaint(gradient);
         g2.fillRect(100, 100, 600, 400);
@@ -589,13 +589,33 @@ public class UI {
         // Draw border around the skill tree
         g2.setColor(Color.WHITE);
         g2.drawRect(100, 100, 600, 400);
-        
+
         // Define positions of skill nodes
         int[][] skillPositions = {
             {150, 150}, // Skill 1 position
-            {250, 250}  // Skill 2 position
+            {250, 250}, // Skill 2 position
+            {350, 350}  // Example skill 3 position
         };
-        
+
+        // Draw lines connecting skills
+        for (int i = 0; i < skillPositions.length - 1; i++) {
+            int x1 = skillPositions[i][0] + 12; // Center x of skill i
+            int y1 = skillPositions[i][1] + 12; // Center y of skill i
+            int x2 = skillPositions[i + 1][0] + 12; // Center x of skill i+1
+            int y2 = skillPositions[i + 1][1] + 12; // Center y of skill i+1
+
+            // Change line color to green if the skill is unlocked
+            if (unlockedSkills[i]) {
+                g2.setColor(Color.GREEN);  // Green for unlocked skills
+            } else {
+                g2.setColor(Color.WHITE);  // White for locked skills
+            }
+
+            // Draw the connecting line
+            g2.drawLine(x1, y1, x2, y2);
+        }
+
+        // Draw skill nodes
         for (int i = 0; i < skillPositions.length; i++) {
             int x = skillPositions[i][0];
             int y = skillPositions[i][1];
@@ -615,9 +635,11 @@ public class UI {
 
         // Draw skill labels
         g2.setColor(Color.WHITE);
-        g2.drawString("Atk up +", 160, 140);
-        g2.drawString("Def up +", 260, 240);
+        g2.drawString("Atk up +", 160, 140); // Skill 1 label
+        g2.drawString("Def up +", 260, 240); // Skill 2 label
+        g2.drawString("Speed up +", 360, 340); // Skill 3 label
     }
+
     
     public void unlockSelectedSkill() {
         if (!unlockedSkills[selectedSkillIndex]) {
