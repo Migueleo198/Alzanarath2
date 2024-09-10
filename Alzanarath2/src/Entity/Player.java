@@ -587,28 +587,40 @@ public class Player extends Entity {
 	
 	// Method to unlock the selected skill if enough skill points are available
 	public void unlockSelectedSkill() {
-	    if (this.getSkillPoints() > 0) {
+	    if (this.getSkillPoints() > 0) {  // Check if the player has at least 1 skill point
 	        switch (gp.ui.getSelectedSkillIndex()) {
-	            case 0:  // Atk up
-	              
-	                	this.setAtkUp1Unlocked(true);
-	                	skillPoints-=1;
-	                    
-	                    atkUp1Unlocked=true;
-	                    updateOrInsertPlayerData();
-	                break;
-	            case 1:  // Def up
-	                
-	                	this.setDefUp1Unlocked(true);
-	                	skillPoints-=1;
+	            case 0: // Unlock "Skill 1"
+	                if (!atkUp1Unlocked && getSkillPoints()>=1) {
 	                	
-	                	 defUp1Unlocked=true;
-	                	 updateOrInsertPlayerData();
+	                    atkUp1Unlocked = true;
+	                    skillPoints-=1;;
+	                    System.out.println("Skill 1 (Atk up) unlocked!");
+	                	gp.ui.drawSkillTree(gp.getG2());
+	                }
 	                break;
-	            case 2:  // Speed up
-	               
+
+	            case 1: // Unlock "Skill 2"
+	                if (!defUp1Unlocked && getSkillPoints()>=1) {
+	                    defUp1Unlocked = true;
+	                    skillPoints-=1;  // Deduct 1 skill point
+	                    System.out.println("Skill 2 (Def up) unlocked!");
+	                    gp.ui.drawSkillTree(gp.getG2());
+	                }
 	                break;
+
+	            case 2: // Example third skill
+	                //if (!someOtherSkillUnlocked) {
+	                 //   someOtherSkillUnlocked = true;
+	                //    gp.getPlayer().skillPoints-=1;  // Deduct 1 skill point
+	                //    System.out.println("Skill 3 unlocked!");
+	               // }
+	                break;
+
+	            default:
+	                System.out.println("Invalid skill selected.");
 	        }
+	    } else {
+	        System.out.println("Not enough skill points!");
 	    }
 	}
 	
