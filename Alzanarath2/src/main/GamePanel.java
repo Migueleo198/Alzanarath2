@@ -134,7 +134,7 @@ public class GamePanel extends JPanel implements Runnable {
    private BufferedImage tempScreen;
    
    //CONNECTION TO DATABASE
-   DBConnection connection = new DBConnection();
+   public DBConnection connection = new DBConnection();
 
    // Constructor
    public GamePanel() {
@@ -143,7 +143,10 @@ public class GamePanel extends JPanel implements Runnable {
        this.setDoubleBuffered(false);  // Set to false for manual double buffering
        this.setFocusable(true);
 
-      
+       gameState = screenState;
+       
+       //Initialize connection with the database
+       getConnection().initializeConnection();
        
        keyH = new KeyHandler(this);
        this.addKeyListener(keyH);
@@ -182,7 +185,7 @@ public class GamePanel extends JPanel implements Runnable {
        
         this.setBackground(Color.black);
         
-        gameState = titleState;
+        playMusic(0);
         
         setFullScreenDimensions();
        
@@ -243,7 +246,7 @@ public class GamePanel extends JPanel implements Runnable {
 
 	    aSetter = new AssetSetter(this, networkManager);
 	    
-	    connection.initializeConnection();
+	    getConnection().initializeConnection();
 	    
 
 	    System.out.println("Game initialized. Player: " + (player != null ? "Initialized" : "Not Initialized"));
@@ -776,6 +779,16 @@ public class GamePanel extends JPanel implements Runnable {
 
 	public int getScreenState() {
 		return screenState;
+	}
+
+
+	public DBConnection getConnection() {
+		return connection;
+	}
+
+
+	public void setConnection(DBConnection connection) {
+		this.connection = connection;
 	}
 	
 	 

@@ -3,6 +3,15 @@ package Inputs;
 import java.awt.Color;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import main.GamePanel;
 
 public class KeyHandler implements KeyListener {
@@ -71,7 +80,7 @@ public class KeyHandler implements KeyListener {
                     gp.ui.setCurrentMessage(""); // Clear the input
                     lastMessageTime = System.currentTimeMillis(); // Update last message time
                     setWarningColor(false);
-                    gp.ui.getG2().setColor(Color.WHITE);
+                    
                 } else {
                 	
                     gp.ui.appendGlobalChatMessage("You are on cooldown"); // Optional feedback
@@ -221,30 +230,90 @@ public class KeyHandler implements KeyListener {
 				gp.ui.setCommandNum(gp.ui.getCommandNum() - 1);
 			}
 		} else if (code == KeyEvent.VK_DOWN) {
-			if (gp.ui.getCommandNum() < 3) {
+			if (gp.ui.getCommandNum() < 4) {
 				gp.ui.setCommandNum(gp.ui.getCommandNum() + 1);
 			}
 		} else if (code == KeyEvent.VK_ENTER) {
 			if (gp.ui.getCommandNum() == 0) {
-				gp.ui.setEmailFocused(true);
+				gp.ui.setUsernameFocused(true);
+				gp.ui.setEmailFocused(false);
 				gp.ui.setPasswordFocused(false);
 			} else if (gp.ui.getCommandNum() == 1) {
+				gp.ui.setUsernameFocused(false);
+				gp.ui.setEmailFocused(true);
+				gp.ui.setPasswordFocused(false);
+			} else if (gp.ui.getCommandNum() == 2) {
+				gp.ui.setUsernameFocused(false);
 				gp.ui.setEmailFocused(false);
 				gp.ui.setPasswordFocused(true);
-			} else if (gp.ui.getCommandNum() == 2) {
-
 			} else if (gp.ui.getCommandNum() == 3) {
+				handleLogin();
+				gp.setGameState(gp.getTitleState());
+				
+			} else if (gp.ui.getCommandNum() == 4) {
 
 			}
 		} else if (code == KeyEvent.VK_ESCAPE) {
 			if (gp.ui.getCommandNum() == 0) {
+				gp.ui.setUsernameFocused(false);
 				gp.ui.setEmailFocused(false);
 				gp.ui.setPasswordFocused(false);
 			} else if (gp.ui.getCommandNum() == 1) {
+				gp.ui.setUsernameFocused(false);
+				gp.ui.setEmailFocused(false);
+				gp.ui.setPasswordFocused(false);
+			} else if (gp.ui.getCommandNum() == 2) {
+				gp.ui.setUsernameFocused(false);
 				gp.ui.setEmailFocused(false);
 				gp.ui.setPasswordFocused(false);
 			}
 		}
+	
+	}
+	
+	private void handleLogin() {
+	    String gmail = gp.ui.getEmailInput(); // Assuming these methods exist
+	    String password = gp.ui.getPasswordInput();
+
+	    Connection conn = gp.connection.connection;
+
+	   
+
+	    
+	    PreparedStatement pstmt = null;
+	    ResultSet rs = null;
+
+	    try {
+	       
+
+	        // Prepare the SQL query to check login credentials
+	        String query = "SELECT * FROM accounts WHERE gmail = ? AND password = ?";
+	        pstmt = conn.prepareStatement(query);
+	        pstmt.setString(1, gmail);
+	        pstmt.setString(2, password);
+	        
+	        rs = pstmt.executeQuery();
+
+	        if (rs.next()) {
+	            // Login successful
+	            System.out.println("Login successful!");
+	            
+	        } else {
+	            // Login failed
+	        	System.out.println("Invalid username or password.");
+	        }
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	        System.out.println("An error occurred while trying to log in.");
+	    } finally {
+	        try {
+	            if (rs != null) rs.close();
+	            if (pstmt != null) pstmt.close();
+	            if (conn != null) conn.close();
+	        } catch (SQLException e) {
+	            e.printStackTrace();
+	        }
+	    }
 	}
 
 	private void InputAuth(KeyEvent e) {
@@ -293,15 +362,31 @@ public class KeyHandler implements KeyListener {
 				gp.ui.setUsernameFocused(false);
 				gp.ui.setEmailFocused(true);
 				gp.ui.setPasswordFocused(false);
-			} else if (gp.ui.getCommandNum() == 4) {
+			} else if (gp.ui.getCommandNum() == 2) {
 				gp.ui.setUsernameFocused(false);
 				gp.ui.setEmailFocused(false);
 				gp.ui.setPasswordFocused(true);
 			} else if (gp.ui.getCommandNum() == 3) {
-
+				
+				if (gp.ui.getCommandNum() == 3) {
+				    
+				        gp.setGameState(gp.getLoginState()); // Proceed to the Login
+				    
 			} else if (gp.ui.getCommandNum() == 4) {
+				
+				    String username = gp.ui.getUsernameInput();
+				    String email = gp.ui.getEmailInput();
+				    String password = gp.ui.getPasswordInput();
 
-			}
+				    // Validate the inputs
+				    gp.setGameState(gp.getPlayState()); // Redirect to login after successful registration
+				       
+				        if (registerUser(username, password, email)) {
+				        	gp.setGameState(gp.getPlayState());
+				        }
+				        }
+				
+			
 		} else if (code == KeyEvent.VK_ESCAPE) {
 			if (gp.ui.getCommandNum() == 0) {
 				gp.ui.setUsernameFocused(false);
@@ -317,6 +402,41 @@ public class KeyHandler implements KeyListener {
 				gp.ui.setPasswordFocused(false);
 			}
 		}
+		}
+	}
+	
+	private boolean registerUser(String username, String password, String email) {
+	    try {
+	        // Assuming you have a connection object to your MySQL database
+	        String query = "INSERT INTO accounts (username, password, gmail) VALUES (?, ?, ?)";
+	        PreparedStatement pstmt = gp.connection.connection.prepareStatement(query);
+	        pstmt.setString(1, username);
+	        pstmt.setString(2, password);
+	        pstmt.setString(3, email);
+	        
+	        int result = pstmt.executeUpdate(); // Execute the query
+	        return result > 0; // Return true if inserted
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	        return false;
+	    }
+	}
+	
+	private boolean validateLogin(String username, String password) {
+	    try {
+	        // Query to check if the username and password match
+	        String query = "SELECT * FROM accounts WHERE username = ? AND password = ?";
+	        PreparedStatement pstmt = gp.connection.connection.prepareStatement(query);
+	        pstmt.setString(1, username);
+	        pstmt.setString(2, password);
+	        
+	        ResultSet rs = pstmt.executeQuery();
+	        
+	        return rs.next(); // Return true if a match is found
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	        return false;
+	    }
 	}
 	
 	private void InputAuthReg(KeyEvent e) {
