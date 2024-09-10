@@ -196,6 +196,7 @@ public class KeyHandler implements KeyListener {
 				gp.setGameState(gp.getPlayState());
 				gp.initializeGame();
 				gp.isServer = false;
+				
 			}
 		}
 	}
@@ -245,8 +246,8 @@ public class KeyHandler implements KeyListener {
 				gp.ui.setPasswordFocused(true);
 			} else if (gp.ui.getCommandNum() == 2) {
 				gp.ui.setCommandNum(0);
-				handleLogin();
-				gp.setGameState(gp.getTitleState());
+				handleLogin(gp.ui.getEmailInput(),gp.ui.getPasswordInput());
+				
 				
 				
 			} else if (gp.ui.getCommandNum() == 3) {
@@ -271,50 +272,58 @@ public class KeyHandler implements KeyListener {
 	
 	}
 	
-	private void handleLogin() {
-	    String gmail = gp.ui.getEmailInput(); // Assuming these methods exist
-	    String password = gp.ui.getPasswordInput();
-
+	private void handleLogin(String username, String password) {
 	    Connection conn = gp.connection.connection;
-
-	   
-
-	    
 	    PreparedStatement pstmt = null;
 	    ResultSet rs = null;
 
-	    try {
-	       
+	    if (conn == null) {
+	        System.out.println("Database connection is not initialized.");
+	        return;
+	    }
 
+	    try {
 	        // Prepare the SQL query to check login credentials
-	        String query = "SELECT * FROM accounts WHERE gmail = ? AND password = ?";
+	        String query = "SELECT * FROM accounts WHERE username = ? AND password = ?";
 	        pstmt = conn.prepareStatement(query);
-	        pstmt.setString(1, gmail);
+	        pstmt.setString(1, username);
 	        pstmt.setString(2, password);
-	        
+
+	        // Debug print statements
+	        System.out.println("Executing query: " + query);
+	        System.out.println("With username: " + username);
+	        System.out.println("With password: " + password);
+
+	        // Execute the query
 	        rs = pstmt.executeQuery();
 
+	        // Check if the login was successful
 	        if (rs.next()) {
 	            // Login successful
 	            System.out.println("Login successful!");
-	            
+	            gp.setGameState(gp.getTitleState());
 	        } else {
 	            // Login failed
-	        	System.out.println("Invalid username or password.");
+	            System.out.println("Invalid username or password.");
+	            gp.setGameState(gp.getLoginState());
 	        }
 	    } catch (SQLException e) {
 	        e.printStackTrace();
-	        System.out.println("An error occurred while trying to log in.");
+	        System.out.println("An error occurred while trying to log in. Please try again.");
 	    } finally {
+	        // Close resources
 	        try {
 	            if (rs != null) rs.close();
 	            if (pstmt != null) pstmt.close();
-	            if (conn != null) conn.close();
+	            // Uncomment if connection is not managed elsewhere
+	            // if (conn != null) conn.close();
 	        } catch (SQLException e) {
 	            e.printStackTrace();
 	        }
 	    }
 	}
+
+
 
 	private void InputAuth(KeyEvent e) {
 		char keyChar = e.getKeyChar();
@@ -378,7 +387,7 @@ public class KeyHandler implements KeyListener {
 				    gp.ui.setCommandNum(0);
 				    // Validate the inputs
 				    
-				       
+				     
 				        if (registerUser(username, password, email)) {
 				        	gp.setGameState(gp.getPlayState());
 				        }
@@ -448,6 +457,8 @@ public class KeyHandler implements KeyListener {
 					gp.ui.setUsernameInput(currentUsername.substring(0, currentUsername.length() - 1));
 				} else if (Character.isLetterOrDigit(keyChar) || isSpecialCharacter(keyChar)) {
 					gp.ui.setUsernameInput(currentUsername + keyChar);
+					
+					
 				}
 				System.out.println( "Username: " + gp.ui.getUsernameInput());
 			}

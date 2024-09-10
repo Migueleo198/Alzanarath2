@@ -14,7 +14,7 @@ import main.GamePanel;
 import main.Utility;
 
 public abstract class Entity {
-	private String usernamePlayer;
+	public String usernamePlayer;
 	protected int worldX;
 	protected int worldY;
 	protected int speed;

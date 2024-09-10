@@ -46,8 +46,11 @@ public class NetworkManager {
         	
             startServer();
         } else {
-            this.nameClient = promptInputName("Client");
+          
             startClient();
+            
+            promptInputName("client");
+           
         }
     }
 
@@ -453,9 +456,10 @@ public class NetworkManager {
     public String promptInputName(String role) {
         String name;
         while (true) {
-            name = JOptionPane.showInputDialog(null, "Input your username:", "Username Input", JOptionPane.PLAIN_MESSAGE);
+            name = JOptionPane.showInputDialog(this,"Introduce your name");
             if (name == null || name.trim().isEmpty() || name.length() > 8) {
-                JOptionPane.showMessageDialog(null, "Invalid username. Please enter a valid name.", "Error", JOptionPane.ERROR_MESSAGE);
+            	JOptionPane.showMessageDialog(gamePanel, "Introduce a valid name");
+            	name = JOptionPane.showInputDialog(this,"Introduce your name");
             } else {
                 return name;
             }

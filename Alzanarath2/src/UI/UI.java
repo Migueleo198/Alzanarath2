@@ -31,6 +31,7 @@ public class UI {
     
     private ArrayList<String> message = new ArrayList<>();
     private ArrayList<Integer> messageCounter = new ArrayList<>();
+	public String playerUsername;
     public UI(GamePanel gp) {
         this.gp = gp;
     }
@@ -79,6 +80,10 @@ public class UI {
         } else if(gp.getNetworkManager()!=null && gp.getNetworkManager().isServer()==true) {
         	drawServerScreen(g2);
         }
+    	 
+    	 if(gp.getNetworkManager()!=null && gp.getGameState()==gp.getPlayState() && gp.getNetworkManager().isServer()) {
+    		 drawServerScreen(g2);
+    	 }
        
     }
     
@@ -428,7 +433,7 @@ public class UI {
         
         // Draw "Email" label
         g2.setColor(commandNum == 0 ? Color.yellow : Color.white);
-        g2.drawString("Email", middleX - 245, middleY - 25);
+        g2.drawString("Username", middleX - 245, middleY - 25);
         g2.drawRect(middleX - 280, middleY - 55, 200, 40);
 
         // Draw rectangle for email input field
@@ -463,6 +468,8 @@ public class UI {
     private void drawRegisterAccount(Graphics2D g2) {
         int middleX = gp.getScreenWidth() / 2;
         int middleY = gp.getScreenHeight() / 2;
+        
+        
         
         g2.setFont(new Font("Comic Sans", Font.BOLD, 48));    
         g2.setColor(Color.white);

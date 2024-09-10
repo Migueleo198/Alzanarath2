@@ -230,6 +230,8 @@ public class GamePanel extends JPanel implements Runnable {
 	    networkManager = new NetworkManager(isServer, config, this, this.keyH);
 
 	    this.player = new Player(this, keyH, networkManager);
+	    
+	   
 
 	    // Start the client connection
 	    networkManager.startClient();
@@ -250,6 +252,8 @@ public class GamePanel extends JPanel implements Runnable {
 	    
 
 	    System.out.println("Game initialized. Player: " + (player != null ? "Initialized" : "Not Initialized"));
+	    
+	    
 	}
 
     long lastMonsterUpdateTime = 0;

@@ -2,6 +2,9 @@ package Entity;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 
 import javax.imageio.ImageIO;
 
@@ -68,10 +71,12 @@ public class Player extends Entity {
         getPlayerAttackImage();
     }
     
+    
+    
     public void setDefaultParams() {
 		worldX = 270;
 		worldY = 270;
-		setUsernamePlayer(networkManager != null ? (networkManager.isServer() ? networkManager.getNameServer() : networkManager.getNameClient()) : "SinglePlayer");
+		setUsernamePlayer(gp.ui.getUsernameInput());
 		speed = 4;
 
 		direction = "down";
@@ -331,13 +336,34 @@ public class Player extends Entity {
     		Health=maxHealth;
     		
     		//DIALOGUES AFTER LEVELING UP(NOT YET IMPLEMENTED)!
-    		
+    		updatePlayerData();
     		//gp.playSE(6);
     		//gp.setGameState(gp.dialogueState);
     		
     		//startDialogue(this,0);
     		//setDialogue();
     	}
+    }
+    
+    public void updatePlayerData() {
+        String username = getUsername(); // Replace with your method to get the current player's username
+        Connection conn = gp.connection.connection; // Assuming you have a Connection object
+
+        // SQL query to update the player's level, dexterity, and strength
+        String query = "UPDATE PlayerData SET level = ?, dexterity = ?, strength = ? WHERE username = ?";
+
+        try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+            pstmt.setInt(1, level);          // Current level
+            pstmt.setInt(2, dexterity);      // Current dexterity
+            pstmt.setInt(3, strength);       // Current strength
+            pstmt.setString(4, username);    // Player's username
+
+            pstmt.executeUpdate(); // Execute the update query
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println("An error occurred while updating player data.");
+        }
     }
 
     public void setLastReceivedData(PlayerData playerData) {
