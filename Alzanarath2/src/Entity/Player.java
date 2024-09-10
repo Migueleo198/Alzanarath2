@@ -76,7 +76,7 @@ public class Player extends Entity {
     public void setDefaultParams() {
 		worldX = 270;
 		worldY = 270;
-		setUsernamePlayer(gp.ui.getUsernameInput());
+		setUsernamePlayer(networkManager != null ? (networkManager.isServer() ? networkManager.getNameServer() : networkManager.getNameClient()) : "SinglePlayer");
 		speed = 4;
 
 		direction = "down";
