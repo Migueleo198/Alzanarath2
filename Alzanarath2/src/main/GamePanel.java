@@ -184,7 +184,7 @@ public class GamePanel extends JPanel implements Runnable {
 
     public void setupGame() {
     	 tempScreen = new BufferedImage(screenWidth, screenHeight, BufferedImage.TYPE_INT_ARGB);
-         g2 = (Graphics2D)tempScreen.getGraphics();
+         setG2((Graphics2D)tempScreen.getGraphics());
     	setTileM(new TileManager(this));
         sound = new Sound();
         ui = new UI(this);
@@ -399,19 +399,19 @@ public class GamePanel extends JPanel implements Runnable {
     protected void drawToTempScreen() {
     	
     	
-		g2 = (Graphics2D)tempScreen.getGraphics();
+		setG2((Graphics2D)tempScreen.getGraphics());
     	 Graphics2D  graphics = tempScreen.createGraphics();
 
  		graphics.setPaint ( new Color ( 0, 0, 0 ) );
  		graphics.fillRect ( 0, 0, tempScreen.getWidth(), tempScreen.getHeight());
 
         if (this.player != null ) {
-            g2.setColor(getBackground());
+            getG2().setColor(getBackground());
 
             // Add all entities to the entityList
             if(!networkManager.isServer()) {
             entityList.add(player);
-            getTileM().draw(g2);
+            getTileM().draw(getG2());
             }
 
             for (int i = 0; i < npc.length; i++) {
@@ -440,7 +440,7 @@ public class GamePanel extends JPanel implements Runnable {
             // Draw entities
             for (int i=0; i<entityList.size();i++) {
             	if(!networkManager.isServer()) {
-                entityList.get(i).draw(g2);
+                entityList.get(i).draw(getG2());
             	}
             }
             
@@ -453,13 +453,13 @@ public class GamePanel extends JPanel implements Runnable {
         // Draw other players
         for (Player otherPlayer : otherPlayers.values()) {
             if (otherPlayer != null) {
-                otherPlayer.draw(g2);
+                otherPlayer.draw(getG2());
                 
             }
         }
 
         // Draw the UI
-        ui.drawUI(g2);
+        ui.drawUI(getG2());
        
        
     }
@@ -833,6 +833,16 @@ public class GamePanel extends JPanel implements Runnable {
 
 	public int getSkillTreeState() {
 		return skillTreeState;
+	}
+
+
+	public Graphics2D getG2() {
+		return g2;
+	}
+
+
+	public void setG2(Graphics2D g2) {
+		this.g2 = g2;
 	}
 	
 	 

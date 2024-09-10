@@ -585,6 +585,8 @@ public class UI {
         GradientPaint gradient = new GradientPaint(100, 100, Color.DARK_GRAY, 700, 500, Color.BLACK);
         g2.setPaint(gradient);
         g2.fillRect(100, 100, 600, 400);
+        
+       
 
         // Draw border around the skill tree
         g2.setColor(Color.WHITE);
@@ -638,6 +640,8 @@ public class UI {
         g2.drawString("Atk up +", 160, 140); // Skill 1 label
         g2.drawString("Def up +", 260, 240); // Skill 2 label
         g2.drawString("Speed up +", 360, 340); // Skill 3 label
+        
+        g2.drawString("Skillpoints: " + gp.getPlayer().getSkillPoints(), 250, 120); // SKILLPOINTS
     }
 
     
