@@ -645,10 +645,13 @@ public class UI {
 
     
     public void unlockSelectedSkill() {
+    	 gp.getPlayer().setSkillPoints(gp.getPlayer().getSkillPoints()-1);
         if (!unlockedSkills[selectedSkillIndex]) {
             unlockedSkills[selectedSkillIndex] = true;  // Unlock the selected skill
             System.out.println("Skill unlocked: " + selectedSkillIndex);
-            
+          
+           
+            gp.getPlayer().updateOrInsertPlayerData();
         }
     }
     

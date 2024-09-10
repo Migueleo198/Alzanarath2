@@ -95,7 +95,7 @@ public class KeyHandler implements KeyListener {
 
                 // Unlock the selected skill
                 if (code == KeyEvent.VK_ENTER) {
-                    gp.ui.unlockSelectedSkill();  // Unlock the currently selected skill
+                    
                    gp.getPlayer().unlockSelectedSkill();
                    	 
                 }
