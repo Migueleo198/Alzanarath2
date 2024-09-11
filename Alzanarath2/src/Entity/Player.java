@@ -624,10 +624,11 @@ public class Player extends Entity {
 	                break;
 
 	            case 2: 
-	            	if (!defUp1Unlocked && getSkillPoints()>=1) {
+	            	if (!speedUpUnlocked && getSkillPoints()>=1) {
 	            	 gp.ui.unlockSelectedSkill();
 	            	speedUpUnlocked=true;
 	            	skillPoints-=1;
+	            	speed+=1;
 	            	 savePlayerData();
 	            	
 	            	}

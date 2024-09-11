@@ -587,8 +587,8 @@ public class UI {
         int treeHeight = 400;
         
         // Calculate the center of the screen for the skill tree
-        int treeX = (screenWidth - treeWidth) /5;
-        int treeY = (screenHeight - treeHeight) /5;
+        int treeX = (screenWidth - treeWidth) /6;
+        int treeY = (screenHeight - treeHeight) /6;
 
         // Create a smoother gradient background for the skill tree
         GradientPaint gradient = new GradientPaint(treeX, treeY, Color.DARK_GRAY, treeX + treeWidth, treeY + treeHeight, Color.BLACK);
@@ -658,7 +658,7 @@ public class UI {
         g2.drawString("Speed Up +", skillPositions[2][0] - 15, skillPositions[2][1] - 10); // Skill 3 label
 
         // Display skill points at the top of the tree
-        g2.setColor(Color.CYAN);
+        g2.setColor(Color.WHITE);
         g2.setFont(new Font("Arial", Font.BOLD, 18));
         g2.drawString("Skill Points: " + gp.getPlayer().getSkillPoints(), treeX + treeWidth / 2 - 60, treeY + 40);
     }
