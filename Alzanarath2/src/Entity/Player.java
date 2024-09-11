@@ -97,9 +97,10 @@ public class Player extends Entity {
         attackArea.width = 36;
         attackArea.height = 36;
         
-        updateOrInsertPlayerData();
+        
        
         setDefaultParams();
+        loadPlayerData();
         getPlayerModel();
         getPlayerAttackImage();
         
@@ -406,7 +407,7 @@ public class Player extends Entity {
     		Health=maxHealth;
     		skillPoints+=1;
     		//DIALOGUES AFTER LEVELING UP(NOT YET IMPLEMENTED)!
-    		updateOrInsertPlayerData();
+    		savePlayerData();
     		//gp.playSE(6);
     		//gp.setGameState(gp.dialogueState);
     		
@@ -588,45 +589,48 @@ public class Player extends Entity {
 	public void unlockSelectedSkill() {
 		
 
-	    if(isSkillUnlocked("Skill 1")) {
-    		gp.ui.getUnlockedSkills()[0] = true;  // Unlock the selected skill
-        System.out.println("Skill unlocked: " + gp.ui.getSelectedSkillIndex());
-        
-    	}
-        if(isSkillUnlocked("Skill 2")) {
-        	gp.ui.getUnlockedSkills()[1] = true;  // Unlock the selected skill
-        }
+	    
 		
 		
 	    if (this.getSkillPoints() > 0) {  // Check if the player has at least 1 skill point
 	        switch (gp.ui.getSelectedSkillIndex()) {
 	            case 0: // Unlock "Skill 1"
-	                if (!atkUp1Unlocked && getSkillPoints()>=1) {
+	                if (!atkUp1Unlocked) {
 	                	
-	                    atkUp1Unlocked = true;
-	                    skillPoints-=1;;
+	                    
 	                    System.out.println("Skill 1 (Atk up) unlocked!");
 	                    strength+=1;
 	                	gp.ui.drawSkillTree(gp.getG2());
-	                	  updateOrInsertPlayerData();
+	                	savePlayerData();
+	                }
+	                if(getSkillPoints()>=1) {
+	                	gp.ui.unlockSelectedSkill();
+	                	atkUp1Unlocked = true;
+	                    skillPoints-=1;
+	                    savePlayerData();
 	                }
 	                break;
 
 	            case 1: // Unlock "Skill 2"
 	                if (!defUp1Unlocked && getSkillPoints()>=1) {
+	                	gp.ui.unlockSelectedSkill();
 	                    defUp1Unlocked = true;
 	                    skillPoints-=1;  // Deduct 1 skill point
 	                    dexterity+=1;
 	                    System.out.println("Skill 2 (Def up) unlocked!");
 	                    gp.ui.drawSkillTree(gp.getG2());
-	                    updateOrInsertPlayerData();
+	                    savePlayerData();
 	                }
 	                break;
 
 	            case 2: 
+	            	if (!defUp1Unlocked && getSkillPoints()>=1) {
+	            	 gp.ui.unlockSelectedSkill();
 	            	speedUpUnlocked=true;
 	            	skillPoints-=1;
-	            	  updateOrInsertPlayerData();
+	            	 savePlayerData();
+	            	
+	            	}
 	                break;
 
 	            default:
@@ -640,61 +644,96 @@ public class Player extends Entity {
 	    
 	}
 	
-	public void updateOrInsertPlayerData() {
+	public void loadPlayerData() {
 	    String username = gp.keyH.username; // Get the current player's username
 	    Connection conn = gp.connection.connection; // Assuming you have a Connection object
 
-	    // Prepare the SQL statements
+	    String checkQuery = "SELECT * FROM PlayerData WHERE username = ?";
+
+	    try (PreparedStatement checkStmt = conn.prepareStatement(checkQuery)) {
+	        checkStmt.setString(1, username);
+	        ResultSet rs = checkStmt.executeQuery();
+
+	        if (rs.next()) {
+	            // Load the player's data from the database
+	            level = rs.getInt("level")-1;
+	            dexterity = rs.getInt("dexterity")-1;
+	            strength = rs.getInt("strength")-1;
+	            maxHealth = rs.getInt("maxHealth");
+	            skillPoints = rs.getInt("skillPoints")-1;
+	            atkUp1Unlocked = rs.getBoolean("atkUp1Unlocked");
+	            defUp1Unlocked = rs.getBoolean("defUp1Unlocked");
+	            speedUpUnlocked = rs.getBoolean("speedUp1Unlocked");
+	            
+	            if(atkUp1Unlocked) {
+	            	gp.ui.unlockedSkills[0]=atkUp1Unlocked;
+	            }
+	            
+	            if(defUp1Unlocked) {
+	            	gp.ui.unlockedSkills[1]=defUp1Unlocked;
+	            }
+
+	            System.out.println("Player data loaded successfully.");
+	        } else {
+	            System.out.println("No data found for the player.");
+	        }
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	        System.out.println("An error occurred while loading player data.");
+	    }
+	}
+	
+	public void savePlayerData() {
+	    String username = gp.keyH.username; // Get the current player's username
+	    Connection conn = gp.connection.connection; // Assuming you have a Connection object
+
 	    String checkQuery = "SELECT * FROM PlayerData WHERE username = ?";
 	    String updateQuery = "UPDATE PlayerData SET level = ?, dexterity = ?, strength = ?, maxHealth = ?, skillPoints = ?, atkUp1Unlocked = ?, defUp1Unlocked = ?, speedUp1Unlocked = ? WHERE username = ?";
 	    String insertQuery = "INSERT INTO PlayerData (username, level, dexterity, strength, maxHealth, skillPoints, atkUp1Unlocked, defUp1Unlocked, speedUp1Unlocked) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-	    try {
-	        // Check if the player's data exists
-	        try (PreparedStatement checkStmt = conn.prepareStatement(checkQuery)) {
-	            checkStmt.setString(1, username);
-	            ResultSet rs = checkStmt.executeQuery();
+	    try (PreparedStatement checkStmt = conn.prepareStatement(checkQuery)) {
+	        checkStmt.setString(1, username);
+	        ResultSet rs = checkStmt.executeQuery();
 
-	            if (rs.next()) {
-	                // Player data exists, so we just perform the update based on the in-game values.
-	                try (PreparedStatement updateStmt = conn.prepareStatement(updateQuery)) {
-	                    // Use in-game state variables (which should be modified when unlocking skills or updating points)
-	                    updateStmt.setInt(1, level); // Set player's level
-	                    updateStmt.setInt(2, dexterity); // Set player's dexterity
-	                    updateStmt.setInt(3, strength); // Set player's strength
-	                    updateStmt.setInt(4, maxHealth); // Set player's max health
-	                    updateStmt.setInt(5, skillPoints); // Set player's skill points
-	                    updateStmt.setBoolean(6, atkUp1Unlocked); // Set boolean values
-	                    updateStmt.setBoolean(7, defUp1Unlocked);
-	                    updateStmt.setBoolean(8, speedUpUnlocked);
-	                    updateStmt.setString(9, username); // Set player's username for WHERE clause
-	                    
-	                    updateStmt.executeUpdate();
-	                    System.out.println("Player data updated successfully.");
-	                }
-	            } else {
-	                // No player data exists, insert new data
-	                try (PreparedStatement insertStmt = conn.prepareStatement(insertQuery)) {
-	                    insertStmt.setString(1, username); // Set player's username
-	                    insertStmt.setInt(2, level); // Set player's level
-	                    insertStmt.setInt(3, dexterity); // Set player's dexterity
-	                    insertStmt.setInt(4, strength); // Set player's strength
-	                    insertStmt.setInt(5, maxHealth); // Set player's max health
-	                    insertStmt.setInt(6, skillPoints); // Set player's skill points
-	                    insertStmt.setBoolean(7, atkUp1Unlocked); // Set boolean values
-	                    insertStmt.setBoolean(8, defUp1Unlocked);
-	                    insertStmt.setBoolean(9, speedUpUnlocked); // Default or current value
-	                    
-	                    insertStmt.executeUpdate();
-	                    System.out.println("Player data inserted successfully.");
-	                }
+	        if (rs.next()) {
+	            // Player data exists, update it
+	            try (PreparedStatement updateStmt = conn.prepareStatement(updateQuery)) {
+	                updateStmt.setInt(1, level); // Set player's level
+	                updateStmt.setInt(2, dexterity); // Set player's dexterity
+	                updateStmt.setInt(3, strength); // Set player's strength
+	                updateStmt.setInt(4, maxHealth); // Set player's max health
+	                updateStmt.setInt(5, skillPoints); // Set player's skill points
+	                updateStmt.setBoolean(6, atkUp1Unlocked); // Set boolean values
+	                updateStmt.setBoolean(7, defUp1Unlocked);
+	                updateStmt.setBoolean(8, speedUpUnlocked);
+	                updateStmt.setString(9, username); // Set player's username for WHERE clause
+
+	                updateStmt.executeUpdate();
+	                System.out.println("Player data updated successfully.");
+	            }
+	        } else {
+	            // No player data exists, insert new data
+	            try (PreparedStatement insertStmt = conn.prepareStatement(insertQuery)) {
+	                insertStmt.setString(1, username); // Set player's username
+	                insertStmt.setInt(2, level); // Set player's level
+	                insertStmt.setInt(3, dexterity); // Set player's dexterity
+	                insertStmt.setInt(4, strength); // Set player's strength
+	                insertStmt.setInt(5, maxHealth); // Set player's max health
+	                insertStmt.setInt(6, skillPoints); // Set player's skill points
+	                insertStmt.setBoolean(7, atkUp1Unlocked); // Set boolean values
+	                insertStmt.setBoolean(8, defUp1Unlocked);
+	                insertStmt.setBoolean(9, speedUpUnlocked); // Default or current value
+
+	                insertStmt.executeUpdate();
+	                System.out.println("Player data inserted successfully.");
 	            }
 	        }
 	    } catch (SQLException e) {
 	        e.printStackTrace();
-	        System.out.println("An error occurred while updating or inserting player data.");
+	        System.out.println("An error occurred while saving player data.");
 	    }
 	}
+
 	
     // Method to check if a skill is unlocked
     public boolean isSkillUnlocked(String skillName) {

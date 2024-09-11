@@ -33,7 +33,7 @@ public class UI {
     
     	// In your UI class
     private int selectedSkillIndex = 0; // Index of the currently selected skill
-    private boolean[] unlockedSkills = {false, false, false}; // Track whether skills are unlocked
+    public boolean[] unlockedSkills = {false, false, false}; // Track whether skills are unlocked
     
     private ArrayList<String> message = new ArrayList<>();
     private ArrayList<Integer> messageCounter = new ArrayList<>();
