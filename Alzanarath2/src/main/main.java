@@ -17,7 +17,7 @@ public class main {
         window.pack();
         window.setLocationRelativeTo(null);  // Center the window
         window.setVisible(true);
-        gamePanel.setupGame();
+        gamePanel.setFullScreeninit();
         gamePanel.startGameThread();  // Start the game thread
        
     }
