@@ -41,7 +41,6 @@ public class UI {
     public UI(GamePanel gp) {
         this.gp = gp;
     }
-
     public void drawUI(Graphics2D g2) {
     	 this.g2 = g2;
     	 
@@ -581,22 +580,31 @@ public class UI {
     //DRAWS THE SKILL TREE
     
     public void drawSkillTree(Graphics2D g2) {
-        // Create a gradient background for the skill tree
-        GradientPaint gradient = new GradientPaint(100, 100, Color.DARK_GRAY, 700, 500, Color.BLACK);
-        g2.setPaint(gradient);
-        g2.fillRect(100, 100, 600, 400);
+        int screenWidth = gp.getWidth(); // Screen width
+        int screenHeight = gp.getHeight(); // Screen height
+
+        int treeWidth = 600;
+        int treeHeight = 400;
         
-       
+        // Calculate the center of the screen for the skill tree
+        int treeX = (screenWidth - treeWidth) /5;
+        int treeY = (screenHeight - treeHeight) /5;
 
-        // Draw border around the skill tree
+        // Create a smoother gradient background for the skill tree
+        GradientPaint gradient = new GradientPaint(treeX, treeY, Color.DARK_GRAY, treeX + treeWidth, treeY + treeHeight, Color.BLACK);
+        g2.setPaint(gradient);
+        g2.fillRoundRect(treeX, treeY, treeWidth, treeHeight, 25, 25);
+
+        // Draw rounded border around the skill tree
         g2.setColor(Color.WHITE);
-        g2.drawRect(100, 100, 600, 400);
+        g2.setStroke(new BasicStroke(3));
+        g2.drawRoundRect(treeX, treeY, treeWidth, treeHeight, 25, 25);
 
-        // Define positions of skill nodes
+        // Define positions of skill nodes relative to the tree's position
         int[][] skillPositions = {
-            {150, 150}, // Skill 1 position
-            {250, 250}, // Skill 2 position
-            {350, 350}  // Example skill 3 position
+            {treeX + 100, treeY + 100}, // Skill 1 position
+            {treeX + 250, treeY + 150}, // Skill 2 position
+            {treeX + 400, treeY + 200}  // Skill 3 position
         };
 
         // Draw lines connecting skills
@@ -617,36 +625,44 @@ public class UI {
             g2.drawLine(x1, y1, x2, y2);
         }
 
-        // Draw skill nodes
+        // Draw skill nodes with shadow effect
         for (int i = 0; i < skillPositions.length; i++) {
             int x = skillPositions[i][0];
             int y = skillPositions[i][1];
 
+            // Shadow effect for nodes
+            g2.setColor(new Color(0, 0, 0, 100)); // Semi-transparent black for shadow
+            g2.fillOval(x + 5, y + 5, 30, 30);
+
             // Change color for unlocked or selected skill
             if (getUnlockedSkills()[i]) {
                 g2.setColor(Color.GREEN);  // Green for unlocked skills
-                g2.fillOval(x, y, 25, 25);
-            }  if ( i == selectedSkillIndex) {
-                g2.setColor(Color.YELLOW);  // Yellow for the selected skill
-                g2.setStroke(new BasicStroke(2));
-                g2.drawOval(x, y, 25, 25);
-            } if(!getUnlockedSkills()[i]){
-                g2.setColor(Color.WHITE);   // Default color for other skills
-                g2.fillOval(x, y, 25, 25);
+            } else {
+                g2.setColor(Color.WHITE);   // Default color for locked skills
             }
+            g2.fillOval(x, y, 30, 30);
 
-            // Draw the skill node
-           
+            // Draw selection highlight if skill is selected
+            if (i == selectedSkillIndex) {
+                g2.setColor(Color.YELLOW);  // Yellow for the selected skill
+                g2.setStroke(new BasicStroke(3));
+                g2.drawOval(x, y, 30, 30);
+            }
         }
 
         // Draw skill labels
         g2.setColor(Color.WHITE);
-        g2.drawString("Atk up +", 160, 140); // Skill 1 label
-        g2.drawString("Def up +", 260, 240); // Skill 2 label
-        g2.drawString("Speed up +", 360, 340); // Skill 3 label
-        
-        g2.drawString("Skillpoints: " + gp.getPlayer().getSkillPoints(), 250, 120); // SKILLPOINTS
+        g2.setFont(new Font("Arial", Font.BOLD, 16));
+        g2.drawString("Atk Up +", skillPositions[0][0] - 15, skillPositions[0][1] - 10); // Skill 1 label
+        g2.drawString("Def Up +", skillPositions[1][0] - 15, skillPositions[1][1] - 10); // Skill 2 label
+        g2.drawString("Speed Up +", skillPositions[2][0] - 15, skillPositions[2][1] - 10); // Skill 3 label
+
+        // Display skill points at the top of the tree
+        g2.setColor(Color.CYAN);
+        g2.setFont(new Font("Arial", Font.BOLD, 18));
+        g2.drawString("Skill Points: " + gp.getPlayer().getSkillPoints(), treeX + treeWidth / 2 - 60, treeY + 40);
     }
+
 
     
     public void unlockSelectedSkill() {
