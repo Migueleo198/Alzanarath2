@@ -240,8 +240,11 @@ public class GamePanel extends JPanel implements Runnable {
 
 	    this.player = new Player(this, keyH, networkManager);
 	    
-	   
-
+	   //UNLOCKS ALL THE PREVIOUSLY UNLOCKED SKILLS ON LOGIN
+	    
+	    
+	    
+	    
 	    // Start the client connection
 	    networkManager.startClient();
 	    playMusic(0);

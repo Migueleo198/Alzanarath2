@@ -72,7 +72,7 @@ public class KeyHandler implements KeyListener {
 
                 // Handle DOWN navigation through the skill tree
                 if (code == KeyEvent.VK_DOWN) {
-                    if (gp.ui.getSelectedSkillIndex() < gp.ui.getSkillCount() - 1) {
+                    if (gp.ui.getSelectedSkillIndex() < gp.ui.getSkillCount() + 1) {
                         gp.ui.setSelectedSkillIndex(gp.ui.getSelectedSkillIndex() + 1);  // Move down
                     }
                 }
@@ -95,9 +95,9 @@ public class KeyHandler implements KeyListener {
 
                 // Unlock the selected skill
                 if (code == KeyEvent.VK_ENTER) {
-                	
-                   gp.getPlayer().unlockSelectedSkill();
-                   gp.ui.unlockSelectedSkill();
+                 gp.getPlayer().unlockSelectedSkill();
+               	 gp.ui.unlockSelectedSkill();
+                  
                    	 
                 }
             }

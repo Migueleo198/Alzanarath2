@@ -585,6 +585,8 @@ public class UI {
         GradientPaint gradient = new GradientPaint(100, 100, Color.DARK_GRAY, 700, 500, Color.BLACK);
         g2.setPaint(gradient);
         g2.fillRect(100, 100, 600, 400);
+        
+       
 
         // Draw border around the skill tree
         g2.setColor(Color.WHITE);
@@ -594,7 +596,7 @@ public class UI {
         int[][] skillPositions = {
             {150, 150}, // Skill 1 position
             {250, 250}, // Skill 2 position
-            {350, 350}  // Skill 3 position
+            {350, 350}  // Example skill 3 position
         };
 
         // Draw lines connecting skills
@@ -605,7 +607,7 @@ public class UI {
             int y2 = skillPositions[i + 1][1] + 12; // Center y of skill i+1
 
             // Change line color to green if the skill is unlocked
-            if (unlockedSkills[i]) {
+            if (getUnlockedSkills()[i]) {
                 g2.setColor(Color.GREEN);  // Green for unlocked skills
             } else {
                 g2.setColor(Color.WHITE);  // White for locked skills
@@ -621,37 +623,39 @@ public class UI {
             int y = skillPositions[i][1];
 
             // Change color for unlocked or selected skill
-            if (unlockedSkills[i]) {
+            if (getUnlockedSkills()[i]) {
                 g2.setColor(Color.GREEN);  // Green for unlocked skills
-            } else if (i == selectedSkillIndex) {
+                g2.fillOval(x, y, 25, 25);
+            }  if ( i == selectedSkillIndex) {
                 g2.setColor(Color.YELLOW);  // Yellow for the selected skill
-            } else {
+                g2.setStroke(new BasicStroke(2));
+                g2.drawOval(x, y, 25, 25);
+            } if(!getUnlockedSkills()[i]){
                 g2.setColor(Color.WHITE);   // Default color for other skills
+                g2.fillOval(x, y, 25, 25);
             }
 
             // Draw the skill node
-            g2.fillOval(x, y, 25, 25);
+           
         }
 
         // Draw skill labels
         g2.setColor(Color.WHITE);
-        g2.drawString("Str up +", 160, 140); // Skill 1 label
-        g2.drawString("Dex up +", 260, 240); // Skill 2 label
+        g2.drawString("Atk up +", 160, 140); // Skill 1 label
+        g2.drawString("Def up +", 260, 240); // Skill 2 label
         g2.drawString("Speed up +", 360, 340); // Skill 3 label
         
-        // Draw the current skill points of the player, updated dynamically
         g2.drawString("Skillpoints: " + gp.getPlayer().getSkillPoints(), 250, 120); // SKILLPOINTS
     }
 
     
     public void unlockSelectedSkill() {
-    	 gp.getPlayer().setSkillPoints(gp.getPlayer().getSkillPoints()-1);
-        if (!unlockedSkills[selectedSkillIndex]) {
-            unlockedSkills[selectedSkillIndex] = true;  // Unlock the selected skill
-            System.out.println("Skill unlocked: " + selectedSkillIndex);
-          
-           
-            gp.getPlayer().updateOrInsertPlayerData();
+    	
+    	
+    	
+        if (!getUnlockedSkills()[selectedSkillIndex]) {
+
+            getUnlockedSkills()[selectedSkillIndex] = true;  // Unlock the selected skill 
         }
     }
     
@@ -749,6 +753,14 @@ public class UI {
 
 	public void setGlobalChatMessages(List<String> globalChatMessages) {
 		this.globalChatMessages = globalChatMessages;
+	}
+
+	public boolean[] getUnlockedSkills() {
+		return unlockedSkills;
+	}
+
+	public void setUnlockedSkills(boolean[] unlockedSkills) {
+		this.unlockedSkills = unlockedSkills;
 	}
 
 	
