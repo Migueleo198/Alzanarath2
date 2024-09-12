@@ -1,5 +1,0 @@
-Manifest-Version: 1.0
-Main-Class: main.main
-Class-Path: mysql-connector-java-8.0.28.jar
-Build-Jdk-Spec: 22
-Created-By: Maven Integration for Eclipse

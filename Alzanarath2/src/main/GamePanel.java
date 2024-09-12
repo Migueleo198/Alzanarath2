@@ -47,8 +47,8 @@ public class GamePanel extends JPanel implements Runnable {
     private int screenHeight2=screenHeight; // 576 pixels
 
     // WORLD SETTINGS
-    private final int maxWorldCol = 50;
-    private final int maxWorldRow = 54;
+    private final int maxWorldCol = 54;
+    private final int maxWorldRow = 39;
     private final int worldWidth = tileSize * maxWorldCol;
     private final int worldHeight = tileSize * maxWorldRow;
 
@@ -160,6 +160,8 @@ public class GamePanel extends JPanel implements Runnable {
        System.out.println("KeyHandler initialized: " + (keyH != null));
        
        init();
+       
+     
    }
    
   
@@ -192,17 +194,19 @@ public class GamePanel extends JPanel implements Runnable {
     public void setupGame() {
     	
     	
-    	 setTileM(new TileManager(this));
+    	
     	
         sound = new Sound();
        
-        cChecker = new ColissionChecker(this);
         
         aSetter = new AssetSetter(this, networkManager);
        
         this.setBackground(Color.black);
         
+        cChecker = new ColissionChecker(this);
         
+        
+        setTileM(new TileManager(this));
         
         setFullScreenDimensions();
        
@@ -214,6 +218,8 @@ public class GamePanel extends JPanel implements Runnable {
     public void startGameThread() {
         gameThread = new Thread(this);
         gameThread.start();
+        
+        
     }
     
    public void initializeServer() {
@@ -257,14 +263,11 @@ public class GamePanel extends JPanel implements Runnable {
 	    networkManager.startClient();
 	    playMusic(0);
 	    // Register the player with the server once the client is started
-	    new Thread(() -> {
-	        try {
-	            Thread.sleep(1000); // Ensure connection is established
+	  
+	            if(player!=null && networkManager!=null) {
 	            networkManager.registerPlayer(this.player);
-	        } catch (InterruptedException e) {
-	            e.printStackTrace();
-	        }
-	    }).start();
+	            }
+	       
 
 	    aSetter = new AssetSetter(this, networkManager);
 	    
@@ -386,7 +389,7 @@ public class GamePanel extends JPanel implements Runnable {
 
         // Update player and other players
         synchronized (keyH) {
-            if (player != null) {
+            if (player != null && networkManager!=null) {
                 player.update();
             }
 

@@ -263,7 +263,7 @@ public class Player extends Entity {
             // Send the update to the server
             if (networkManager != null ) {
                 try {
-                	
+                	if(networkManager.getOut()!=null)
                     networkManager.sendPlayerUpdate(this);
                 } catch (Exception e) {
                     System.err.println("Failed to send player update: " + e.getMessage());

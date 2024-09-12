@@ -260,8 +260,9 @@ public class KeyHandler implements KeyListener {
 				gp.stopMusic();
 
 			} else if (gp.ui.getCommandNum() == 1) {
-				gp.setupGame();		
 				gp.setGameState(gp.getPlayState());
+				gp.setupGame();		
+				
 				gp.initializeGame();
 				gp.isServer = false;
 				

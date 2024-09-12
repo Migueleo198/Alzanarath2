@@ -32,7 +32,7 @@ public class TileManager {
 	
 	public void getTileImage() {
 		setup(0, "5Grass",false);
-		setup(1, "0WallTile",true);
+		setup(1, "0wallTile",true);
 		setup(2, "8WoodenFloor",false);
 		setup(3, "7Tree",true);
 		
@@ -51,7 +51,9 @@ public class TileManager {
 				
 				String line = br.readLine();
 				
-				while(col<gp.getMaxWorldCol()) {
+				while(col<gp.getMaxWorldCol() ) {
+					
+					
 					String numbers[] = line.split(" ");
 					
 					int num = Integer.parseInt(numbers[col]);
@@ -59,6 +61,7 @@ public class TileManager {
 					getMapTileNum()[col][row] = num;
 					
 					col++;
+					
 				}
 				
 				if(col==gp.getMaxWorldCol()) {

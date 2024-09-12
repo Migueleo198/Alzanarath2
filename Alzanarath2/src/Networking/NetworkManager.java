@@ -125,12 +125,12 @@ public class NetworkManager {
             clientSocket.setReceiveBufferSize(1024 * 64);
             clientSocket.setSendBufferSize(1024 * 64);
             // Initialize BufferedWriter and BufferedReader
-            out = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
+            setOut(new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream())));
             in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 
             // Store the BufferedWriter in clientWriters
             synchronized (this) {
-                clientWriters.put(clientSocket, out);
+                clientWriters.put(clientSocket, getOut());
                 clientReaders.put(clientSocket, in);
             }
 
@@ -153,10 +153,10 @@ public class NetworkManager {
     }
 
     private void requestExistingPlayersData() throws IOException {
-        if (out != null) {
+        if (getOut() != null) {
             // Send a request to the server to get existing player data
-            out.write("REQUEST_PLAYERS_DATA\n");
-            out.flush();
+            getOut().write("REQUEST_PLAYERS_DATA\n");
+            getOut().flush();
         }
     }
 
@@ -314,7 +314,7 @@ public class NetworkManager {
         if (player == null) return;
 
         // Determine player ID and other details
-        String playerId = isServer ? nameServer : nameClient;
+        String playerId = player.getUsername();
         String username = player.getUsername();
         int level = player.getLevel();
         boolean isAttacking = player.isAttacking();
@@ -356,8 +356,8 @@ public class NetworkManager {
             }
         } else {
             try {
-                out.write(message + "\n");
-                out.flush();
+                getOut().write(message + "\n");
+                getOut().flush();
                 System.out.println("Sent registration data to server: " + message);
             } catch (IOException e) {
                 System.err.println("Error sending player registration data to server: " + e.getMessage());
@@ -425,8 +425,8 @@ public class NetworkManager {
             }
         } else {
             try {
-                out.write(message + "\n");
-                out.flush();
+                getOut().write(message + "\n");
+                getOut().flush();
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -448,8 +448,8 @@ public class NetworkManager {
             }
         } else {
             try {
-                out.write(formattedMessage + "\n");
-                out.flush();
+                getOut().write(formattedMessage + "\n");
+                getOut().flush();
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -809,5 +809,15 @@ public class NetworkManager {
 
 	public void setDeadMonsterIndex(String string) {
 		this.deadMonsterIndex = string;
+	}
+
+
+	public BufferedWriter getOut() {
+		return out;
+	}
+
+
+	public void setOut(BufferedWriter out) {
+		this.out = out;
 	}
 }
