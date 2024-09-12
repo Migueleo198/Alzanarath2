@@ -18,6 +18,15 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="src" path="src/Armors"/>
+	<classpathentry kind="src" path="src/Attacks"/>
+	<classpathentry kind="src" path="src/Maps"/>
+	<classpathentry kind="src" path="src/Monsters"/>
+	<classpathentry kind="src" path="src/Music"/>
+	<classpathentry kind="src" path="src/Npcs"/>
+	<classpathentry kind="src" path="src/Object"/>
+	<classpathentry kind="src" path="src/Player"/>
+	<classpathentry kind="src" path="src/tiles"/>
 	<classpathentry exported="true" kind="lib" path="C:/Users/Miguel/Downloads/mysql-connector-java-8.0.28.jar"/>
 	<classpathentry kind="con" path="org.eclipse.m2e.MAVEN2_CLASSPATH_CONTAINER">
 		<attributes>

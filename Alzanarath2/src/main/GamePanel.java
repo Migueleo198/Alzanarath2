@@ -159,16 +159,18 @@ public class GamePanel extends JPanel implements Runnable {
        this.addKeyListener(keyH);
        System.out.println("KeyHandler initialized: " + (keyH != null));
        
-      
+       init();
    }
    
   
    
-   public void setFullScreeninit() {
+   private void init() {
 	   tempScreen = new BufferedImage(screenWidth, screenHeight, BufferedImage.TYPE_INT_ARGB);
        setG2((Graphics2D)tempScreen.getGraphics());
+      
        ui = new UI(this);
        setFullScreenDimensions();
+       this.setPreferredSize(new Dimension(screenWidth2,screenHeight2));
    }
 
    
@@ -189,7 +191,9 @@ public class GamePanel extends JPanel implements Runnable {
 
     public void setupGame() {
     	
-    	setTileM(new TileManager(this));
+    	
+    	 setTileM(new TileManager(this));
+    	
         sound = new Sound();
        
         cChecker = new ColissionChecker(this);
