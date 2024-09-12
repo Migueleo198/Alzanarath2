@@ -115,8 +115,8 @@ public class Player extends Entity {
        
 
         // Default position
-        worldX = 600;
-        worldY = 600;
+        worldX = 800;
+        worldY = 800;
 
         // Set username depending on the game mode
         setUsernamePlayer(networkManager != null ? 

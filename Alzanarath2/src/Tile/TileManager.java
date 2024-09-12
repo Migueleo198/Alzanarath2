@@ -25,16 +25,29 @@ public class TileManager {
 		tile= new Tile[20];
 		setMapTileNum(new int[gp.getMaxWorldCol()][gp.getMaxWorldRow()]);
 		getTileImage();
-		loadMap("/Maps/map01.txt");
+		loadMap("/Maps/improvedMap01.txt");
 		
 		
 	}
 	
 	public void getTileImage() {
-		setup(0, "5Grass",false);
-		setup(1, "0wallTile",true);
-		setup(2, "8WoodenFloor",false);
-		setup(3, "7Tree",true);
+		setup(0, "0wallTile",true);
+		setup(1, "10Grass",false);
+		setup(2, "11Grass",false);
+		setup(3, "12Grass",false);
+		setup(4, "13Grass",false);
+		setup(5, "14Grass",false);
+		setup(6, "2Grass",false);
+		setup(7, "3Grass",false);
+		setup(8, "4Grass",false);
+		setup(9, "5Grass",false);
+		setup(10, "6Sand",false);
+		setup(11, "7Tree",true);
+		setup(12, "8WoodenFloor",false);
+		setup(13, "9Grass",false);
+		
+		
+		
 		
 		
 	}
