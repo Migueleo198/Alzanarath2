@@ -14,11 +14,11 @@ public class OBJ_WoodenShield extends Entity{
 		public static final String objName = "Wooden Shield";
 		public OBJ_WoodenShield(GamePanel GamePanel) {
 			super(GamePanel);
-			type=3;
+			type=type_Shield;
 			name=objName;
 			down1=setup("/Object/WoodShield.png",GamePanel.getTileSize(),GamePanel.getTileSize());
 			defenseValue=3;
-			
+			direction="down";
 			description="["+ name +"] \n" + "An old wodden Shield \n thrown  away  because of its \n low durability";
 		
 			

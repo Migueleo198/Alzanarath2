@@ -6,6 +6,7 @@ import Entity.Entity;
 import Entity.NpcOldMan;
 import Monster.MON_Slime;
 import Networking.NetworkManager;
+import Objects.OBJ_IronSword;
 import Objects.OBJ_Potion;
 import Objects.OBJ_WoodenShield;
 
@@ -81,12 +82,18 @@ public class AssetSetter {
 		gp.Objects[i].setWorldY(35*gp.getTileSize());
 		
 		i++;
+		
+		gp.Objects[i] = new OBJ_IronSword(gp);
+		gp.Objects[i].setWorldX(40*gp.getTileSize());
+		gp.Objects[i].setWorldY(35*gp.getTileSize());
+		i++;
 	}
 	
 	public void respawnMonsters() {
 	    if (gp.networkManager != null && gp.networkManager.isServer()) {
 	        long currentTime = System.currentTimeMillis();
 	        int rand = 0;
+	        Random random = new Random();
 	        // Iterate through the list of removed monsters
 	        for (int i = 0; i < gp.getRemovedMonsters().size(); i++) {
 	            Entity removedMonster = gp.getRemovedMonsters().get(i); // Assuming RemovedMonster contains monster and time
@@ -99,19 +106,18 @@ public class AssetSetter {
 	                // Find an empty slot in the monster array to respawn the monster
 	                for (int j = 0; j < gp.monster.length; j++) {
 	                    if (gp.monster[j] == null) {
-	                    	Random random = new Random();
-	                    	rand=random.nextInt(100);
+	                    	
+	                    	rand=random.nextInt(70)+30;
 	                        // Respawn the monster in the empty slot
 	                        MON_Slime respawnedMonster = new MON_Slime(gp); // Or the appropriate monster class
 	                        respawnedMonster.setMonsterId(removedMonster.getMonsterId()); // Restore original monster ID
-	                        while(rand<30 && rand>60) {
-	                        	rand=random.nextInt(100);
-	                        	if(rand>= 30 && rand<=60) {
+	                     
+	                        	
 	                        		
 	                        respawnedMonster.setWorldX(gp.getTileSize() * rand); // Set respawn position
 	                        respawnedMonster.setWorldY(gp.getTileSize() * rand);
-	                        	}
-	                        }
+	                        	
+	                        
 	                        gp.monster[j] = respawnedMonster; // Place the respawned monster into the game
 
 	                        // Remove the monster from the removed list after respawning

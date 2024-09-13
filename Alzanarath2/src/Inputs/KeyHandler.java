@@ -19,7 +19,7 @@ import main.GamePanel;
 
 public class KeyHandler implements KeyListener {
     private GamePanel gp;
-    private boolean upPressed, downPressed, leftPressed, rightPressed, ePressed, tPressed;
+    private boolean upPressed, downPressed, leftPressed, rightPressed, ePressed, tPressed , mPressed;
     private boolean enterKeyPressed = false;
     private boolean escKeyPressed = false;
     private boolean cPressed;
@@ -57,6 +57,12 @@ public class KeyHandler implements KeyListener {
                 titleState(code);
             } else if (gp.getGameState() == gp.getPlayState()) {
                 playState(code, e);
+                if (code == KeyEvent.VK_M) {
+    				
+    				
+    				gp.setGameState(gp.getMapState());
+    				mPressed=true;
+    			}
 
             } else if (gp.getGameState() == gp.getCharacterState()) {
                 characterState(code);
@@ -106,9 +112,21 @@ public class KeyHandler implements KeyListener {
                    	 
                 }
             }
+            
+            else if(gp.getGameState() == gp.getMapState()) {
+    			mapState(code);
+    		}
         }
+        
+     
     }
     
+    
+    public void mapState(int code) {
+    	if(code == KeyEvent.VK_M) {
+    		gp.setGameState(gp.getPlayState());
+    	}
+    }
     
 
 
@@ -194,30 +212,35 @@ public class KeyHandler implements KeyListener {
                 gp.setGameState(gp.getPlayState());
                 gp.playSE(5);
             }
+            
         }
         
         //INVENTORY CURSOR MOVEMENT
         
-        if (code == KeyEvent.VK_W) {
+        if (code == KeyEvent.VK_UP) {
         	if(gp.ui.getSlotRow()!=0) {
             gp.ui.setSlotRow(gp.ui.getSlotRow() - 1);
             gp.playSE(4);
         	}
-        } else if (code == KeyEvent.VK_S) {
+        } else if (code == KeyEvent.VK_DOWN) {
         	if(gp.ui.getSlotRow()!=3) {
         	 gp.ui.setSlotRow(gp.ui.getSlotRow() + 1);
         	 gp.playSE(4);
         	}
-        } else if (code == KeyEvent.VK_A) {
+        } else if (code == KeyEvent.VK_LEFT) {
         	if(gp.ui.getSlotCol()!=0) {
         	 gp.ui.setSlotCol(gp.ui.getSlotCol() - 1);
         	 gp.playSE(4);
         	}
-        } else if (code == KeyEvent.VK_D) {
+        } else if (code == KeyEvent.VK_RIGHT) {
         	if(gp.ui.getSlotCol()!=4) {
         	 gp.ui.setSlotCol(gp.ui.getSlotCol() + 1);
         	 gp.playSE(4);
         	}
+        }
+        
+        if(code == KeyEvent.VK_ENTER) {
+        	gp.getPlayer().selectItem();
         }
     }
 

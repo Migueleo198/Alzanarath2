@@ -23,6 +23,7 @@ import Entity.NpcOldMan;
 import Entity.Player;
 import Inputs.KeyHandler;
 import Monster.MON_Slime;
+import Tile.MiniMap;
 import Tile.TileManager;
 import UI.UI;
 
@@ -86,8 +87,8 @@ public class GamePanel extends JPanel implements Runnable {
     private ArrayList<Entity> entityList = new ArrayList<>();
     
    
-
-    
+    //MINIMAP AND MAP
+    MiniMap map = new MiniMap(this);
     
     public ArrayList<Entity> getEntityList() {
 		return entityList;
@@ -122,6 +123,7 @@ public class GamePanel extends JPanel implements Runnable {
  	private final int registerState = 6;
  	private final int screenState = 7;
  	private final int skillTreeState = 8;
+ 	private final int mapState = 9;
     
     // Initialize the UI management class
     public UI ui;
@@ -284,7 +286,7 @@ public class GamePanel extends JPanel implements Runnable {
 	    
 
 	    System.out.println("Game initialized. Player: " + (player != null ? "Initialized" : "Not Initialized"));
-	    
+	    map.miniMapOn = true;
 	  
 	}
 
@@ -493,7 +495,10 @@ public class GamePanel extends JPanel implements Runnable {
 
         // Draw the UI
         ui.drawUI(getG2());
-       
+       map.drawMiniMap(g2);
+       if(gameState==mapState) {
+       map.drawFullMapScreen(g2);
+       }
        
     }
     
@@ -886,6 +891,11 @@ public class GamePanel extends JPanel implements Runnable {
 
 	public void setObjects(Entity[] objects) {
 		Objects = objects;
+	}
+
+
+	public int getMapState() {
+		return mapState;
 	}
 	
 	 

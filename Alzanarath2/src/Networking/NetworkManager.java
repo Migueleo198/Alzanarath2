@@ -767,6 +767,11 @@ public class NetworkManager {
             System.err.println("Player with ID " + playerId + " not found.");
         }
     }
+    
+    
+    //TRADE SYSTEM
+    
+    
 
 
     public void close() {

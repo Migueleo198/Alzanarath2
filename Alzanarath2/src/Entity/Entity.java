@@ -43,7 +43,11 @@ public abstract class Entity {
 	
 	
 	
-	protected int type; //1= player 2 = slime
+	
+	
+	
+	
+	
 	protected Rectangle attackArea = new Rectangle(0,0,0,0);
 	
 	//ATTACK ANIMATION VAR
@@ -78,7 +82,19 @@ public abstract class Entity {
 	
 	protected String description = "";
 	
+	//TYPE
+	protected int type; //1= player 2 = slime
+	
+	protected final int type_Player=0;
+	protected final int type_Npc=1;
+	protected final int type_Monster=2;
+	protected final int type_Sword=3;
+	protected final int type_Shield=4;
+	protected final int type_BloodSword=5;
+	protected final int type_Consumable=6;
+	
 	public int getAttack() {
+		
 		return attack;
 	}
 
@@ -96,6 +112,8 @@ public abstract class Entity {
 
 	public Entity(GamePanel gp) {
 		this.gp=gp;
+		
+	
 	}
 	
 	public void setAction() {}
@@ -113,6 +131,30 @@ public abstract class Entity {
     	return scaledImage;
     }
 	
+	public int getLeftX() {
+		return worldX +solidArea.x;
+	}
+	
+	public int getRightX() {
+		return worldX + solidArea.x + solidArea.width;
+	}
+	
+	public int getTopY() {
+		return worldY +solidArea.y;
+	}
+	
+	public int getBottomY() {
+		return worldY + solidArea.y + solidArea.height;
+	}
+	
+	public int getCol() {
+		return(worldX + solidArea.x)/gp.getTileSize();
+	}
+	
+	public int getRow() {
+		return(worldY + solidArea.y)/gp.getTileSize();
+	}
+	
 	public void update(){
 		setAction();
 		
@@ -124,7 +166,7 @@ public abstract class Entity {
 		
 		
 		
-		if(this.type==2 && contactPlayer==true) {
+		if(this.type==type_Monster && contactPlayer==true) {
 			
 			if(gp.getPlayer().Health>=0) {
 				
@@ -182,6 +224,36 @@ public abstract class Entity {
 		
 	}
 	
+	public void use(Entity entity) {}
+	
+	public void getDetected(Entity user, Entity target[], String targetName) {
+		int index = 999;
+		
+		//Check the surrounding object
+		int nextWorldX = user.getLeftX();
+		int nextWorldY = user.getTopY();
+		
+		switch(direction) {
+		case "up": nextWorldY = user.getTopY()-1;break;
+		case "down": nextWorldY = user.getBottomY()+1;break;
+		case "left": nextWorldX = user.getLeftX()-1; break;
+		case "right": nextWorldX = user.getRightX()+1;break;
+		}
+		
+		int col = nextWorldX/gp.getTileSize();
+		int row = nextWorldY/gp.getTileSize();
+		
+		for(int i=0; i<target.length; i++) {
+			if(target[i]!=null) {
+				if(target[i].getCol()==col &&
+						target[i].getRow()==row
+						&& target[i].name.equals(targetName)) {
+					index = 1;
+					break;
+				}
+			}
+		}
+	}
 		public void draw(Graphics2D g2) {
 			int screenX = worldX - gp.getPlayer().getWorldX() + gp.getPlayer().getScreenX();
 			int screenY = worldY - gp.getPlayer().getWorldY() + gp.getPlayer().getScreenY();

@@ -108,6 +108,7 @@ public class Player extends Entity {
        
         setDefaultParams();
         loadPlayerData();
+        nextLevelExp = (int) ((double) +  1.5*(((Math.pow(level,2)*2)*20)) + Math.pow(level, 3));
         getPlayerModel();
         getPlayerAttackImage();
         setItems();
@@ -138,7 +139,7 @@ public class Player extends Entity {
         if (level == 0) {
             level = 0;
         }
-        nextLevelExp = (int) ((double) +  1.5*(((Math.pow(level,2)*2)*20)) + Math.pow(level, 3));
+       
 
         // Ensure other stats are set based on loaded data
         if (maxHealth == 0) {
@@ -435,6 +436,31 @@ public class Player extends Entity {
     		
     		//startDialogue(this,0);
     		//setDialogue();
+    	}
+    }
+    
+    public void selectItem() {
+    	int itemIndex = gp.ui.getItemIndexOnSlot();
+    	
+    	if(itemIndex < inventory.size()) {
+    		Entity selectedItem = inventory.get(itemIndex);
+    		
+    		if(selectedItem.type == type_Sword ||  selectedItem.type == type_BloodSword) {
+    			setCurrentWeapon(selectedItem);
+    			
+    			attack = getAttack();
+    		}
+    		
+    		if(selectedItem.type == type_Shield) {
+    			setCurrentShield(selectedItem);
+    			
+    			defense = getDefense();
+    		}
+    		
+    		if(selectedItem.type==type_Consumable) {
+    			selectedItem.use(this);
+    			inventory.remove(itemIndex);
+    		}
     	}
     }
     
@@ -786,6 +812,9 @@ public class Player extends Entity {
                 return false;
         }
     }
+    
+    
+    
     
     
     

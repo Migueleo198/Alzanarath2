@@ -5,36 +5,33 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
 
 import Entity.Entity;
 import main.GamePanel;
 
-public class OBJ_Potion extends Entity{
-	GamePanel gp;
-	private int value=25;
-	public OBJ_Potion(GamePanel gp) {
-		super(gp);
-		this.gp=gp;
-		direction="down";
-		 name = "Health Potion";
-		 down1=setup("/Object/Potion.png",gp.getTileSize(),gp.getTileSize());
-		 type=type_Consumable;
-		 
-		 setDescription("["+ name +"]\n"  + "A perfect potion for healing \n minor injuries" +
-					"+:" + value + "HP" );
-		 
-	}
-	
-	public void use(Entity entity) {
-		entity.Health +=value;
+public class OBJ_IronSword extends Entity{
+	public static final String objName = "Iron Sword";
+	public OBJ_IronSword(GamePanel GamePanel) {
+		super(GamePanel);
 		
-		if(gp.getPlayer().Health>gp.getPlayer().getMaxHealth()) {
-			gp.getPlayer().Health=gp.getPlayer().getMaxHealth();
-		}
+		
+		name = objName;
+		down1 = setup("/Object/Sword.png",GamePanel.getTileSize(),GamePanel.getTileSize());
+		type=type_Sword;
+		attackArea.width=36;
+		attackArea.height=36;
+		attackValue=8;
+		direction="down";
+		level=1;
+		
+		
+		setDescription("["+ name +"]\n"  + " A normal basic sword,\n perfect for newbie adventurers" +
+				"Attack:" + attackValue 
+						+ "     Level:" + level);
+		
 	}
 	
-	public void draw(Graphics2D g2) {
+public void draw(Graphics2D g2) {
 		
 		
 		int screenX = worldX - gp.getPlayer().getWorldX() + gp.getPlayer().getScreenX();
@@ -114,6 +111,26 @@ public class OBJ_Potion extends Entity{
 		}
 	}
 
+	public int getAttackValue() {
+	    return attackValue;
+	}
+
+	public void setAttackValue(int attackValue) {
+	    this.attackValue = attackValue;
+	}
+
+	public int getLevel() {
+	    return level;
+	}
+
+	public void setLevel(int level) {
+	    this.level = level;
+	}
+	
+	public static void changeDescription() {
+	
+	}
+
 	@Override
 	public String getMonsterId() {
 		// TODO Auto-generated method stub
@@ -125,4 +142,7 @@ public class OBJ_Potion extends Entity{
 		// TODO Auto-generated method stub
 		
 	}
+	
+
+
 }

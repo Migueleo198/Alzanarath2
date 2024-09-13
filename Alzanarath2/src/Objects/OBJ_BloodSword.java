@@ -14,11 +14,11 @@ public class OBJ_BloodSword extends Entity{
 	public OBJ_BloodSword(GamePanel GamePanel) {
 		super(GamePanel);
 		
-		type=3;
+		type=type_BloodSword;
 		name = objName;
 		down1 = setup("/Object/BloodSword_Icon2.png",GamePanel.getTileSize(),GamePanel.getTileSize());
 		attackValue=15;
-		
+		direction="down";
 		level=1;
 		
 		
