@@ -77,7 +77,7 @@ public class MiniMap extends TileManager {
             // DRAW MAP BACKGROUND with transparency
             int diameter = 150; // Diameter of the circular minimap
             int x = gamePanel.getScreenWidth() - diameter - 50;
-            int y = 50;
+            int y = 30;
 
             // Set the Alpha Composite for transparency
             AlphaComposite originalComposite = (AlphaComposite) g2.getComposite();

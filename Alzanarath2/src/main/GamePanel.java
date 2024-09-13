@@ -495,6 +495,12 @@ public class GamePanel extends JPanel implements Runnable {
 
         // Draw the UI
         ui.drawUI(getG2());
+        if(gameState==playState) {
+        	map.miniMapOn=true;
+        }
+        else {
+        	map.miniMapOn=false;
+        }
        map.drawMiniMap(g2);
        if(gameState==mapState) {
        map.drawFullMapScreen(g2);

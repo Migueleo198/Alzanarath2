@@ -110,7 +110,7 @@ public class AssetSetter {
 	                    	rand=random.nextInt(70)+30;
 	                        // Respawn the monster in the empty slot
 	                        MON_Slime respawnedMonster = new MON_Slime(gp); // Or the appropriate monster class
-	                        respawnedMonster.setMonsterId(removedMonster.getMonsterId()); // Restore original monster ID
+	                        respawnedMonster.setMonsterId(""+currentTime); // Restore original monster ID
 	                     
 	                        	
 	                        		
