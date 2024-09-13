@@ -5,30 +5,23 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 
 import Entity.Entity;
 import main.GamePanel;
 
-public class OBJ_BloodSword extends Entity{
-	public static final String objName = "Blood Sword";
-	public OBJ_BloodSword(GamePanel GamePanel) {
-		super(GamePanel);
-		
-		type=3;
-		name = objName;
-		down1 = setup("/Object/BloodSword_Icon2.png",GamePanel.getTileSize(),GamePanel.getTileSize());
-		attackValue=15;
-		
-		level=1;
-		
-		
-		setDescription("["+ name +"] \n" +"Belongs to a Fabled Demon, wait \n This sword shouldnt be in \n your hands...  return it now!\n " 
-				+ "Attack:" + attackValue 
-						+ "     Level:" + level);
-		
+public class OBJ_Potion extends Entity{
+	GamePanel gp;
+	
+	public OBJ_Potion(GamePanel gp) {
+		super(gp);
+		this.gp=gp;
+		direction="down";
+		 name = "Health Potion";
+		 down1=setup("/Object/Potion.png",gp.getTileSize(),gp.getTileSize());
 	}
 	
-public void draw(Graphics2D g2) {
+	public void draw(Graphics2D g2) {
 		
 		
 		int screenX = worldX - gp.getPlayer().getWorldX() + gp.getPlayer().getScreenX();
@@ -108,26 +101,6 @@ public void draw(Graphics2D g2) {
 		}
 	}
 
-	public int getAttackValue() {
-	    return attackValue;
-	}
-
-	public void setAttackValue(int attackValue) {
-	    this.attackValue = attackValue;
-	}
-
-	public int getLevel() {
-	    return level;
-	}
-
-	public void setLevel(int level) {
-	    this.level = level;
-	}
-	
-	public static void changeDescription() {
-	
-	}
-
 	@Override
 	public String getMonsterId() {
 		// TODO Auto-generated method stub
@@ -139,7 +112,4 @@ public void draw(Graphics2D g2) {
 		// TODO Auto-generated method stub
 		
 	}
-	
-
-
 }

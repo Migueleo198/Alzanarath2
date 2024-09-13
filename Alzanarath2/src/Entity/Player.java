@@ -209,6 +209,8 @@ public class Player extends Entity {
             
         }
         
+       
+        
         //ON DATABASE
         
         
@@ -262,6 +264,11 @@ public class Player extends Entity {
             npcInteraction(npcIndex);
             
             contactMonster(monsterIndex);
+            
+            if(this!=null) {
+            int objIndex = gp.getcChecker().checkObject(this,true);
+    		pickUpObject(objIndex);
+            }
             
             
             if (collisionOn==false ) {
@@ -390,7 +397,7 @@ public class Player extends Entity {
                    
                     // Apply damage to the monster
                     monster.hitMonster(monster.getMonsterId(), this.attack, monster.getHealth());
-                    gp.ui.addBattleNotification("You dealt " + attack + "damage!");
+                    gp.ui.addAlert("You deal " + attack + "damage!");
                     // Check if monster is dead
                    
                 }
@@ -403,7 +410,7 @@ public class Player extends Entity {
     
     public void checkLevelUp(){
     	int exp2= exp-nextLevelExp;
-    	if(exp>=nextLevelExp && nextLevelExp!=0) {
+    	if(exp>=nextLevelExp) {
     		level++;
     		
     		nextLevelExp = (int) ((double) +  1.5*(((Math.pow(level,2)*2)*20)) + Math.pow(level, 3));
@@ -672,11 +679,11 @@ public class Player extends Entity {
 
 	        if (rs.next()) {
 	            // Load the player's data from the database
-	            level = rs.getInt("level")-1;
-	            dexterity = rs.getInt("dexterity")-1;
-	            strength = rs.getInt("strength")-1;
+	            level = rs.getInt("level");
+	            dexterity = rs.getInt("dexterity");
+	            strength = rs.getInt("strength");
 	            maxHealth = rs.getInt("maxHealth");
-	            skillPoints = rs.getInt("skillPoints")-1;
+	            skillPoints = rs.getInt("skillPoints");
 	            atkUp1Unlocked = rs.getBoolean("atkUp1Unlocked");
 	            defUp1Unlocked = rs.getBoolean("defUp1Unlocked");
 	            speedUpUnlocked = rs.getBoolean("speedUp1Unlocked");
@@ -697,6 +704,22 @@ public class Player extends Entity {
 	        e.printStackTrace();
 	        System.out.println("An error occurred while loading player data.");
 	    }
+	}
+	
+	public void pickUpObject(int i) {
+		if(i!=999) {
+			String text;
+			if(inventory.size() != maxInventorySize) {
+				inventory.add(gp.Objects[i]);
+				
+				text = "You got a " + gp.Objects[i].name;
+			}
+			else {
+				text = "You cant carry any more objects";
+			}
+			gp.ui.addAlert(text);
+			gp.Objects[i]=null;
+		}
 	}
 	
 	public void savePlayerData() {
@@ -731,14 +754,14 @@ public class Player extends Entity {
 	            // No player data exists, insert new data
 	            try (PreparedStatement insertStmt = conn.prepareStatement(insertQuery)) {
 	                insertStmt.setString(1, username); // Set player's username
-	                insertStmt.setInt(2, 1); // Set player's level
-	                insertStmt.setInt(3, 1); // Set player's dexterity
-	                insertStmt.setInt(4, 1); // Set player's strength
-	                insertStmt.setInt(5,100); // Set player's max health
-	                insertStmt.setInt(6, 0); // Set player's skill points
-	                insertStmt.setBoolean(7, false); // Set boolean values
-	                insertStmt.setBoolean(8, false);
-	                insertStmt.setBoolean(9, false); // Default or current value
+	                insertStmt.setInt(1, level); // Set player's level
+	                insertStmt.setInt(2, dexterity); // Set player's dexterity
+	                insertStmt.setInt(3, strength); // Set player's strength
+	                insertStmt.setInt(4, maxHealth); // Set player's max health
+	                insertStmt.setInt(5, skillPoints); // Set player's skill points
+	                insertStmt.setBoolean(6, atkUp1Unlocked); // Set boolean values
+	                insertStmt.setBoolean(7, defUp1Unlocked);
+	                insertStmt.setBoolean(8, speedUpUnlocked);
 	                
 	                insertStmt.executeUpdate();
 	                System.out.println("Player data inserted successfully.");

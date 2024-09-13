@@ -145,7 +145,7 @@ public class GamePanel extends JPanel implements Runnable {
    public int monsterCounter;
    
    //OBJECTS
-   private Entity[] Objects = new Entity[99];
+   public Entity[] Objects = new Entity[99];
    
    
    // Constructor
@@ -256,6 +256,10 @@ public class GamePanel extends JPanel implements Runnable {
 	    }
 
 	    networkManager = new NetworkManager(isServer, config, this, this.keyH);
+	    
+	    aSetter = new AssetSetter(this, networkManager);
+	    
+	    aSetter.setObject();
 
 	    this.player = new Player(this, keyH, networkManager);
 	    
@@ -274,14 +278,14 @@ public class GamePanel extends JPanel implements Runnable {
 	            }
 	       
 
-	    aSetter = new AssetSetter(this, networkManager);
+	   
 	    
 	    getConnection().initializeConnection();
 	    
 
 	    System.out.println("Game initialized. Player: " + (player != null ? "Initialized" : "Not Initialized"));
 	    
-	    
+	  
 	}
 
     long lastMonsterUpdateTime = 0;
@@ -375,6 +379,9 @@ public class GamePanel extends JPanel implements Runnable {
                     monster[i].updateSprite();
                 }
             }
+        }
+            
+           
 
             // Check if the monster should respawn
             if (removedMonsters!=null && respawn==true) {
@@ -384,7 +391,7 @@ public class GamePanel extends JPanel implements Runnable {
                     
             }
                    
-                }
+                
             
         
 
@@ -442,6 +449,13 @@ public class GamePanel extends JPanel implements Runnable {
             for (int i = 0; i < monster.length; i++) {
                 if (monster[i] != null ) {
                     entityList.add(monster[i]);
+                    
+                }
+            }
+            
+            for (int i = 0; i < Objects.length; i++) {
+                if (Objects[i] != null ) {
+                    entityList.add(Objects[i]);
                     
                 }
             }

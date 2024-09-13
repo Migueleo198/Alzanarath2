@@ -247,12 +247,10 @@ public abstract class Entity {
 			// THE ENTITY POSITION WILL NEVER BE STATIC
 			Font customFont = new Font("Comic Sans", Font.BOLD, 16);
 			g2.setFont(customFont);
-			g2.setColor(Color.ORANGE);
-			int textWidth = g2.getFontMetrics().stringWidth(gp.getNpc()[gp.getCurrentNpcNum()].getName());
-			int textX = screenX + (gp.getTileSize() / 2) - (textWidth / 2);
-			int textY = screenY - 5;
 			
-			g2.drawString(gp.getNpc()[gp.getCurrentNpcNum()].getName(), textX, textY);
+			
+			
+			
 			g2.drawImage(image, screenX, screenY, null);
 			
 			g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER,1f));

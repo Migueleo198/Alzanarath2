@@ -68,28 +68,75 @@ public class ColissionChecker {
         }
     }
 
-    public int checkObject(Entity entity, boolean player) {
-        int index = 999;
-        for (int i = 0; i < gp.getNpc().length; i++) {
-            updateSolidArea(entity);
-            updateSolidArea(gp.getNpc()[i]);
-
-            switch (entity.getDirection()) {
-                case "up": entity.solidArea.y -= entity.getSpeed(); break;
-                case "down": entity.solidArea.y += entity.getSpeed(); break;
-                case "left": entity.solidArea.x -= entity.getSpeed(); break;
-                case "right": entity.solidArea.x += entity.getSpeed(); break;
-            }
-
-            if (entity.solidArea.intersects(gp.getNpc()[i].solidArea)) {
-                System.out.println(entity.getDirection() + " collision");
-            }
-
-            resetSolidArea(entity);
-            resetSolidArea(gp.getNpc()[i]);
-        }
-        return index;
-    }
+public int checkObject(Entity entity, boolean player){
+		
+		
+		int index = 999;
+		
+		for(int i = 0; i < gp.Objects.length; i++) {
+			
+			if (gp.Objects[i] != null) {
+				//entity solid area pos
+			entity.solidArea.x = entity.getWorldX() + entity.solidArea.x;
+			entity.solidArea.y = entity.getWorldY() + entity.solidArea.y;
+			
+			gp.Objects[i].solidArea.x = gp.Objects[i].getWorldX() + gp.Objects[i].solidArea.x;
+			gp.Objects[i].solidArea.y =gp.Objects[i].getWorldY() +gp.Objects[i].solidArea.y;
+			
+			switch(entity.getDirection()) {
+			case "up":
+				entity.solidArea.y = entity.solidArea.y - entity.getSpeed();
+				if(entity.solidArea.intersects(gp.Objects[i].solidArea)){
+					if (gp.Objects[i].collisionOn==true) {
+						entity.collisionOn=true;
+						if (player == true) {
+							index=i;
+							
+						}
+						
+					}
+				}
+				break;
+				
+			case "down":
+				entity.solidArea.y = entity.solidArea.y + entity.getSpeed(); break;
+				
+			case "left":
+				entity.solidArea.x = entity.solidArea.x - entity.getSpeed(); break;
+			
+			case "right":
+				entity.solidArea.x = entity.solidArea.x + entity.getSpeed(); break;
+				
+			}
+			
+			
+			if(entity.solidArea.intersects(gp.Objects[i].solidArea)){
+				if (gp.Objects[i].collisionOn==true) {
+					entity.collisionOn=true;
+				}
+				
+				
+				if (player == true) {
+					index=i;
+					
+			    }
+					
+			}
+			
+			entity.solidArea.x = entity.getSolidAreaDefaultX();
+			entity.solidArea.y = entity.getSolidAreaDefaultY();
+			gp.Objects[i].solidArea.x = gp.Objects[i].getSolidAreaDefaultX();
+			gp.Objects[i].solidArea.y = gp.Objects[i].getSolidAreaDefaultY();
+			
+			
+			}
+			}
+		
+		
+		return index;
+			
+		
+	}
 
     public int checkEntity(Entity entity, Entity[] target) {
         int index = 999;

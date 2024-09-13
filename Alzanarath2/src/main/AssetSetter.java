@@ -6,6 +6,7 @@ import Entity.Entity;
 import Entity.NpcOldMan;
 import Monster.MON_Slime;
 import Networking.NetworkManager;
+import Objects.OBJ_Potion;
 import Objects.OBJ_WoodenShield;
 
 public class AssetSetter {
@@ -69,10 +70,16 @@ public class AssetSetter {
 	
 	public void setObject() {
 		int i=0;
-		gp.getObjects()[i]= new OBJ_WoodenShield(gp);
-		gp.getObjects()[i].setWorldX(30);
-		gp.getObjects()[i].setWorldY(30);
-		gp.getObjects()[i].setDirection("down");
+		gp.Objects[i]= new OBJ_WoodenShield(gp);
+		gp.Objects[i].setWorldX(30*gp.getTileSize());
+		gp.Objects[i].setWorldY(30*gp.getTileSize());
+		gp.Objects[i].setDirection("down");
+		i++;
+		
+		gp.Objects[i] = new OBJ_Potion(gp);
+		gp.Objects[i].setWorldX(34*gp.getTileSize());
+		gp.Objects[i].setWorldY(35*gp.getTileSize());
+		
 		i++;
 	}
 	

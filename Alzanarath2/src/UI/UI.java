@@ -43,9 +43,22 @@ public class UI {
 	
 	private int slotCol=0;
 	private int slotRow=0;
+	
+	
+	//Alerts
+	 ArrayList<String> Alert = new ArrayList<>();
+     @SuppressWarnings("unchecked")
+	  ArrayList<Integer> AlertCounter = new ArrayList<>();
+	
+	
     public UI(GamePanel gp) {
         this.gp = gp;
     }
+    
+    
+    
+    
+    
     public void drawUI(Graphics2D g2) {
     	 this.g2 = g2;
     	 
@@ -79,7 +92,7 @@ public class UI {
             g2.setColor(new Color(255, 255, 255, 200));
             g2.drawString("Level " + gp.getPlayer().getLevel(), 55, 50);
             drawHealthBar(g2);
-
+            drawAlert();
             if (globalChatVisible) { // Draw global chat if visible
                 drawGlobalChat(g2);
             }
@@ -103,7 +116,37 @@ public class UI {
     }
     
    
+    public void drawAlert() {
+    	  
+    	  int messageX= gp.getTileSize();
+    	  int messageY=  gp.getTileSize()*5;
+    	  g2.setFont(g2.getFont().deriveFont(Font.BOLD, 20f));
+    	  
+    	  for (int i= 0; i < Alert.size(); i++) {
+    		  if(Alert.get(i)!=null) {
+    			  g2.setColor(Color.black);
+    			  g2.drawString(Alert.get(i), messageX+2, messageY+2);
+    			  
+    			  
+    			  g2.setColor(Color.white);
+    			  g2.drawString(Alert.get(i), messageX, messageY);
+    			  int counter = AlertCounter.get(i)+1;
+    			  AlertCounter.set(i,counter);
+    			  messageY+=50;
+    			  
+    			  if (AlertCounter.get(i)>180) {
+    				  Alert.remove(i);
+    				  AlertCounter.remove(i);
+    			  }
+    		  }
+    	  }
+      }
     
+    public void addAlert(String text) {
+    	
+  	  Alert.add(text);
+  	  AlertCounter.add(0);
+    }
     
     
     public void drawMessage() {
@@ -157,12 +200,12 @@ public class UI {
         final int slotYStart = frameY + 20;
         int slotX = slotXStart;
         int slotY = slotYStart;
-        int slotSize = gp.getTileSize() + 3;
+        int slotSize = gp.getTileSize()+3;
 
         // DRAW PLAYER ITEMS
         for (int i = 0; i < gp.getPlayer().getInventory().size(); i++) {
             g2.drawImage(gp.getPlayer().getInventory().get(i).getDown1(), slotX, slotY, null);
-            slotX += gp.getTileSize();
+            slotX += gp.getTileSize()+2;
 
             if (i == 4 || i == 9 || i == 14) {
                 slotX = slotXStart;
@@ -171,7 +214,7 @@ public class UI {
         }
 
         // CURSOR
-        int cursorX = slotXStart + (slotSize * getSlotCol());
+        int cursorX = slotXStart + (slotSize * getSlotCol())-1;
         int cursorY = slotYStart + (slotSize * getSlotRow());
         int cursorWidth = gp.getTileSize();
         int cursorHeight = gp.getTileSize();
