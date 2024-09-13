@@ -6,6 +6,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
 
@@ -46,6 +47,12 @@ public class Player extends Entity {
     
     private int skillPoints;
     private boolean firstTime=true;
+    
+    //INVENTORY
+    
+    private ArrayList<Entity> inventory = new ArrayList<>();
+    public final int maxInventorySize=20;
+    
     private boolean isAtkUp1Unlocked() {
 		return atkUp1Unlocked;
 	}
@@ -103,7 +110,7 @@ public class Player extends Entity {
         loadPlayerData();
         getPlayerModel();
         getPlayerAttackImage();
-        
+        setItems();
         
         
     }
@@ -129,8 +136,9 @@ public class Player extends Entity {
 
         // Ensure loaded level is not overridden by default stats
         if (level == 0) {
-            level = 1;
+            level = 0;
         }
+        nextLevelExp = (int) ((double) +  1.5*(((Math.pow(level,2)*2)*20)) + Math.pow(level, 3));
 
         // Ensure other stats are set based on loaded data
         if (maxHealth == 0) {
@@ -147,17 +155,22 @@ public class Player extends Entity {
 
 
         // Health is set based on loaded or default max health
-        setHealth(maxHealth);
+        Health=maxHealth;
 
         invincibleCounter = 0;
         setExp(0);
         setGold(0);
 
         // Equip default weapon and shield
-        currentWeapon = new OBJ_BloodSword(gp);
+        setCurrentWeapon(new OBJ_BloodSword(gp));
         attack = getAttack(); // Calculate total attack based on weapon and strength
-        currentShield = new OBJ_WoodenShield(gp);
+        setCurrentShield(new OBJ_WoodenShield(gp));
         setDefense(getDefense()); // Calculate total defense based on dexterity and equipment
+    }
+    
+    public void setItems() {
+    	getInventory().add(getCurrentShield());
+    	getInventory().add(getCurrentWeapon());
     }
     
     public void setSkillStats() {
@@ -390,7 +403,7 @@ public class Player extends Entity {
     
     public void checkLevelUp(){
     	int exp2= exp-nextLevelExp;
-    	if(exp>=nextLevelExp) {
+    	if(exp>=nextLevelExp && nextLevelExp!=0) {
     		level++;
     		
     		nextLevelExp = (int) ((double) +  1.5*(((Math.pow(level,2)*2)*20)) + Math.pow(level, 3));
@@ -407,7 +420,9 @@ public class Player extends Entity {
     		Health=maxHealth;
     		skillPoints+=1;
     		//DIALOGUES AFTER LEVELING UP(NOT YET IMPLEMENTED)!
+    		
     		savePlayerData();
+    		
     		//gp.playSE(6);
     		//gp.setGameState(gp.dialogueState);
     		
@@ -543,7 +558,7 @@ public class Player extends Entity {
 	
 	public void getPlayerAttackImage() {
 		
-		if(currentWeapon.name.equals("Blood Sword")) {
+		if(getCurrentWeapon().name.equals("Blood Sword")) {
 
 	    	attackUp1= setup("/Attacks/BloodSwordAtkUp.png",gp.getTileSize()+2,gp.getTileSize()*2+10);
 	    	attackUp2= setup("/Attacks/BloodSwordAtkUp.png",gp.getTileSize()+2,gp.getTileSize()*2+10);
@@ -716,15 +731,15 @@ public class Player extends Entity {
 	            // No player data exists, insert new data
 	            try (PreparedStatement insertStmt = conn.prepareStatement(insertQuery)) {
 	                insertStmt.setString(1, username); // Set player's username
-	                insertStmt.setInt(2, level); // Set player's level
-	                insertStmt.setInt(3, dexterity); // Set player's dexterity
-	                insertStmt.setInt(4, strength); // Set player's strength
-	                insertStmt.setInt(5, maxHealth); // Set player's max health
-	                insertStmt.setInt(6, skillPoints); // Set player's skill points
-	                insertStmt.setBoolean(7, atkUp1Unlocked); // Set boolean values
-	                insertStmt.setBoolean(8, defUp1Unlocked);
-	                insertStmt.setBoolean(9, speedUpUnlocked); // Default or current value
-
+	                insertStmt.setInt(2, 1); // Set player's level
+	                insertStmt.setInt(3, 1); // Set player's dexterity
+	                insertStmt.setInt(4, 1); // Set player's strength
+	                insertStmt.setInt(5,100); // Set player's max health
+	                insertStmt.setInt(6, 0); // Set player's skill points
+	                insertStmt.setBoolean(7, false); // Set boolean values
+	                insertStmt.setBoolean(8, false);
+	                insertStmt.setBoolean(9, false); // Default or current value
+	                
 	                insertStmt.executeUpdate();
 	                System.out.println("Player data inserted successfully.");
 	            }
@@ -733,6 +748,7 @@ public class Player extends Entity {
 	        e.printStackTrace();
 	        System.out.println("An error occurred while saving player data.");
 	    }
+	    
 	}
 
 	
@@ -753,11 +769,11 @@ public class Player extends Entity {
 
 	
 	public int getAttack() {
-		return attack = getStrength() * currentWeapon.attackValue;
+		return attack = getStrength() * getCurrentWeapon().attackValue;
 	}
 	
 	public int getDefense() {
-		return defense = getDexterity() * currentShield.defenseValue;
+		return defense = getDexterity() * getCurrentShield().defenseValue;
 	}
 	
 	public boolean isAttacking() {
@@ -866,6 +882,18 @@ public class Player extends Entity {
 
 	public void setSpeedUpUnlocked(boolean speedUpUnlocked) {
 		this.speedUpUnlocked = speedUpUnlocked;
+	}
+
+
+
+	public ArrayList<Entity> getInventory() {
+		return inventory;
+	}
+
+
+
+	public void setInventory(ArrayList<Entity> inventory) {
+		this.inventory = inventory;
 	}
 
 }

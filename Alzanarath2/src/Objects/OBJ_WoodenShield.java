@@ -12,6 +12,9 @@ public class OBJ_WoodenShield extends Entity{
 			name=objName;
 			down1=setup("/Object/WoodShield.png",GamePanel.getTileSize(),GamePanel.getTileSize());
 			defenseValue=3;
+			
+			description="["+ name +"] \n" + "An old wodden Shield \n thrown  away  because of its \n low durability";
+		
 		}
 		@Override
 		public String getMonsterId() {

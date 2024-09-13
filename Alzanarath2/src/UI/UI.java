@@ -38,6 +38,11 @@ public class UI {
     private ArrayList<String> message = new ArrayList<>();
     private ArrayList<Integer> messageCounter = new ArrayList<>();
 	public String playerUsername;
+	
+	//INVENTORY SLOTS VARS
+	
+	private int slotCol=0;
+	private int slotRow=0;
     public UI(GamePanel gp) {
         this.gp = gp;
     }
@@ -68,7 +73,7 @@ public class UI {
 
             g2.setColor(new Color(0, 0, 0, 120));
             g2.fillRoundRect(56, 26, 180, 75, 5, 5);
-            g2.setColor(new Color(0, 0, 0, 225));
+            g2.setColor(new Color(0, 0, 0, 230));
             g2.fillRoundRect(50, 20, 180, 75, 5, 5);
 
             g2.setColor(new Color(255, 255, 255, 200));
@@ -86,6 +91,7 @@ public class UI {
             
         } else if (gp.getGameState()==gp.getCharacterState()) {
         	drawStatusScreen();
+        	drawInventory();
         } else if(gp.getNetworkManager()!=null && gp.getNetworkManager().isServer()==true) {
         	drawServerScreen(g2);
         }
@@ -95,6 +101,10 @@ public class UI {
     	 }
        
     }
+    
+   
+    
+    
     
     public void drawMessage() {
     	int messageX = gp.getTileSize();
@@ -123,129 +133,224 @@ public class UI {
 		
 	}
     
-    public void drawStatusScreen() {
-   	 
-   	 final int frameX = gp.getTileSize();
-   	 final int frameY = gp.getTileSize()-20;
-   	 final int frameWidth = gp.getTileSize()*6;
-   	 final int frameHeight = gp.getTileSize()*11+5;
-   	 drawSubWindow(frameX,frameY,frameWidth,frameHeight);
-   	 
-   	 //text
-   	 
-   	 int textX= frameX+20;
-   	 int textY= frameY+gp.getTileSize();
-   	 int lineHeight=38;
-   	 
-   	 
-   	 //Names
-   	 g2.setFont(new Font("Comic Sans", Font.BOLD, 30));
-   	 String valueName;
-   	 valueName =String.valueOf(gp.getPlayer().getUsernamePlayer());
-   	 g2.drawString(gp.getPlayer().getUsernamePlayer(), textX, textY);
-   	 textY+=lineHeight+10;
-   	 
-   	 g2.setColor(Color.white);
-   	 g2.setFont(g2.getFont().deriveFont(23F));
-   	 
-   	 g2.drawString("Level", textX, textY);
-   	 textY+=lineHeight;
-   	 g2.drawString("Health", textX, textY);
-   	 textY+=lineHeight;
-   	 g2.drawString("Strength", textX, textY);
-   	 textY+=lineHeight;
-   	 g2.drawString("Dexterity", textX, textY);
-   	 textY+=lineHeight;
-   	 g2.drawString("Attack", textX, textY);
-   	 textY+=lineHeight;
-   	 g2.drawString("Defense", textX, textY);
-   	 textY+=lineHeight;
-   	 g2.drawString("Exp", textX, textY);
-   	 textY+=lineHeight;
-   	 g2.drawString("Next Level", textX, textY);
-   	 textY+=lineHeight;
-   	 g2.drawString("Gold", textX, textY);
-   	 textY+=lineHeight;
-   	 g2.drawString("Weapon", textX, textY);
-   	 textY+=lineHeight;
-   	 g2.drawString("Shield", textX, textY);
-   	 textY+=lineHeight;
-   	 
-   	 //STAT VALUES
-   	 int tailX = (frameX + frameWidth)-30;
-   	 //Reset Text Y
-   	 textY = frameY + gp.getTileSize();
-   	 String value;
-   	 
-   	 value =String.valueOf(gp.getPlayer().getLevel());
-   	 textX = getXforAlignToRightText(value, tailX);
-   	 g2.drawString(value, tailX-75, textY+45);
-   	 textY+=lineHeight;
-   	 
-   	 value =String.valueOf(gp.getPlayer().getHealth() + "/" + gp.getPlayer().getMaxHealth());
-   	 textX = getXforAlignToRightText(value, tailX);
-   	 g2.drawString(value, tailX-75, textY+45);
-   	 textY+=lineHeight;
-   	 
-   	 value =String.valueOf(gp.getPlayer().getStrength());
-   	 textX = getXforAlignToRightText(value, tailX);
-   	 g2.drawString(value, tailX-75, textY+45);
-   	 textY+=lineHeight;
-   	 
-   	 
-   	 value =String.valueOf(gp.getPlayer().getDexterity());
-   	 textX = getXforAlignToRightText(value, tailX);
-   	 g2.drawString(value, tailX-75, textY+45);
-   	 textY+=lineHeight;
-   	 
-   	 value =String.valueOf(gp.getPlayer().getAttack());
-   	 textX = getXforAlignToRightText(value, tailX);
-   	 g2.drawString(value, tailX-75, textY+45);
-   	 textY+=lineHeight;
-   	 
-   	 value =String.valueOf(gp.getPlayer().getDefense());
-   	 textX = getXforAlignToRightText(value, tailX);
-   	 g2.drawString(value, tailX-75, textY+45);
-   	 textY+=lineHeight;
-   	 
-   	 value =String.valueOf(gp.getPlayer().getExp());
-   	 textX = getXforAlignToRightText(value, tailX);
-   	 g2.drawString(value, tailX-75, textY+45);
-   	 textY+=lineHeight;
-   	 
-   	 value =String.valueOf(gp.getPlayer().getNextLevelExp());
-   	 textX = getXforAlignToRightText(value, tailX);
-   	 g2.drawString(value, tailX-75, textY+45);
-   	 textY+=lineHeight;
-   	 
-   	 value =String.valueOf(gp.getPlayer().getGold());
-   	 textX = getXforAlignToRightText(value, tailX);
-   	 g2.drawString(value, tailX-75, textY+45);
-   	 textY+=lineHeight +5;
-   	 
-   	 //values
-   	
-   	 g2.drawImage(gp.getPlayer().currentWeapon.getDown1(), tailX-gp.getTileSize()-20,textY,null);
-   	 textY += gp.getTileSize();
-   	 
-   	 g2.drawImage(gp.getPlayer().currentShield.getDown1(), tailX-gp.getTileSize()-20,textY,null);
-   	 textY += gp.getTileSize();
-   	 
+    public void drawInventory() {
+        
+        // FRAME
+        int frameX = gp.getTileSize() * 9;
+        int frameY = gp.getTileSize() * 3 - 10;
+        int frameWidth = gp.getTileSize() * 6;
+        int frameHeight = gp.getTileSize() * 5;
+
+        // Draw Inventory title box
+        drawSubWindow(frameX, frameY - 100, frameWidth, gp.getTileSize() * 2);
+        
+        // Set medieval-style font and color for the "Inventory" label
+        g2.setFont(new Font("Serif", Font.BOLD, 30)); // Gothic/serif font for medieval feel
+        g2.setColor(new Color(200, 200, 200)); // Off-white text
+        g2.drawString("Inventory", frameX + 75, frameY - 50);
+
+        // Draw main inventory window
+        drawSubWindow(frameX, frameY, frameWidth, frameHeight);
+
+        // SLOTS
+        final int slotXStart = frameX + 20;
+        final int slotYStart = frameY + 20;
+        int slotX = slotXStart;
+        int slotY = slotYStart;
+        int slotSize = gp.getTileSize() + 3;
+
+        // DRAW PLAYER ITEMS
+        for (int i = 0; i < gp.getPlayer().getInventory().size(); i++) {
+            g2.drawImage(gp.getPlayer().getInventory().get(i).getDown1(), slotX, slotY, null);
+            slotX += gp.getTileSize();
+
+            if (i == 4 || i == 9 || i == 14) {
+                slotX = slotXStart;
+                slotY += slotSize;
+            }
+        }
+
+        // CURSOR
+        int cursorX = slotXStart + (slotSize * getSlotCol());
+        int cursorY = slotYStart + (slotSize * getSlotRow());
+        int cursorWidth = gp.getTileSize();
+        int cursorHeight = gp.getTileSize();
+
+        // Outer border of the cursor: Dark gray to give it a medieval, iron look
+        g2.setColor(new Color(50, 50, 50)); // Dark gray
+        g2.setStroke(new BasicStroke(3));
+        g2.drawRoundRect(cursorX, cursorY, cursorWidth, cursorHeight, 10, 10); // Rounded corners
+
+        // Inner border for glow effect: subtle dark glow to give the cursor some depth
+        g2.setColor(new Color(100, 100, 100, 120)); // Dark gray with transparency
+        g2.setStroke(new BasicStroke(2));
+        g2.drawRoundRect(cursorX + 2, cursorY + 2, cursorWidth - 4, cursorHeight - 4, 8, 8);
+
+        // Optional: Add a glowing effect around the cursor for emphasis
+        g2.setColor(new Color(150, 0, 0, 150)); // Dark red glow for a mysterious, medieval look
+        g2.setStroke(new BasicStroke(1));
+        g2.drawRoundRect(cursorX - 2, cursorY - 2, cursorWidth + 4, cursorHeight + 4, 12, 12);
+
+        // ITEM DESCRIPTION FRAME
+        int dFrameX = frameX;
+        int dFrameY = frameY + frameHeight + 10;
+        int dFrameWidth = frameWidth;
+        int dFrameHeight = gp.getTileSize() * 3 + 20;
+
+        // DRAW ITEM DESCRIPTION TEXT
+        int textX = dFrameX + 20;
+        int textY = dFrameY + gp.getTileSize() - 10;
+
+        g2.setFont(g2.getFont().deriveFont(14F)); // Smaller font for descriptions
+
+        int itemIndex = getItemIndexOnSlot();
+
+        if (itemIndex < gp.getPlayer().getInventory().size()) {
+            // Draw description window
+            drawSubWindow(dFrameX, dFrameY, dFrameWidth, dFrameHeight);
+
+            // Draw each line of item description
+            for (String line : gp.getPlayer().getInventory().get(itemIndex).getDescription().split("\n")) {
+                g2.setColor(new Color(200, 200, 200)); // Off-white text for readability
+                g2.drawString(line, textX, textY);
+                textY += 28;
+            }
+        }
     }
+
+    
+    public void drawStatusScreen() {
+        
+        final int frameX = gp.getTileSize();
+        final int frameY = gp.getTileSize() - 20;
+        final int frameWidth = gp.getTileSize() * 6;
+        final int frameHeight = gp.getTileSize() * 11 + 5;
+        
+        // Draw dark, medieval-style sub-window
+        drawSubWindow(frameX, frameY, frameWidth, frameHeight);
+
+        // Text settings
+        int textX = frameX + 20;
+        int textY = frameY + gp.getTileSize();
+        int lineHeight = 38;
+        
+        // Names
+        g2.setFont(new Font("Serif", Font.BOLD, 30)); // Gothic/Serif font for medieval feel
+        String valueName;
+        g2.setColor(new Color(200, 200, 200)); // Off-white for text to contrast with the dark background
+        valueName = String.valueOf(gp.getPlayer().getUsernamePlayer());
+        g2.drawString(gp.getPlayer().getUsernamePlayer(), textX, textY);
+        textY += lineHeight + 10;
+
+        // Set smaller font for other stats
+        g2.setFont(g2.getFont().deriveFont(23F));
+
+        // Draw stat names in a muted, dark color
+        g2.setColor(new Color(150, 150, 150)); // Dark gray color for stat labels
+        g2.drawString("Level", textX, textY);
+        textY += lineHeight;
+        g2.drawString("Health", textX, textY);
+        textY += lineHeight;
+        g2.drawString("Strength", textX, textY);
+        textY += lineHeight;
+        g2.drawString("Dexterity", textX, textY);
+        textY += lineHeight;
+        g2.drawString("Attack", textX, textY);
+        textY += lineHeight;
+        g2.drawString("Defense", textX, textY);
+        textY += lineHeight;
+        g2.drawString("Exp", textX, textY);
+        textY += lineHeight;
+        g2.drawString("Next Level", textX, textY);
+        textY += lineHeight;
+        g2.drawString("Gold", textX, textY);
+        textY += lineHeight;
+        g2.drawString("Weapon", textX, textY);
+        textY += lineHeight;
+        g2.drawString("Shield", textX, textY);
+        textY += lineHeight;
+
+        // STAT VALUES
+        int tailX = (frameX + frameWidth) - 30;
+        textY = frameY + gp.getTileSize(); // Reset textY
+
+        String value;
+
+        g2.setColor(new Color(200, 200, 200)); // Off-white for the stat values
+
+        value = String.valueOf(gp.getPlayer().getLevel());
+        textX = getXforAlignToRightText(value, tailX);
+        g2.drawString(value, tailX - 75, textY + 45);
+        textY += lineHeight;
+
+        value = String.valueOf(gp.getPlayer().getHealth() + "/" + gp.getPlayer().getMaxHealth());
+        textX = getXforAlignToRightText(value, tailX);
+        g2.drawString(value, tailX - 75, textY + 45);
+        textY += lineHeight;
+
+        value = String.valueOf(gp.getPlayer().getStrength());
+        textX = getXforAlignToRightText(value, tailX);
+        g2.drawString(value, tailX - 75, textY + 45);
+        textY += lineHeight;
+
+        value = String.valueOf(gp.getPlayer().getDexterity());
+        textX = getXforAlignToRightText(value, tailX);
+        g2.drawString(value, tailX - 75, textY + 45);
+        textY += lineHeight;
+
+        value = String.valueOf(gp.getPlayer().getAttack());
+        textX = getXforAlignToRightText(value, tailX);
+        g2.drawString(value, tailX - 75, textY + 45);
+        textY += lineHeight;
+
+        value = String.valueOf(gp.getPlayer().getDefense());
+        textX = getXforAlignToRightText(value, tailX);
+        g2.drawString(value, tailX - 75, textY + 45);
+        textY += lineHeight;
+
+        value = String.valueOf(gp.getPlayer().getExp());
+        textX = getXforAlignToRightText(value, tailX);
+        g2.drawString(value, tailX - 75, textY + 45);
+        textY += lineHeight;
+
+        value = String.valueOf(gp.getPlayer().getNextLevelExp());
+        textX = getXforAlignToRightText(value, tailX);
+        g2.drawString(value, tailX - 75, textY + 45);
+        textY += lineHeight;
+
+        value = String.valueOf(gp.getPlayer().getGold());
+        textX = getXforAlignToRightText(value, tailX);
+        g2.drawString(value, tailX - 75, textY + 45);
+        textY += lineHeight + 5;
+
+        // Draw Weapon and Shield Icons
+        g2.drawImage(gp.getPlayer().getCurrentWeapon().getDown1(), tailX - gp.getTileSize() - 20, textY, null);
+        textY += gp.getTileSize();
+        g2.drawImage(gp.getPlayer().getCurrentShield().getDown1(), tailX - gp.getTileSize() - 20, textY, null);
+        textY += gp.getTileSize();
+    }
+
     
     public void drawSubWindow(int x, int y, int width, int height) {
-   	 //Color one, color two, color three, opacity(transparency)
-   	 Color color = new Color(0,0,0,220);
-   	 g2.setColor(color);
-   	 g2.fillRect(x, y, width, height);
-   	 
-   	 color = new Color(255,255,255);
-   	 g2.setColor(color);
-   	 g2.setStroke(new BasicStroke(5));
-   	 g2.drawRect(x+5, y+5, width-10, height-10);
-   	 
-   	 
-   	 
+        // Dark background for window body (slightly transparent for depth)
+        Color backgroundColor = new Color(20, 20, 20, 220); // Dark gray, 220 transparency
+        g2.setColor(backgroundColor);
+        g2.fillRoundRect(x, y, width, height, 25, 25); // Rounded corners for a refined medieval look
+        
+        // Dark border color, resembling aged iron or dark stone
+        Color borderColor = new Color(50, 50, 50); // Dark gray/iron-like tone
+        g2.setColor(borderColor);
+        g2.setStroke(new BasicStroke(5));
+        g2.drawRoundRect(x+5, y+5, width-10, height-10, 20, 20); // Matching rounded corners
+        
+        // Subtle inner glow effect for highlighting the edges (still dark but provides depth)
+        Color innerGlow = new Color(100, 100, 100, 120); // Dark gray, subtle glow
+        g2.setColor(innerGlow);
+        g2.setStroke(new BasicStroke(3));
+        g2.drawRoundRect(x+8, y+8, width-16, height-16, 15, 15); // Slightly smaller inner border
+        
+        // Optional: add subtle dark decorative patterns or corner elements for a gothic touch
+        // You can implement textures or patterns for more detailing if desired
     }
     
     public int getXforCenteredText(String text) {
@@ -587,18 +692,23 @@ public class UI {
         int treeHeight = 400;
         
         // Calculate the center of the screen for the skill tree
-        int treeX = (screenWidth - treeWidth) /6;
-        int treeY = (screenHeight - treeHeight) /6;
+        int treeX = (screenWidth - treeWidth) / 6; // Centered horizontally
+        int treeY = (screenHeight - treeHeight) / 6; // Centered vertically
 
-        // Create a smoother gradient background for the skill tree
-        GradientPaint gradient = new GradientPaint(treeX, treeY, Color.DARK_GRAY, treeX + treeWidth, treeY + treeHeight, Color.BLACK);
-        g2.setPaint(gradient);
-        g2.fillRoundRect(treeX, treeY, treeWidth, treeHeight, 25, 25);
+        // Create a dark medieval-style background
+        g2.setPaint(new GradientPaint(treeX, treeY, new Color(20, 20, 20, 200), 
+                                       treeX + treeWidth, treeY + treeHeight, new Color(10, 10, 10, 255)));
+        g2.fillRoundRect(treeX, treeY, treeWidth, treeHeight, 20, 20); // Rounded corners
 
-        // Draw rounded border around the skill tree
-        g2.setColor(Color.WHITE);
-        g2.setStroke(new BasicStroke(3));
-        g2.drawRoundRect(treeX, treeY, treeWidth, treeHeight, 25, 25);
+        // Draw metallic border with emboss effect
+        g2.setColor(new Color(150, 150, 150)); // Light gray for metallic look
+        g2.setStroke(new BasicStroke(4)); // Thicker stroke for prominence
+        g2.drawRoundRect(treeX, treeY, treeWidth, treeHeight, 20, 20);
+
+        // Inner shadow for depth
+        g2.setColor(new Color(0, 0, 0, 120)); // Darker shadow color
+        g2.setStroke(new BasicStroke(1)); // Thin stroke for shadow
+        g2.drawRoundRect(treeX + 2, treeY + 2, treeWidth - 4, treeHeight - 4, 20, 20);
 
         // Define positions of skill nodes relative to the tree's position
         int[][] skillPositions = {
@@ -609,59 +719,52 @@ public class UI {
 
         // Draw lines connecting skills
         for (int i = 0; i < skillPositions.length - 1; i++) {
-            int x1 = skillPositions[i][0] + 12; // Center x of skill i
-            int y1 = skillPositions[i][1] + 12; // Center y of skill i
-            int x2 = skillPositions[i + 1][0] + 12; // Center x of skill i+1
-            int y2 = skillPositions[i + 1][1] + 12; // Center y of skill i+1
+            int x1 = skillPositions[i][0] + 15; // Center x of skill i
+            int y1 = skillPositions[i][1] + 15; // Center y of skill i
+            int x2 = skillPositions[i + 1][0] + 15; // Center x of skill i+1
+            int y2 = skillPositions[i + 1][1] + 15; // Center y of skill i+1
 
             // Change line color to green if the skill is unlocked
-            if (getUnlockedSkills()[i]) {
-                g2.setColor(Color.GREEN);  // Green for unlocked skills
-            } else {
-                g2.setColor(Color.WHITE);  // White for locked skills
-            }
-
-            // Draw the connecting line
+            g2.setColor(getUnlockedSkills()[i] ? new Color(0, 255, 0) : new Color(255, 255, 255)); // Green for unlocked, white for locked
+            g2.setStroke(new BasicStroke(2));
             g2.drawLine(x1, y1, x2, y2);
         }
 
-        // Draw skill nodes with shadow effect
+        // Draw skill nodes with medieval style
         for (int i = 0; i < skillPositions.length; i++) {
             int x = skillPositions[i][0];
             int y = skillPositions[i][1];
 
             // Shadow effect for nodes
-            g2.setColor(new Color(0, 0, 0, 100)); // Semi-transparent black for shadow
+            g2.setColor(new Color(0, 0, 0, 120)); // Darker shadow color
             g2.fillOval(x + 5, y + 5, 30, 30);
 
-            // Change color for unlocked or selected skill
-            if (getUnlockedSkills()[i]) {
-                g2.setColor(Color.GREEN);  // Green for unlocked skills
-            } else {
-                g2.setColor(Color.WHITE);   // Default color for locked skills
-            }
+            // Skill node color
+            g2.setColor(getUnlockedSkills()[i] ? new Color(0, 255, 0) : new Color(150, 150, 150)); // Green for unlocked, gray for locked
             g2.fillOval(x, y, 30, 30);
 
             // Draw selection highlight if skill is selected
             if (i == selectedSkillIndex) {
-                g2.setColor(Color.YELLOW);  // Yellow for the selected skill
+                g2.setColor(new Color(255, 215, 0)); // Gold for selected
                 g2.setStroke(new BasicStroke(3));
                 g2.drawOval(x, y, 30, 30);
             }
         }
 
-        // Draw skill labels
-        g2.setColor(Color.WHITE);
-        g2.setFont(new Font("Arial", Font.BOLD, 16));
+        // Draw skill labels with medieval style
+        g2.setColor(new Color(255, 255, 255)); // White for text
+        g2.setFont(new Font("Garamond", Font.BOLD, 18)); // Gothic/Serif font
         g2.drawString("Atk Up +", skillPositions[0][0] - 15, skillPositions[0][1] - 10); // Skill 1 label
         g2.drawString("Def Up +", skillPositions[1][0] - 15, skillPositions[1][1] - 10); // Skill 2 label
         g2.drawString("Speed Up +", skillPositions[2][0] - 15, skillPositions[2][1] - 10); // Skill 3 label
 
         // Display skill points at the top of the tree
-        g2.setColor(Color.WHITE);
-        g2.setFont(new Font("Arial", Font.BOLD, 18));
+        g2.setColor(new Color(255, 255, 255)); // White for text
+        g2.setFont(new Font("Garamond", Font.BOLD, 20)); // Gothic/Serif font
         g2.drawString("Skill Points: " + gp.getPlayer().getSkillPoints(), treeX + treeWidth / 2 - 60, treeY + 40);
     }
+    
+    
 
 
     
@@ -673,6 +776,11 @@ public class UI {
 
             getUnlockedSkills()[selectedSkillIndex] = true;  // Unlock the selected skill 
         }
+    }
+    
+    public int getItemIndexOnSlot() {
+    	int itemIndex = slotCol + (slotRow*5);
+    	return itemIndex;
     }
     
     public int getSelectedSkillIndex() {
@@ -777,6 +885,18 @@ public class UI {
 
 	public void setUnlockedSkills(boolean[] unlockedSkills) {
 		this.unlockedSkills = unlockedSkills;
+	}
+	public int getSlotRow() {
+		return slotRow;
+	}
+	public void setSlotRow(int slotRow) {
+		this.slotRow = slotRow;
+	}
+	public int getSlotCol() {
+		return slotCol;
+	}
+	public void setSlotCol(int slotCol) {
+		this.slotCol = slotCol;
 	}
 
 	

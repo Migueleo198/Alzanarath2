@@ -36,10 +36,12 @@ public abstract class Entity {
 	protected int exp=0;
 	protected int nextLevelExp;
 	private int gold;
-	public Entity currentWeapon;
-	public Entity currentShield;
-	public boolean isMonster=false;
-	public boolean hasChanged=false;
+	private Entity currentWeapon;
+	private Entity currentShield;
+	protected boolean isMonster=false;
+	protected boolean hasChanged=false;
+	
+	
 	
 	protected int type; //1= player 2 = slime
 	protected Rectangle attackArea = new Rectangle(0,0,0,0);
@@ -73,6 +75,8 @@ public abstract class Entity {
 	protected String monsterId;
 	
 	protected long removalTime=0;
+	
+	protected String description = "";
 	
 	public int getAttack() {
 		return attack;
@@ -543,6 +547,30 @@ public abstract class Entity {
 
 	public void setRemovalTime(long removalTime) {
 		this.removalTime = removalTime;
+	}
+
+	public Entity getCurrentWeapon() {
+		return currentWeapon;
+	}
+
+	public void setCurrentWeapon(Entity currentWeapon) {
+		this.currentWeapon = currentWeapon;
+	}
+
+	public Entity getCurrentShield() {
+		return currentShield;
+	}
+
+	public void setCurrentShield(Entity currentShield) {
+		this.currentShield = currentShield;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
 	}
 	
 	

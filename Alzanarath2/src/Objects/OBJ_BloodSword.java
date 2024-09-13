@@ -16,7 +16,9 @@ public class OBJ_BloodSword extends Entity{
 		level=1;
 		
 		
-		
+		setDescription("["+ name +"] \n" +"Belongs to a Fabled Demon, wait \n This sword shouldnt be in \n your hands...  return it now!\n " 
+				+ "Attack:" + attackValue 
+						+ "     Level:" + level);
 		
 	}
 

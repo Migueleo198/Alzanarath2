@@ -6,6 +6,7 @@ import Entity.Entity;
 import Entity.NpcOldMan;
 import Monster.MON_Slime;
 import Networking.NetworkManager;
+import Objects.OBJ_WoodenShield;
 
 public class AssetSetter {
 	GamePanel gp;
@@ -18,9 +19,7 @@ public class AssetSetter {
 		this.networkManager=networkManager;
 	}
 	
-	public void setObject() {
-		
-	}
+	
 	
 	public void setNpc() {
 		
@@ -64,10 +63,17 @@ public class AssetSetter {
 		
 		
 		}
+
 		
-		
-		
-		
+	}
+	
+	public void setObject() {
+		int i=0;
+		gp.getObjects()[i]= new OBJ_WoodenShield(gp);
+		gp.getObjects()[i].setWorldX(30);
+		gp.getObjects()[i].setWorldY(30);
+		gp.getObjects()[i].setDirection("down");
+		i++;
 	}
 	
 	public void respawnMonsters() {

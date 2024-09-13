@@ -67,6 +67,7 @@ public class KeyHandler implements KeyListener {
                 if (code == KeyEvent.VK_UP) {
                     if (gp.ui.getSelectedSkillIndex() > 0) {
                         gp.ui.setSelectedSkillIndex(gp.ui.getSelectedSkillIndex() - 1);  // Move up
+                   gp.playSE(4);
                     }
                 }
 
@@ -74,6 +75,7 @@ public class KeyHandler implements KeyListener {
                 if (code == KeyEvent.VK_DOWN) {
                     if (gp.ui.getSelectedSkillIndex() < gp.ui.getSkillCount() + 1) {
                         gp.ui.setSelectedSkillIndex(gp.ui.getSelectedSkillIndex() + 1);  // Move down
+                        gp.playSE(4);
                     }
                 }
 
@@ -82,6 +84,7 @@ public class KeyHandler implements KeyListener {
                     // Adjust for a horizontal move (optional if you have horizontal skills)
                     if (gp.ui.getSelectedSkillIndex() % 3 != 0) { // Assuming 3 skills per row, prevent going left off-row
                         gp.ui.setSelectedSkillIndex(gp.ui.getSelectedSkillIndex() - 1);
+                        gp.playSE(4);
                     }
                 }
 
@@ -90,6 +93,8 @@ public class KeyHandler implements KeyListener {
                     // Adjust for a horizontal move (optional if you have horizontal skills)
                     if ((gp.ui.getSelectedSkillIndex() + 1) % 3 != 0 && gp.ui.getSelectedSkillIndex() < gp.ui.getSkillCount() - 1) { 
                         gp.ui.setSelectedSkillIndex(gp.ui.getSelectedSkillIndex() + 1);
+                        
+                        gp.playSE(4);
                     }
                 }
 
@@ -103,6 +108,8 @@ public class KeyHandler implements KeyListener {
             }
         }
     }
+    
+    
 
 
 	public void titleState(int code) {
@@ -159,6 +166,7 @@ public class KeyHandler implements KeyListener {
 	        // Open inventory
 	        if (code == KeyEvent.VK_C) {
 	            gp.setGameState(gp.getCharacterState());
+	            gp.playSE(5);
 	        }
 	        
 	        if (code == KeyEvent.VK_T) {
@@ -184,7 +192,32 @@ public class KeyHandler implements KeyListener {
         if (gp.getGameState() == gp.getCharacterState()) {
             if (code == KeyEvent.VK_C) {
                 gp.setGameState(gp.getPlayState());
+                gp.playSE(5);
             }
+        }
+        
+        //INVENTORY CURSOR MOVEMENT
+        
+        if (code == KeyEvent.VK_W) {
+        	if(gp.ui.getSlotRow()!=0) {
+            gp.ui.setSlotRow(gp.ui.getSlotRow() - 1);
+            gp.playSE(4);
+        	}
+        } else if (code == KeyEvent.VK_S) {
+        	if(gp.ui.getSlotRow()!=3) {
+        	 gp.ui.setSlotRow(gp.ui.getSlotRow() + 1);
+        	 gp.playSE(4);
+        	}
+        } else if (code == KeyEvent.VK_A) {
+        	if(gp.ui.getSlotCol()!=0) {
+        	 gp.ui.setSlotCol(gp.ui.getSlotCol() - 1);
+        	 gp.playSE(4);
+        	}
+        } else if (code == KeyEvent.VK_D) {
+        	if(gp.ui.getSlotCol()!=4) {
+        	 gp.ui.setSlotCol(gp.ui.getSlotCol() + 1);
+        	 gp.playSE(4);
+        	}
         }
     }
 

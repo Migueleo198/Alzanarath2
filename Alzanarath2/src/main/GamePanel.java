@@ -143,6 +143,11 @@ public class GamePanel extends JPanel implements Runnable {
    //CONNECTION TO DATABASE
    public DBConnection connection = new DBConnection();
    public int monsterCounter;
+   
+   //OBJECTS
+   private Entity[] Objects = new Entity[99];
+   
+   
    // Constructor
    public GamePanel() {
        System.out.println("Initializing GamePanel...");
@@ -857,6 +862,16 @@ public class GamePanel extends JPanel implements Runnable {
 
 	public void setG2(Graphics2D g2) {
 		this.g2 = g2;
+	}
+
+
+	public Entity[] getObjects() {
+		return Objects;
+	}
+
+
+	public void setObjects(Entity[] objects) {
+		Objects = objects;
 	}
 	
 	 
