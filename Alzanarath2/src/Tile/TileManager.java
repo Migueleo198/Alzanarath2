@@ -8,40 +8,48 @@ import java.io.InputStreamReader;
 
 import javax.imageio.ImageIO;
 
+import Entity.Player;
 import main.GamePanel;
+import main.Utility;
 
 public class TileManager {
 	GamePanel gp;
 	public Tile[] tile;
 	private int mapTileNum[][];
+	private int tileNum;
+	public int screenX;
+	public int screenY;
 	public TileManager(GamePanel gp) {
 		this.gp=gp;
 		
 		tile= new Tile[20];
 		setMapTileNum(new int[gp.getMaxWorldCol()][gp.getMaxWorldRow()]);
 		getTileImage();
-		loadMap("/Maps/map01.txt");
+		loadMap("/Maps/improvedMap01.txt");
 		
 		
 	}
 	
 	public void getTileImage() {
+		setup(0, "0wallTile",true);
+		setup(1, "10Grass",false);
+		setup(2, "11Grass",false);
+		setup(3, "12Grass",false);
+		setup(4, "13Grass",false);
+		setup(5, "14Grass",false);
+		setup(6, "2Grass",false);
+		setup(7, "3Grass",false);
+		setup(8, "4Grass",false);
+		setup(9, "5Grass",false);
+		setup(10, "6Sand",false);
+		setup(11, "7Tree",true);
+		setup(12, "8WoodenFloor",false);
+		setup(13, "9Grass",false);
 		
-		try {
-		tile[0] = new Tile();
-		tile[0].setImage(ImageIO.read(getClass().getResourceAsStream("/Tiles/5Grass.png")));
-		tile[1] = new Tile();
-		tile[1].setImage(ImageIO.read(getClass().getResourceAsStream("/Tiles/0WallTile.png")));
-		tile[1].setCollision(true);
-		tile[2] = new Tile();
-		tile[2].setImage(ImageIO.read(getClass().getResourceAsStream("/Tiles/8WoodenFloor.png")));
-		tile[3] = new Tile();
-		tile[3].setImage(ImageIO.read(getClass().getResourceAsStream("/Tiles/7Tree.png")));
-		tile[3].setCollision(true);
-		}
-		catch(IOException e) {
-			e.printStackTrace();
-		}
+		
+		
+		
+		
 	}
 	
 	public void loadMap(String filePath) {
@@ -56,7 +64,9 @@ public class TileManager {
 				
 				String line = br.readLine();
 				
-				while(col<gp.getMaxWorldCol()) {
+				while(col<gp.getMaxWorldCol() ) {
+					
+					
 					String numbers[] = line.split(" ");
 					
 					int num = Integer.parseInt(numbers[col]);
@@ -64,6 +74,7 @@ public class TileManager {
 					getMapTileNum()[col][row] = num;
 					
 					col++;
+					
 				}
 				
 				if(col==gp.getMaxWorldCol()) {
@@ -81,48 +92,55 @@ public class TileManager {
 	}
 	
 	public void draw(Graphics2D g2) {
-		int worldCol=0;
-		int worldRow=0;
+	    int tileSize = gp.getTileSize();
+	    int maxWorldCol = gp.getMaxWorldCol();
+	    int maxWorldRow = gp.getMaxWorldRow();
+	    
+	    Player player = gp.getPlayer();
+	    
+	    // Get player's current position and screen position
+	    int playerWorldX = player.getWorldX();
+	    int playerWorldY = player.getWorldY();
+	    int playerScreenX = player.getScreenX();
+	    int playerScreenY = player.getScreenY();
+	    
+	    int screenWidth = gp.getWidth();
+	    int screenHeight = gp.getHeight();
+	    
+	    // Calculate visible tile bounds
+	    int worldColStart = Math.max(0, (playerWorldX - playerScreenX) / tileSize);
+	    int worldColEnd = Math.min(maxWorldCol, (playerWorldX - playerScreenX + screenWidth) / tileSize + 1);
+	    int worldRowStart = Math.max(0, (playerWorldY - playerScreenY) / tileSize);
+	    int worldRowEnd = Math.min(maxWorldRow, (playerWorldY - playerScreenY + screenHeight) / tileSize + 1);
 
-		
-		//SCREEN X IS WHERE ON THE SCREEN WE DRAW THE TILES AND WORLD X IS THE POSITION OF THE CURRENT DRAWING
-		//SO WHEN THE PLAYER MOVES WE SUBSTRACT THAT TO WORLD X IF HE MOVES TO THE SIDES OR TO WORLD Y IF HE MOVES UP AND DOWN
-		
-		while(worldRow<gp.getMaxWorldRow()){
-			
-			int tileNum = getMapTileNum()[worldCol][worldRow];
-			
-			int checkCurrentWorldX = worldCol * gp.getTileSize();
-			int checkCurrentWorldY = worldRow * gp.getTileSize();
-			//WE SUBSTRACT THE POSITION OF THE PLAYER X AND Y TO THE 
-			// MAP DRAWING AND DRAW THE TILE X AND Y POSITION TAKING THAT INTO ACCOUNT
-			int screenX = checkCurrentWorldX - gp.getPlayer().getWorldX() + gp.getPlayer().getScreenX();
-			int screenY = checkCurrentWorldY - gp.getPlayer().getWorldY() + gp.getPlayer().getScreenY();
-			
-			if(checkCurrentWorldX + gp.getTileSize() > gp.getPlayer().getWorldX()-gp.getPlayer().getScreenX()
-					&& checkCurrentWorldX - gp.getTileSize() < gp.getPlayer().getWorldX()+gp.getPlayer().getScreenX()
-					&& checkCurrentWorldY + gp.getTileSize()> gp.getPlayer().getWorldY()-gp.getPlayer().getScreenY()
-					&& checkCurrentWorldY - gp.getTileSize() < gp.getPlayer().getWorldY()+gp.getPlayer().getScreenY()) {
-			g2.drawImage(tile[tileNum].getImage(),screenX,screenY,gp.getTileSize(),gp.getTileSize(),null);
-			}
-			
-			
-			worldCol+=1;
-		
-		
-		if(worldCol==gp.getMaxWorldCol()) {
-			
-			worldRow+=1;
-			
-			worldCol=0;
-		}
-		
-		
-		
-		
-		
-		}
+	    for (int worldRow = worldRowStart; worldRow < worldRowEnd; worldRow++) {
+	        for (int worldCol = worldColStart; worldCol < worldColEnd; worldCol++) {
+	            int tileNum = mapTileNum[worldCol][worldRow];
+	            int tileWorldX = worldCol * tileSize;
+	            int tileWorldY = worldRow * tileSize;
+	            int screenX = tileWorldX - playerWorldX + playerScreenX;
+	            int screenY = tileWorldY - playerWorldY + playerScreenY;
+
+	            // Draw the tile if it's within the visible screen bounds
+	            g2.drawImage(tile[tileNum].getImage(), screenX, screenY, tileSize, tileSize, null);
+	        }
+	    }
 	}
+
+
+	
+	public void setup(int index, String imageName, boolean collision) {
+        Utility uTool = new Utility();
+
+        try {
+            tile[index] = new Tile();
+            tile[index].image = ImageIO.read(getClass().getResourceAsStream("/tiles/" + imageName + ".png"));
+            tile[index].image = uTool.scaleImage(tile[index].image, gp.getTileSize(), gp.getTileSize());
+            tile[index].collision = collision;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }	
 
 	public int[][] getMapTileNum() {
 		return mapTileNum;
@@ -130,6 +148,14 @@ public class TileManager {
 
 	public void setMapTileNum(int mapTileNum[][]) {
 		this.mapTileNum = mapTileNum;
+	}
+
+	public int getTileNum() {
+		return tileNum;
+	}
+
+	public void setTileNum(int tileNum) {
+		this.tileNum = tileNum;
 	}
 	
 	
