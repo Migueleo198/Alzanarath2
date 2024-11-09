@@ -132,7 +132,7 @@ public class Player extends Entity {
             : "SinglePlayer");
        
         // Default speed and direction
-        speed = 3;
+        speed = 5;
         direction = "down";
 
         // Ensure loaded level is not overridden by default stats

@@ -25,7 +25,7 @@ public class OBJ_IronSword extends Entity{
 		level=1;
 		
 		
-		setDescription("["+ name +"]\n"  + " A normal basic sword,\n perfect for newbie adventurers" +
+		setDescription("["+ name +"]\n"  + " A normal basic sword,\n perfect for newbie adventurers \n" +
 				"Attack:" + attackValue 
 						+ "     Level:" + level);
 		

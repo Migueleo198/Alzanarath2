@@ -149,6 +149,11 @@ public class GamePanel extends JPanel implements Runnable {
    //OBJECTS
    public Entity[] Objects = new Entity[99];
    
+   //CURRENT MAP VARIABLES
+   
+   public final int maxMap = 20;
+   public int currentMap = 0;
+   
    
    // Constructor
    public GamePanel() {

@@ -16,7 +16,7 @@ import main.Utility;
 public class TileManager {
 	GamePanel gp;
 	public Tile[] tile;
-	private int mapTileNum[][];
+	private int mapTileNum[][][];
 	private int tileNum;
 	public int screenX;
 	public int screenY;
@@ -60,7 +60,7 @@ public class TileManager {
 			gp.setMaxWorldCol(maxTile.length);
 			gp.setMaxWorldRow(maxTile.length);
 			
-			mapTileNum = new int[gp.getMaxWorldCol()][gp.getMaxWorldRow()];
+			mapTileNum = new int[gp.maxMap][gp.getMaxWorldCol()][gp.getMaxWorldRow()];
 			
 			br.close();
 			
@@ -70,7 +70,8 @@ public class TileManager {
 		
 		
 		getTileImage();
-		loadMap("/Maps/improvedMap01.txt");
+		loadMap("/Maps/improvedMap01.txt",0);
+		loadMap("/Maps/MapShop1.txt",1);
 		
 		
 	}
@@ -101,7 +102,7 @@ public class TileManager {
 		
 	}
 	
-	public void loadMap(String filePath) {
+	public void loadMap(String filePath, int map) {
 		try {
 			InputStream is = getClass().getResourceAsStream(filePath);
 			BufferedReader br = new BufferedReader(new InputStreamReader(is));
@@ -120,7 +121,7 @@ public class TileManager {
 					
 					int num = Integer.parseInt(numbers[col]);
 					
-					getMapTileNum()[col][row] = num;
+					getMapTileNum()[map][col][row] = num;
 					
 					col++;
 					
@@ -164,7 +165,7 @@ public class TileManager {
 
 	    for (int worldRow = worldRowStart; worldRow < worldRowEnd; worldRow++) {
 	        for (int worldCol = worldColStart; worldCol < worldColEnd; worldCol++) {
-	            int tileNum = mapTileNum[worldCol][worldRow];
+	            int tileNum = mapTileNum[gp.currentMap][worldCol][worldRow];
 	            int tileWorldX = worldCol * tileSize;
 	            int tileWorldY = worldRow * tileSize;
 	            int screenX = tileWorldX - playerWorldX + playerScreenX;
@@ -191,11 +192,11 @@ public class TileManager {
         }
     }	
 
-	public int[][] getMapTileNum() {
+	public int[][][] getMapTileNum() {
 		return mapTileNum;
 	}
 
-	public void setMapTileNum(int mapTileNum[][]) {
+	public void setMapTileNum(int mapTileNum[][][]) {
 		this.mapTileNum = mapTileNum;
 	}
 
