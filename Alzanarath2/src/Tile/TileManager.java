@@ -5,6 +5,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
 
@@ -19,11 +20,55 @@ public class TileManager {
 	private int tileNum;
 	public int screenX;
 	public int screenY;
+	ArrayList<String> fileNames = new ArrayList<>();
+	ArrayList<String> collisionStatus = new ArrayList<>();
+	
 	public TileManager(GamePanel gp) {
 		this.gp=gp;
 		
-		tile= new Tile[20];
-		setMapTileNum(new int[gp.getMaxWorldCol()][gp.getMaxWorldRow()]);
+		//READ TILE DATA FILE
+		InputStream is = getClass().getResourceAsStream("/tileData/tileDataForImprovedMap01.txt");
+		BufferedReader br = new BufferedReader(new InputStreamReader(is));
+		
+		//GETTING TILES AND COLLISION INFO FROM FILE
+		String line;
+		
+		try {
+			while((line =  br.readLine())!= null ) {
+				fileNames.add(line);
+				collisionStatus.add(br.readLine());
+				
+			}
+			br.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
+		tile= new Tile[fileNames.size()];
+		getTileImage();
+		
+		
+		is= getClass().getResourceAsStream("/Maps/improvedMap01.txt");
+		br = new BufferedReader(new InputStreamReader(is));
+		
+		try {
+			String line2 = br.readLine();
+			String maxTile[] = line2.split(" ");
+			
+			gp.setMaxWorldCol(maxTile.length);
+			gp.setMaxWorldRow(maxTile.length);
+			
+			mapTileNum = new int[gp.getMaxWorldCol()][gp.getMaxWorldRow()];
+			
+			br.close();
+			
+		}catch(IOException e) {
+			e.printStackTrace();
+		}
+		
+		
 		getTileImage();
 		loadMap("/Maps/improvedMap01.txt");
 		
@@ -31,20 +76,24 @@ public class TileManager {
 	}
 	
 	public void getTileImage() {
-		setup(0, "0wallTile",true);
-		setup(1, "10Grass",false);
-		setup(2, "11Grass",false);
-		setup(3, "12Grass",false);
-		setup(4, "13Grass",false);
-		setup(5, "14Grass",false);
-		setup(6, "2Grass",false);
-		setup(7, "3Grass",false);
-		setup(8, "4Grass",false);
-		setup(9, "5Grass",false);
-		setup(10, "6Sand",false);
-		setup(11, "7Tree",true);
-		setup(12, "8WoodenFloor",false);
-		setup(13, "9Grass",false);
+		for(int i=0; i< fileNames.size();i++) {
+			String fileName;
+			boolean collision;
+		
+			//get a file name
+			fileName = fileNames.get(i);
+			
+			//get collision status
+			
+			if(collisionStatus.get(i).equals("true")) {
+				collision=true;
+			}
+			else {
+				collision=false;
+			}
+			setup(i,fileName,collision);
+		}
+			
 		
 		
 		
@@ -134,7 +183,7 @@ public class TileManager {
 
         try {
             tile[index] = new Tile();
-            tile[index].image = ImageIO.read(getClass().getResourceAsStream("/tiles/" + imageName + ".png"));
+            tile[index].image = ImageIO.read(getClass().getResourceAsStream("/tiles/" + imageName ));
             tile[index].image = uTool.scaleImage(tile[index].image, gp.getTileSize(), gp.getTileSize());
             tile[index].collision = collision;
         } catch (IOException e) {
