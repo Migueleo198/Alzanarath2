@@ -32,7 +32,7 @@ public class MiniMap extends TileManager {
             Graphics2D g2 = worldMap[0].createGraphics();
 
             for (int col = 0, row = 0; col < gamePanel.getMaxWorldCol() && row < gamePanel.getMaxWorldRow(); ) {
-                int tileNum = getMapTileNum()[col][row];
+                int tileNum = getMapTileNum()[gp.currentMap][col][row];
                 int x = gamePanel.getTileSize() * col;
                 int y = gamePanel.getTileSize() * row;
                 g2.drawImage(tile[tileNum].image, x, y, null);

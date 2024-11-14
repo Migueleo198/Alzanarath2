@@ -1,1 +1,5 @@
+Objects\OBJ_IronSword.class
 module-info.class
+Objects\OBJ_Potion.class
+Tile\MiniMap.class
+Objects\OBJ_WoodenChest.class

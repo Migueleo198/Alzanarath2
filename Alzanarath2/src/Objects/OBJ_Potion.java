@@ -18,7 +18,7 @@ public class OBJ_Potion extends Entity{
 		this.gp=gp;
 		direction="down";
 		 name = "Health Potion";
-		 down1=setup("/Object/Potion.png",gp.getTileSize(),gp.getTileSize());
+		 down1=setup("/Icons/Icon1.png",gp.getTileSize(),gp.getTileSize());
 		 type=type_Consumable;
 		 
 		 setDescription("["+ name +"]\n"  + "A perfect potion for healing \n minor injuries" +

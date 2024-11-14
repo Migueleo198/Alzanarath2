@@ -48,10 +48,9 @@ public class GamePanel extends JPanel implements Runnable {
     private int screenHeight2=screenHeight; // 576 pixels
 
     // WORLD SETTINGS
-    private final int maxWorldCol = 100;
-    private final int maxWorldRow = 100;
-    private final int worldWidth = tileSize * maxWorldCol;
-    private final int worldHeight = tileSize * maxWorldRow;
+    private  int maxWorldCol;
+    private  int maxWorldRow;
+    
 
     //HANDLE SERVER-CLIENT MONSTER DEATHS
     private boolean stopUpdatingMonsters=false;
@@ -59,6 +58,7 @@ public class GamePanel extends JPanel implements Runnable {
     
     // GAME THREAD
     Thread gameThread;
+    
     
     // GAME FPS
     private int FPS=60;
@@ -149,6 +149,11 @@ public class GamePanel extends JPanel implements Runnable {
    //OBJECTS
    public Entity[] Objects = new Entity[99];
    
+   //CURRENT MAP VARIABLES
+   
+   public final int maxMap = 20;
+   public int currentMap = 0;
+   
    
    // Constructor
    public GamePanel() {
@@ -199,9 +204,6 @@ public class GamePanel extends JPanel implements Runnable {
     
 
     public void setupGame() {
-    	
-    	
-    	
     	
         sound = new Sound();
        
@@ -259,11 +261,15 @@ public class GamePanel extends JPanel implements Runnable {
 
 	    networkManager = new NetworkManager(isServer, config, this, this.keyH);
 	    
+	    this.player = new Player(this, keyH, networkManager);
+	    
 	    aSetter = new AssetSetter(this, networkManager);
+	    
+	    
 	    
 	    aSetter.setObject();
 
-	    this.player = new Player(this, keyH, networkManager);
+	    
 	    
 	   //UNLOCKS ALL THE PREVIOUSLY UNLOCKED SKILLS ON LOGIN
 	    
@@ -315,7 +321,6 @@ public class GamePanel extends JPanel implements Runnable {
                 update(); // Update game logic
                 drawToTempScreen(); // Draw everything to the buffered image
                 drawToScreen(); // Draw the buffered image to the screen
-                
                 delta--; // Reduce delta by 1 after processing the frame
 
                 // Handle monster updates separately
@@ -404,7 +409,9 @@ public class GamePanel extends JPanel implements Runnable {
         // Update player and other players
         synchronized (keyH) {
             if (player != null && networkManager!=null) {
+            	
                 player.update();
+                
             }
 
             for (Player otherPlayer : otherPlayers.values()) {
@@ -501,7 +508,9 @@ public class GamePanel extends JPanel implements Runnable {
         else {
         	map.miniMapOn=false;
         }
-       map.drawMiniMap(g2);
+        if(this.player!=null) {
+        map.drawMiniMap(g2);
+        }
        if(gameState==mapState) {
        map.drawFullMapScreen(g2);
        }
@@ -703,13 +712,7 @@ public class GamePanel extends JPanel implements Runnable {
         return maxWorldRow;
     }
 
-    public int getWorldWidth() {
-        return worldWidth;
-    }
-
-    public int getWorldHeight() {
-        return worldHeight;
-    }
+  
 
     public ColissionChecker getcChecker() {
         return cChecker;
@@ -902,6 +905,17 @@ public class GamePanel extends JPanel implements Runnable {
 
 	public int getMapState() {
 		return mapState;
+	}
+
+
+	public void setMaxWorldCol(int maxWorldCol) {
+		this.maxWorldCol = maxWorldCol;
+	}
+
+
+	public void setMaxWorldRow(int length) {
+		this.maxWorldRow=length;
+		
 	}
 	
 	 

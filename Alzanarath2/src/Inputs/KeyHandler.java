@@ -275,6 +275,7 @@ public class KeyHandler implements KeyListener {
     
 
     private void handlePlayerMovement(int code, boolean pressed) {
+    	
         if (code == KeyEvent.VK_W) {
             upPressed = pressed;
         } else if (code == KeyEvent.VK_S) {
@@ -284,12 +285,37 @@ public class KeyHandler implements KeyListener {
         } else if (code == KeyEvent.VK_D) {
             rightPressed = pressed;
         }
+    	
 
-        if (code == KeyEvent.VK_E && attackDelay == 1) {
+        // Handle attack action on 'E' key press with delay
+        if (code == KeyEvent.VK_E && attackDelay == 1 && pressed) {
             ePressed = true;
             gp.playSE(3);
             attackDelay = 0;
         }
+    }
+    
+    // Apply movement based on key states (call this in the game loop) (LEAVE FOR LATER I DONT KNOW HOW TO IMPLEMENT THIS YET)
+    public void applyMovement() {
+        int deltaX = 0;
+        int deltaY = 0;
+
+        if (upPressed) {
+            deltaY -= gp.getPlayer().getSpeed();
+        }
+        if (downPressed) {
+            deltaY += gp.getPlayer().getSpeed();
+        }
+        if (leftPressed) {
+            deltaX -= gp.getPlayer().getSpeed();
+        }
+        if (rightPressed) {
+            deltaX += gp.getPlayer().getSpeed();
+        }
+
+        // Update player position based on delta values
+        gp.getPlayer().setWorldX(gp.getPlayer().getWorldX()+deltaX);
+        gp.getPlayer().setWorldY(gp.getPlayer().getWorldY()+deltaY);
     }
 
     private void sendMessage(String message) {
@@ -317,9 +343,11 @@ public class KeyHandler implements KeyListener {
 
 			} else if (gp.ui.getCommandNum() == 1) {
 				gp.setGameState(gp.getPlayState());
-				gp.setupGame();		
 				
+				gp.setupGame();	
 				gp.initializeGame();
+				
+				
 				gp.isServer = false;
 				
 			}
